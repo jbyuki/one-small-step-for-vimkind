@@ -1,5 +1,5 @@
--- Generated from attach.lua.tl, breakpoint_hit.lua.tl, handle_message.lua.tl, init.lua.tl, initialize.lua.tl, launch.lua.tl, log_remote.lua.tl, message_loop.lua.tl, receive.lua.tl, send.lua.tl, server.lua.tl, set_breakpoints.lua.tl using ntangle.nvim
-local server_messages = {}
+-- Generated from attach.lua.tl, breakpoint_hit.lua.tl, handle_message.lua.tl, init.lua.tl, initialize.lua.tl, launch.lua.tl, log_remote.lua.tl, message_loop.lua.tl, receive.lua.tl, scopes.lua.tl, send.lua.tl, server.lua.tl, set_breakpoints.lua.tl, stack_trace.lua.tl, threads.lua.tl, variables.lua.tl using ntangle.nvim
+local running = false
 
 local seq_id = 1
 
@@ -7,11 +7,17 @@ local nvim_server
 
 local debug_hook_conn 
 
+local vars_id = 1
+local vars_ref = {}
+
 local host = "127.0.0.1"
 
 -- for now, only accepts a single
 -- connection
 local client
+
+local frame_id = 1
+local frames = {}
 
 local make_response
 
@@ -22,7 +28,7 @@ local log
 local sendProxyDAP
 
 local M = {}
-M.server_messages = server_messages
+M.server_messages = {}
 function make_response(request, response)
   local msg = {
     type = "response",
@@ -33,6 +39,16 @@ function make_response(request, response)
   }
   seq_id = seq_id + 1
   return vim.tbl_extend('error', msg, response)
+end
+
+function make_event(event)
+  local msg = {
+    type = "event",
+    seq = seq_id,
+    event = event,
+  }
+  seq_id = seq_id + 1
+  return msg
 end
 
 function M.launch()
@@ -52,7 +68,7 @@ function M.wait_attach()
   local timer = vim.loop.new_timer()
   timer:start(0, 100, vim.schedule_wrap(function()
     local has_attach = false
-    for _,msg in ipairs(server_messages) do
+    for _,msg in ipairs(M.server_messages) do
       if msg.command == "attach" then
         has_attach = true
       end
@@ -66,6 +82,36 @@ function M.wait_attach()
     
     function handlers.attach(msg)
       log("Attached!")
+    end
+    
+    function handlers.scopes(request)
+      local args = request.arguments
+      local frame = frames[args.frameId]
+      if not frame then 
+        log("Frame not found!")
+        return 
+      end
+    
+    
+      local scopes = {}
+    
+      local a = 1
+      local local_scope = {}
+      local_scope.name = "Locals"
+      local_scope.presentationHint = "locals"
+      local_scope.variablesReference = vars_id
+      local_scope.expensive = false
+      
+      vars_ref[vars_id] = frame
+      vars_id = vars_id + 1
+      
+      table.insert(scopes, local_scope)
+    
+      sendProxyDAP(make_response(request,{
+        body = {
+          scopes = scopes,
+        };
+      }))
     end
     
     function handlers.setBreakpoints(request)
@@ -88,10 +134,99 @@ function M.wait_attach()
       
     end
     
+    function handlers.stackTrace(request)
+      local args = request.arguments
+      local start_frame = args.startFrame or 0
+      local max_levels = args.levels or -1
+      
+    
+      local stack_frames = {}
+      local levels = 1
+      while levels <= max_levels or max_levels == -1 do
+        local info = debug.getinfo(2+levels+start_frame)
+        if not info then
+          break
+        end
+      
+        local stack_frame = {}
+        stack_frame.id = frame_id
+        stack_frame.name = info.name or info.what
+        if info.source:sub(1, 1) == '@' then
+          stack_frame.source = {
+            name = info.source,
+            path = vim.fn.fnamemodify(info.source:sub(2), ":p"),
+          }
+          stack_frame.line = info.currentline 
+          stack_frame.column = 0
+        end
+        table.insert(stack_frames, stack_frame)
+        frames[frame_id] = 2+levels+start_frame
+        frame_id = frame_id + 1
+      
+        levels = levels + 1
+      end
+      
+    
+      sendProxyDAP(make_response(request,{
+        body = {
+          stackFrames = stack_frames,
+          totalFrames = #stack_frames,
+        };
+      }))
+    end
+    
+    function handlers.threads(request)
+      sendProxyDAP(make_response(request, {
+        body = {
+          threads = {
+            {
+              id = 1,
+              name = "main"
+            }
+          }
+        }
+      }))
+    end
+    function handlers.variables(request)
+      local args = request.arguments
+    
+      local frame = vars_ref[args.variablesReference]
+      if not frame then
+        log("VariablesReference not found")
+        return
+      end
+    
+      local variables = {}
+      local a = 1
+      while true do
+        local ln, lv = debug.getlocal(frame, a)
+        if not ln then
+          break
+        end
+      
+        if vim.startswith(ln, "(*") then
+        
+        else
+          local v = {}
+          v.name = ln
+          v.value = vim.inspect(lv)
+          table.insert(variables, v)
+        end
+        a = a + 1
+      end
+      
+    
+      sendProxyDAP(make_response(request, {
+        body = {
+          variables = variables,
+        }
+      }))
+    end
+    
     debug.sethook(function(event, line)
       local i = 1
-      while i <= #server_messages do
-        local msg = server_messages[i]
+      while i <= #M.server_messages do
+        local msg = M.server_messages[i]
         local f = handlers[msg.command]
         if f then
           f(msg)
@@ -101,22 +236,45 @@ function M.wait_attach()
         i = i + 1
       end
       
-      server_messages = {}
+      M.server_messages = {}
       
     
       local bps = breakpoints[line]
       if bps then
         local info = debug.getinfo(2, "S")
         local source_path = info.source
-        log(source_path)
         
         if source_path:sub(1, 1) == "@" then
           local path = source_path:sub(2)
           path = vim.fn.fnamemodify(path, ":p")
           if bps[path] then
-            log("Break!")
+            local msg = make_event("stopped")
+            msg.body = {
+              reason = "breakpoint",
+              threadId = 1
+            }
+            sendProxyDAP(msg)
+        
+            while not running do
+              local i = 1
+              while i <= #M.server_messages do
+                local msg = M.server_messages[i]
+                local f = handlers[msg.command]
+                if f then
+                  f(msg)
+                else
+                  log("Could not handle " .. msg.command)
+                end
+                i = i + 1
+              end
+              
+              M.server_messages = {}
+              
+              vim.wait(50)
+            end
           end
         end
+        
       end
       
     end, "l")
@@ -151,16 +309,6 @@ function M.start_server()
     local sock = vim.loop.new_tcp()
     server:accept(sock)
     local tcp_data = ""
-    
-    function make_event(event)
-      local msg = {
-        type = "event",
-        seq = seq_id,
-        event = event,
-      }
-      seq_id = seq_id + 1
-      return msg
-    end
     
   
     client = sock
@@ -215,7 +363,7 @@ function M.start_server()
         end
         
         if debug_hook_conn then
-          vim.fn.rpcnotify(debug_hook_conn, "nvim_exec_lua", [[table.insert(require"lua-debug".server_messages, ...)]], {msg})
+          vim.fn.rpcrequest(debug_hook_conn, "nvim_exec_lua", [[table.insert(require"lua-debug".server_messages, ...)]], {msg})
         end
         
       end
@@ -245,10 +393,6 @@ function M.start_server()
     host = host,
     port = server:getsockname().port
   }
-end
-
-function M.test()
-  return 2
 end
 
 function sendProxyDAP(data)

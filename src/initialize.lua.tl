@@ -26,7 +26,7 @@ M.sendDAP(make_response(msg, {
 @declare+=
 local make_event
 
-@socket_functions+=
+@implement+=
 function make_event(event)
   local msg = {
     type = "event",

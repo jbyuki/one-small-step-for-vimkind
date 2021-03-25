@@ -9,8 +9,8 @@ end, "l")
 
 @handle_new_messages+=
 local i = 1
-while i <= #server_messages do
-  local msg = server_messages[i]
+while i <= #M.server_messages do
+  local msg = M.server_messages[i]
   local f = handlers[msg.command]
   if f then
     f(msg)
@@ -21,7 +21,7 @@ while i <= #server_messages do
 end
 
 @clear_messages+=
-server_messages = {}
+M.server_messages = {}
 
 @implement_handlers+=
 function handlers.attach(msg)

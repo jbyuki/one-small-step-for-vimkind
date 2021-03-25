@@ -40,11 +40,6 @@ end)
 
 log("Server started on " .. server:getsockname().port)
 
-@implement+=
-function M.test()
-  return 2
-end
-
 @accept_server+=
 local sock = vim.loop.new_tcp()
 server:accept(sock)
