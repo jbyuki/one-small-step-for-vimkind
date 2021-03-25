@@ -3,16 +3,16 @@
 @declare
 @implement
 @script_variables
--- local host_neovim_conn_add = [[\\.\pipe\nvim-18104-0]]
--- local host_neovim_conn = vim.fn.sockconnect('pipe', host_neovim_conn_add, {rpc = true})
-@create_host_neovim_instance
+local host_neovim_conn_add = [[\\.\pipe\nvim-17308-0]]
+local host_neovim_conn = vim.fn.sockconnect('pipe', host_neovim_conn_add, {rpc = true})
+-- @create_host_neovim_instance
 @redefine_print_in_host_neovim_instance
 
 @start_debug_adapter
 
--- local debug_neovim_conn_add = [[\\.\pipe\nvim-8472-0]]
--- local debug_neovim_conn = vim.fn.sockconnect('pipe', debug_neovim_conn_add, {rpc = true})
-@create_debug_neovim_instance
+local debug_neovim_conn_add = [[\\.\pipe\nvim-3784-0]]
+local debug_neovim_conn = vim.fn.sockconnect('pipe', debug_neovim_conn_add, {rpc = true})
+-- @create_debug_neovim_instance
 
 @send_dab_configuration
 

@@ -1,0 +1,85 @@
+lua-debug                                       *lua-debug*
+
+lua-debug.nvim is an adapter for lua running inside Neovim. It
+will allow you to:
+
+  * Debug lua scripts
+  * Debug a running component inside Neovim (like a plugin)
+  * Debug Neovim internal lua scripts
+
+In order to use lua-debug.nvim, you will need a DAP client.
+You can choose between two alternatives which are:
+
+  nvim-dap: https://github.com/mfussenegger/nvim-dap
+  vimspector: https://github.com/puremourning/vimspector
+
+lua-debug.nvim was mainly developed with nvim-dap which
+is the one recommanded.
+
+The general idea is to control remotely an instance from a
+DAP client. The adapter is launched on the target instance,
+and the debug instance will use the DAP client to communicate
+with the target instance.
+
+The remote controlled instance will be completely frozen
+when a breakpoint is hit. So be careful to always to use 
+correctly the debugging environnement.
+
+                                  Type |gO| to the table of contents.
+
+==============================================================================
+nvim-dap                                               *lua-debug-dap*
+
+nvim-dap has the concepts of configurations and adapters. The configuration
+has the form dap.configuration.<language> where the language is lua for
+lua-plugins.nvim. Furthermore, you need to specify, it's an "attach" under
+the request field. The host and port field will allow to pass the server
+address to nvim-dap. >
+
+  local dap = require"dap"
+  dap.configurations.lua = { 
+    { 
+      type = 'nlua', 
+      request = 'attach',
+      name = "Attach to running Neovim instance",
+      host = function()
+        local value = vim.fn.input('Host [127.0.0.1]: ')
+        if value ~= "" then
+          return value
+        end
+        return '127.0.0.1'
+      end,
+      port = function()
+        local val = tonumber(vim.fn.input('Port: '))
+        assert(val, "Please provide a port number")
+        return val
+      end,
+    }
+  }
+
+  dap.adapters.nlua = function(callback, config)
+    callback({ type = 'server', host = config.host, port = config.port })
+  end
+<
+
+Once the |lua-debug-server| has been launched, nvim-dap can be attached
+to the Neovim instance. The usual procedure is:
+
+  * Toggle breakpoints using |dap.toggle_breakpoint()|.
+  * Start the debugging session using |dap.continue()|.
+
+==============================================================================
+vimspector configuration                           *lua-debug-vimspector*
+
+Todo
+
+==============================================================================
+Launch lua-debug's server                          *lua-debug-server*
+
+To start a debugging session, you will first need to start the server. This
+can done using |lua-debug.launch()|.  
+
+launch()                                               *lua-debug.launch()*
+
+This command will launch the DAP server awaiting any connections. On
+execution, a prompt message will display the port it's running on.
