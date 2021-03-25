@@ -52,7 +52,6 @@ function make_event(event)
 end
 
 function M.launch()
-  log("launch!")
   nvim_server = vim.fn.jobstart({'nvim', '--embed', '--headless'}, {rpc = true})
   
   local hook_address = vim.fn.serverstart()
@@ -60,7 +59,7 @@ function M.launch()
   
   local server = vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"lua-debug".start_server()]], {})
   
-
+  log("Server started on port " .. server.port)
   return server
 end
 

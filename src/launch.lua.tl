@@ -1,11 +1,10 @@
 ##lua-debug
 @implement+=
 function M.launch()
-  log("launch!")
   @spawn_nvim_instance_for_server
   @set_hook_instance_address
   @launch_server
-
+  log("Server started on port " .. server.port)
   return server
 end
 
