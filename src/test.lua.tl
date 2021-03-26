@@ -23,8 +23,10 @@
 
 vim.wait(500)
 
-@next_in_debug_session
+-- @next_in_debug_session
 -- @step_in_debug_session
+-- @continue_in_debug_session
+@step_out_debug_session
 
 @capture_output_from_host
 
@@ -67,6 +69,10 @@ vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", 'j', "n", false) -- go down
 vim.wait(200)
 vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".toggle_breakpoint()\n', "n", false)
 vim.wait(200)
+-- vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", 'jj', "n", false) -- go down one line
+-- vim.wait(200)
+-- vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".toggle_breakpoint()\n', "n", false)
+-- vim.wait(200)
 vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".continue()\n', "n", false)
 vim.wait(200)
 print("Done!")
@@ -99,4 +105,12 @@ end
 vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".step_over()\n', "n", false)
 vim.wait(500)
 vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".step_over()\n', "n", false)
+vim.wait(500)
+
+@continue_in_debug_session+=
+vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".continue()\n', "n", false)
+vim.wait(500)
+
+@step_out_debug_session+=
+vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".step_out()\n', "n", false)
 vim.wait(500)

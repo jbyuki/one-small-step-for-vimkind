@@ -52,8 +52,8 @@ Handlers:
 * [x] variables
 * [x] stepIn
 * [x] next
-* [ ] stepOut
-* [ ] continue
+* [x] stepOut
+* [x] continue
 
 Events:
 

@@ -12,6 +12,7 @@ debug.sethook(function(event, line)
   @check_if_breakpoint_hit
   @check_if_step_into
   @check_if_next
+  @check_if_step_out
   end
 end, "clr")
 
