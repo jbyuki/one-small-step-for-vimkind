@@ -5,6 +5,7 @@ debug.sethook(function(event, line)
   @clear_messages
 
   @check_if_breakpoint_hit
+  @check_if_step_into
 end, "l")
 
 @implement_handlers+=

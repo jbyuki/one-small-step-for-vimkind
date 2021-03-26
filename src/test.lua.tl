@@ -10,17 +10,20 @@
 
 @start_debug_adapter
 
--- local debug_neovim_conn_add = [[\\.\pipe\nvim-6988-0]]
--- local debug_neovim_conn = vim.fn.sockconnect('pipe', debug_neovim_conn_add, {rpc = true})
-@create_debug_neovim_instance
+local debug_neovim_conn_add = [[\\.\pipe\nvim-8180-0]]
+local debug_neovim_conn = vim.fn.sockconnect('pipe', debug_neovim_conn_add, {rpc = true})
+-- @create_debug_neovim_instance
 
 @send_dab_configuration
 
 @open_lua_file
 @start_dap_session
 
-
 @execute_in_host
+
+vim.wait(500)
+
+-- @next_in_debug_session
 
 @capture_output_from_host
 
@@ -78,9 +81,15 @@ local result = vim.fn.rpcnotify(host_neovim_conn, "nvim_exec", [[luafile test4.l
 print(vim.inspect(result))
 
 @capture_output_from_host+=
-vim.wait(1000)
+vim.wait(500)
 local output = vim.fn.rpcrequest(host_neovim_conn, "nvim_exec_lua", [[return debug_output]], {})
 
 for _, line in ipairs(output) do
   print(line)
+end
+
+@next_in_debug_session+=
+for i=1,11 do
+  vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".step_into()\n', "n", false)
+  vim.wait(500)
 end

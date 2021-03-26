@@ -50,13 +50,15 @@ Handlers:
 * [x] stackTrace
 * [x] threads
 * [x] variables
+* [x] stepIn
+* [ ] next
+* [ ] stepOut
+* [ ] continue
 
 Events:
 
 * [x] initialized
 * [x] stopped
-
-Status: **Not working yet!**
 
 ## Credits
 

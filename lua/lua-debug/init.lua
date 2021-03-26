@@ -1,5 +1,5 @@
--- Generated from attach.lua.tl, breakpoint_hit.lua.tl, init.lua.tl, initialize.lua.tl, launch.lua.tl, log_remote.lua.tl, message_loop.lua.tl, receive.lua.tl, scopes.lua.tl, send.lua.tl, server.lua.tl, set_breakpoints.lua.tl, stack_trace.lua.tl, threads.lua.tl, variables.lua.tl using ntangle.nvim
-local running = false
+-- Generated from attach.lua.tl, breakpoint_hit.lua.tl, init.lua.tl, initialize.lua.tl, launch.lua.tl, log_remote.lua.tl, message_loop.lua.tl, receive.lua.tl, scopes.lua.tl, send.lua.tl, server.lua.tl, set_breakpoints.lua.tl, stack_trace.lua.tl, step_in.lua.tl, threads.lua.tl, variables.lua.tl using ntangle.nvim
+local running = true
 
 local seq_id = 1
 
@@ -16,6 +16,8 @@ local debug_hook_conn
 
 local frame_id = 1
 local frames = {}
+
+local step_in
 
 local make_response
 
@@ -187,6 +189,16 @@ function M.wait_attach()
       }))
     end
     
+    function handlers.stepIn(request)
+      step_in = true
+      
+      running = true
+      
+    
+      sendProxyDAP(make_response(request,{}))
+      
+    end
+    
     function handlers.threads(request)
       sendProxyDAP(make_response(request, {
         body = {
@@ -256,7 +268,7 @@ function M.wait_attach()
         local info = debug.getinfo(2, "S")
         local source_path = info.source
         
-        if source_path:sub(1, 1) == "@" then
+        if source_path:sub(1, 1) == "@" or step_in then
           local path = source_path:sub(2)
           path = vim.fn.fnamemodify(path, ":p")
           if bps[path] then
@@ -266,7 +278,7 @@ function M.wait_attach()
               threadId = 1
             }
             sendProxyDAP(msg)
-        
+            running = false
             while not running do
               local i = 1
               while i <= #M.server_messages do
@@ -284,7 +296,38 @@ function M.wait_attach()
               
               vim.wait(50)
             end
+            
           end
+        end
+        
+      
+      elseif step_in then
+        local msg = make_event("stopped")
+        msg.body = {
+          reason = "step",
+          threadId = 1
+        }
+        sendProxyDAP(msg)
+        step_in = false
+        
+      
+        running = false
+        while not running do
+          local i = 1
+          while i <= #M.server_messages do
+            local msg = M.server_messages[i]
+            local f = handlers[msg.command]
+            if f then
+              f(msg)
+            else
+              log("Could not handle " .. msg.command)
+            end
+            i = i + 1
+          end
+          
+          M.server_messages = {}
+          
+          vim.wait(50)
         end
         
       end
