@@ -106,6 +106,7 @@ the ntangle.nvim plugin available at:
     https://github.com/jbyuki/ntangle.nvim
 
 This plug-in should be enough to generate the lua file which can be run.
-Additionally, dash.nvim is used to run quickly the lua file.
+Additionally, dash.nvim is used to quickly run the lua file from within the
+tangle file.
 
     https://github.com/jbyuki/dash.nvim

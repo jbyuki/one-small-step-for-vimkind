@@ -1,15 +1,13 @@
 # lua-debug.nvim
 
-`lua-debug.nvim` is an **adapter** to debug a running Neovim instance. See the [DAP protocol](https://microsoft.github.io/debug-adapter-protocol/overview) to know more about adapters. It allows you to debug any lua code running in a Neovim instance. This means it can be used to debug running plugins.
+`lua-debug.nvim` is an **adapter** to debug a running Neovim instance. See the [DAP protocol](https://microsoft.github.io/debug-adapter-protocol/overview) to know more about adapters. It allows you to debug any lua code running in a Neovim instance.
 
 ## Install
 
 In addition to installing `lua-debug.nvim`, you will also need a DAP plugin which will allow you to interact with the adapter. There are mainly two available:
 
-  * [nvim-dap](https://github.com/mfussenegger/nvim-dap) (recommanded)
+  * [nvim-dap](https://github.com/mfussenegger/nvim-dap)
   * [vimspector](https://github.com/puremourning/vimspector) 
-
-See the project respective pages for additionnal configurations.
 
 ## Configuration
 
