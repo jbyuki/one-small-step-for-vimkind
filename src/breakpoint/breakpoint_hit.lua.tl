@@ -1,7 +1,7 @@
 ##../lua-debug
 @check_if_breakpoint_hit+=
 local bps = breakpoints[line]
-if bps then
+if event == "line" and bps then
   @get_source_path
   @if_source_path_match_break
 

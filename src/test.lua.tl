@@ -10,11 +10,11 @@
 
 @start_debug_adapter
 
-local debug_neovim_conn_add = [[\\.\pipe\nvim-8180-0]]
-local debug_neovim_conn = vim.fn.sockconnect('pipe', debug_neovim_conn_add, {rpc = true})
--- @create_debug_neovim_instance
+-- local debug_neovim_conn_add = [[\\.\pipe\nvim-4316-0]]
+-- local debug_neovim_conn = vim.fn.sockconnect('pipe', debug_neovim_conn_add, {rpc = true})
+@create_debug_neovim_instance
 
-@send_dab_configuration
+@send_dap_configuration
 
 @open_lua_file
 @start_dap_session
@@ -23,7 +23,8 @@ local debug_neovim_conn = vim.fn.sockconnect('pipe', debug_neovim_conn_add, {rpc
 
 vim.wait(500)
 
--- @next_in_debug_session
+@next_in_debug_session
+-- @step_in_debug_session
 
 @capture_output_from_host
 
@@ -73,7 +74,7 @@ print("Done!")
 @redefine_print_in_host_neovim_instance+=
 vim.fn.rpcrequest(host_neovim_conn, "nvim_exec_lua", [[debug_output = {}]], {})
 
-@send_dab_configuration+=
+@send_dap_configuration+=
 vim.fn.rpcrequest(debug_neovim_conn, "nvim_exec_lua", [[require"dap".configurations.lua = { { type = 'nlua', request = 'attach', name = "Attach to running Neovim instance", host = '127.0.0.1', port = ]] .. server.port .. [[} }]], {})
 
 @execute_in_host+=
@@ -88,8 +89,14 @@ for _, line in ipairs(output) do
   print(line)
 end
 
-@next_in_debug_session+=
+@step_in_debug_session+=
 for i=1,11 do
   vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".step_into()\n', "n", false)
   vim.wait(500)
 end
+
+@next_in_debug_session+=
+vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".step_over()\n', "n", false)
+vim.wait(500)
+vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".step_over()\n', "n", false)
+vim.wait(500)

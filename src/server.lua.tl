@@ -27,7 +27,6 @@ local client
 server:listen(128, function(err)
   @accept_server
   @socket_variables
-  @socket_functions
 
   client = sock
 

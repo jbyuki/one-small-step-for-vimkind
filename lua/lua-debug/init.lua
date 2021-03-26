@@ -1,9 +1,14 @@
--- Generated from attach.lua.tl, breakpoint_hit.lua.tl, init.lua.tl, initialize.lua.tl, launch.lua.tl, log_remote.lua.tl, message_loop.lua.tl, receive.lua.tl, scopes.lua.tl, send.lua.tl, server.lua.tl, set_breakpoints.lua.tl, stack_trace.lua.tl, step_in.lua.tl, threads.lua.tl, variables.lua.tl using ntangle.nvim
+-- Generated from attach.lua.tl, breakpoint_hit.lua.tl, init.lua.tl, initialize.lua.tl, launch.lua.tl, log_remote.lua.tl, message_loop.lua.tl, next.lua.tl, receive.lua.tl, scopes.lua.tl, send.lua.tl, server.lua.tl, set_breakpoints.lua.tl, stack_trace.lua.tl, step_in.lua.tl, threads.lua.tl, variables.lua.tl using ntangle.nvim
+local limit = 0
+
 local running = true
 
 local seq_id = 1
 
 local nvim_server
+
+local stack_level = 0
+local next = false
 
 local vars_id = 1
 local vars_ref = {}
@@ -97,6 +102,16 @@ function M.wait_attach()
       sendProxyDAP(make_response(request, {}))
     end
     
+    
+    function handlers.next(request)
+      stack_level = 0
+      
+      next = true
+      
+      running = true
+      
+      sendProxyDAP(make_response(request, {}))
+    end
     
     function handlers.scopes(request)
       local args = request.arguments
@@ -263,8 +278,19 @@ function M.wait_attach()
       M.server_messages = {}
       
     
+      if next and event == "call" then
+        local info = debug.getinfo(2, "S")
+        local c_function = info.what == "C"
+        if not c_function then
+          stack_level = stack_level + 1
+        end
+      elseif next and event == "return" then
+        stack_level = stack_level - 1
+      end
+      
+    
       local bps = breakpoints[line]
-      if bps then
+      if event == "line" and bps then
         local info = debug.getinfo(2, "S")
         local source_path = info.source
         
@@ -301,7 +327,7 @@ function M.wait_attach()
         end
         
       
-      elseif step_in then
+      elseif event == "line" and step_in then
         local msg = make_event("stopped")
         msg.body = {
           reason = "step",
@@ -330,9 +356,39 @@ function M.wait_attach()
           vim.wait(50)
         end
         
-      end
       
-    end, "l")
+      elseif event == "line" and next and stack_level == 0 then
+        local msg = make_event("stopped")
+        msg.body = {
+          reason = "step",
+          threadId = 1
+        }
+        sendProxyDAP(msg)
+        next = false
+        
+      
+        running = false
+        while not running do
+          local i = 1
+          while i <= #M.server_messages do
+            local msg = M.server_messages[i]
+            local f = handlers[msg.command]
+            if f then
+              f(msg)
+            else
+              log("Could not handle " .. msg.command)
+            end
+            i = i + 1
+          end
+          
+          M.server_messages = {}
+          
+          vim.wait(50)
+        end
+        
+      
+      end
+    end, "clr")
     
   end))
 end
