@@ -74,11 +74,3 @@ do
   msg = read_body(len.content_length)
 end
 
-@script_variables+=
-local debug_hook_conn 
-
-@connect_to_hook+=
-if debug_hook_conn_address then
-  debug_hook_conn = vim.fn.sockconnect("pipe", debug_hook_conn_address, {rpc = true})
-end
-

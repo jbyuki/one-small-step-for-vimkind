@@ -1,20 +1,18 @@
--- Generated from attach.lua.tl, breakpoint_hit.lua.tl, handle_message.lua.tl, init.lua.tl, initialize.lua.tl, launch.lua.tl, log_remote.lua.tl, message_loop.lua.tl, receive.lua.tl, scopes.lua.tl, send.lua.tl, server.lua.tl, set_breakpoints.lua.tl, stack_trace.lua.tl, threads.lua.tl, variables.lua.tl using ntangle.nvim
+-- Generated from attach.lua.tl, breakpoint_hit.lua.tl, init.lua.tl, initialize.lua.tl, launch.lua.tl, log_remote.lua.tl, message_loop.lua.tl, receive.lua.tl, scopes.lua.tl, send.lua.tl, server.lua.tl, set_breakpoints.lua.tl, stack_trace.lua.tl, threads.lua.tl, variables.lua.tl using ntangle.nvim
 local running = false
 
 local seq_id = 1
 
 local nvim_server
 
-local debug_hook_conn 
-
 local vars_id = 1
 local vars_ref = {}
-
-local host = "127.0.0.1"
 
 -- for now, only accepts a single
 -- connection
 local client
+
+local debug_hook_conn 
 
 local frame_id = 1
 local frames = {}
@@ -28,7 +26,6 @@ local log
 local sendProxyDAP
 
 local M = {}
-M.server_messages = {}
 function make_response(request, response)
   local msg = {
     type = "response",
@@ -51,13 +48,26 @@ function make_event(event)
   return msg
 end
 
-function M.launch()
+function M.launch(opts)
+  vim.validate {
+    opts = {opts, 't', true}
+  }
+  
+  if opts then
+    vim.validate {
+      ["opts.host"] = {opts.host, isIPv4, true},
+      ["opts.port"] = {opts.port, "n", true},
+    }
+  end
+
   nvim_server = vim.fn.jobstart({'nvim', '--embed', '--headless'}, {rpc = true})
   
   local hook_address = vim.fn.serverstart()
   vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[debug_hook_conn_address = ...]], {hook_address})
   
-  local server = vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"lua-debug".start_server()]], {})
+  local host = (opts and opts.host) or "127.0.0.1"
+  local port = (opts and opts.port) or 0
+  local server = vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"lua-debug".start_server(...)]], {host, port})
   
   log("Server started on port " .. server.port)
   return server
@@ -72,6 +82,7 @@ function M.wait_attach()
         has_attach = true
       end
     end
+    
     if not has_attach then return end
     log("Attach!")
     timer:close()
@@ -280,6 +291,7 @@ function M.wait_attach()
     
   end))
 end
+
 function log(str)
   if debug_output then
     table.insert(debug_output, tostring(str))
@@ -287,6 +299,7 @@ function log(str)
     print(str)
   end
 end
+M.server_messages = {}
 function M.sendDAP(msg)
   local succ, encoded = pcall(vim.fn.json_encode, msg)
   
@@ -299,14 +312,15 @@ function M.sendDAP(msg)
   end
 end
 
-function M.start_server()
+function M.start_server(host, port)
   local server = vim.loop.new_tcp()
   
-  server:bind(host, 0)
+  server:bind(host, port)
   
   server:listen(128, function(err)
     local sock = vim.loop.new_tcp()
     server:accept(sock)
+    
     local tcp_data = ""
     
   

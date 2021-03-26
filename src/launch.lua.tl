@@ -1,6 +1,8 @@
 ##lua-debug
 @implement+=
-function M.launch()
+function M.launch(opts)
+  @verify_launch_arguments
+
   @spawn_nvim_instance_for_server
   @set_hook_instance_address
   @launch_server
@@ -19,7 +21,9 @@ local hook_address = vim.fn.serverstart()
 vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[debug_hook_conn_address = ...]], {hook_address})
 
 @launch_server+=
-local server = vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"lua-debug".start_server()]], {})
+local host = (opts and opts.host) or "127.0.0.1"
+local port = (opts and opts.port) or 0
+local server = vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"lua-debug".start_server(...)]], {host, port})
 
 @implement+=
 function M.wait_attach()
@@ -35,4 +39,16 @@ function M.wait_attach()
     @implement_handlers
     @attach_to_current_instance
   end))
+end
+
+@verify_launch_arguments+=
+vim.validate {
+  opts = {opts, 't', true}
+}
+
+if opts then
+  vim.validate {
+    ["opts.host"] = {opts.host, isIPv4, true},
+    ["opts.port"] = {opts.port, "n", true},
+  }
 end

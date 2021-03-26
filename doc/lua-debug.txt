@@ -4,7 +4,7 @@ lua-debug.nvim is an adapter for lua running inside Neovim. It
 will allow you to:
 
   * Debug lua scripts
-  * Debug a running component inside Neovim (like a plugin)
+  * Debug a running component inside Neovim (like a plug-in)
   * Debug Neovim internal lua scripts
 
 In order to use lua-debug.nvim, you will need a DAP client.
@@ -23,7 +23,7 @@ with the target instance.
 
 The remote controlled instance will be completely frozen
 when a breakpoint is hit. So be careful to always to use 
-correctly the debugging environnement.
+correctly the debugging environment.
 
                                   Type |gO| to the table of contents.
 
@@ -79,7 +79,33 @@ Launch lua-debug's server                          *lua-debug-server*
 To start a debugging session, you will first need to start the server. This
 can done using |lua-debug.launch()|.  
 
-launch()                                               *lua-debug.launch()*
+launch({opts})                             *lua-debug.launch()*
 
 This command will launch the DAP server awaiting any connections. On
 execution, a prompt message will display the port it's running on.
+
+    Parameters:~
+        {opts} Optional parameters.
+               • `host`: defaults to "127.0.0.1"
+               • `port`: Specify a port number or if nil, lets the server
+               choose an available port.
+
+    Return:~
+        An server info object which contains {host = {host}, port = {port}} or
+        nil on failure
+
+==============================================================================
+lua-debug development                              *lua-debug-development*
+
+Most of the development and testing is done through `src/test.lua.tl`. It 
+allows to start a debug session automatically. Otherwise the time of
+development would be much longer. It also provides a script which test most of
+the functionalities of lua-debug. In order to be run, you will at least need
+the ntangle.nvim plugin available at:
+
+    https://github.com/jbyuki/ntangle.nvim
+
+This plug-in should be enough to generate the lua file which can be run.
+Additionally, dash.nvim is used to run quickly the lua file.
+
+    https://github.com/jbyuki/dash.nvim
