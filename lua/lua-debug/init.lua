@@ -1,4 +1,4 @@
--- Generated from attach.lua.tl, breakpoint_hit.lua.tl, continue.lua.tl, init.lua.tl, initialize.lua.tl, launch.lua.tl, log_remote.lua.tl, message_loop.lua.tl, next.lua.tl, receive.lua.tl, scopes.lua.tl, send.lua.tl, server.lua.tl, set_breakpoints.lua.tl, stack_trace.lua.tl, step_in.lua.tl, step_out.lua.tl, threads.lua.tl, variables.lua.tl using ntangle.nvim
+-- Generated from attach.lua.tl, breakpoint_hit.lua.tl, continue.lua.tl, evaluate.lua.tl, init.lua.tl, initialize.lua.tl, launch.lua.tl, log_remote.lua.tl, message_loop.lua.tl, next.lua.tl, receive.lua.tl, scopes.lua.tl, send.lua.tl, server.lua.tl, set_breakpoints.lua.tl, stack_trace.lua.tl, step_in.lua.tl, step_out.lua.tl, threads.lua.tl, variables.lua.tl using ntangle.nvim
 local limit = 0
 
 local running = true
@@ -110,6 +110,66 @@ function M.wait_attach()
       running = true
       
       sendProxyDAP(make_response(request,{}))
+    end
+    
+    function handlers.evaluate(request)
+      local args = request.arguments
+      if args.context == "repl" then
+        local frame = frames[args.frameId]
+        -- what is this abomination...
+        --              a former c++ programmer
+        local a = 1
+        local prev
+        local cur = {}
+        local first = cur
+        
+        while true do
+          local succ, ln, lv = pcall(debug.getlocal, frame+1, a)
+          if not succ then
+            break
+          end
+        
+          if not ln then
+            prev = cur
+        
+            cur = {}
+            setmetatable(prev, {
+              __index = cur
+            })
+        
+            frame = frame + 1
+            a = 1
+          else
+            cur[ln] = lv
+            a = a + 1
+          end
+        end
+        
+        setmetatable(cur, {
+          __index = _G
+        })
+        
+        local succ, f = pcall(loadstring, "return " .. args.expression)
+        if succ then
+          setfenv(f, first)
+        end
+        
+        local result_repl
+        if succ then
+          succ, result_repl = pcall(f)
+        else
+          result_repl = f
+        end
+        
+        sendProxyDAP(make_response(request, {
+          body = {
+            result = vim.inspect(result_repl),
+            variablesReference = 0,
+          }
+        }))
+      else
+        log("evaluate context " .. args.context .. " not supported!")
+      end
     end
     
     function handlers.next(request)

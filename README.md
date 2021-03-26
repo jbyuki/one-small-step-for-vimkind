@@ -56,7 +56,7 @@ Handlers:
 * [x] next
 * [x] stepOut
 * [x] continue
-* [ ] evaluate
+* [x] evaluate
 * [ ] pause
 * [ ] terminate
 * [ ] disconnect

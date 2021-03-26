@@ -10,9 +10,9 @@
 
 @start_debug_adapter
 
-local debug_neovim_conn_add = [[\\.\pipe\nvim-19944-0]]
-local debug_neovim_conn = vim.fn.sockconnect('pipe', debug_neovim_conn_add, {rpc = true})
--- @create_debug_neovim_instance
+-- local debug_neovim_conn_add = [[\\.\pipe\nvim-21744-0]]
+-- local debug_neovim_conn = vim.fn.sockconnect('pipe', debug_neovim_conn_add, {rpc = true})
+@create_debug_neovim_instance
 
 @send_dap_configuration
 
@@ -67,7 +67,7 @@ vim.fn.rpcnotify(host_neovim_conn, "nvim_exec_lua", "require'lua-debug'.wait_att
 
 @start_dap_session+=
 -- for some reason I can't nvim_exec_lua here
-vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", 'j', "n", false) -- go down one line
+vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", 'jj', "n", false) -- go down one line
 vim.wait(200)
 vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".toggle_breakpoint()\n', "n", false)
 vim.wait(200)
@@ -128,4 +128,5 @@ vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".repl.ope
 vim.wait(200)
 vim.fn.rpcnotify(debug_neovim_conn, "nvim_exec", "wincmd p", false)
 vim.wait(200)
-vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", 'iprint(2)\n', "n", false)
+vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", 'i2*a\n', "n", false)
+vim.wait(200)
