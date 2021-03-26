@@ -67,6 +67,7 @@ to the Neovim instance. The usual procedure is:
 
   * Toggle breakpoints using |dap.toggle_breakpoint()|.
   * Start the debugging session using |dap.continue()|.
+  * Open the REPL using |dap.repl.open()|.
 
 ==============================================================================
 vimspector configuration                           *lua-debug-vimspector*
@@ -76,7 +77,7 @@ Todo
 ==============================================================================
 Launch lua-debug's server                          *lua-debug-server*
 
-To start a debugging session, you will first need to start the server. This
+To start a debugging session, you will first need to launch the server. This
 can done using |lua-debug.launch()|.  
 
 launch({opts})                             *lua-debug.launch()*
@@ -110,3 +111,10 @@ Additionally, dash.nvim is used to quickly run the lua file from within the
 tangle file.
 
     https://github.com/jbyuki/dash.nvim
+
+==============================================================================
+lua-debug evaluation                               *lua-debug-evaluation*
+
+The REPL supports evaluation of expression. It will prepend a "return "
+statement which will return the value of the expression to the debugger. This
+means expression such as assignements will not be valid syntax.
