@@ -10,7 +10,7 @@
 
 @start_debug_adapter
 
--- local debug_neovim_conn_add = [[\\.\pipe\nvim-17016-0]]
+-- local debug_neovim_conn_add = [[\\.\pipe\nvim-6988-0]]
 -- local debug_neovim_conn = vim.fn.sockconnect('pipe', debug_neovim_conn_add, {rpc = true})
 @create_debug_neovim_instance
 

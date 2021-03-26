@@ -90,9 +90,11 @@ function M.wait_attach()
     local handlers = {}
     local breakpoints = {}
     
-    function handlers.attach(msg)
+    function handlers.attach(request)
       log("Attached!")
+      sendProxyDAP(make_response(request, {}))
     end
+    
     
     function handlers.scopes(request)
       local args = request.arguments

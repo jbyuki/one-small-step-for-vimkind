@@ -8,7 +8,11 @@ debug.sethook(function(event, line)
 end, "l")
 
 @implement_handlers+=
-function handlers.attach(msg)
+function handlers.attach(request)
   log("Attached!")
+  @acknowledge_attach
 end
 
+
+@acknowledge_attach+=
+sendProxyDAP(make_response(request, {}))
