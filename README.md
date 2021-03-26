@@ -51,7 +51,7 @@ Handlers:
 * [x] threads
 * [x] variables
 * [x] stepIn
-* [ ] next
+* [x] next
 * [ ] stepOut
 * [ ] continue
 
