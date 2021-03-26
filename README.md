@@ -54,11 +54,27 @@ Handlers:
 * [x] next
 * [x] stepOut
 * [x] continue
+* [ ] evaluate
+* [ ] pause
+* [ ] terminate
+* [ ] disconnect
+* [ ] setVariable
+* [ ] setFunctionBreakpoints
+* [ ] setExceptionBreakpoints
+* [ ] breakpointLocations
 
 Events:
 
 * [x] initialized
 * [x] stopped
+* [ ] terminated
+* [ ] exited
+* [ ] output
+
+Capabilities:
+
+* [ ] variableReferences
+* [ ] condition
 
 ## Credits
 

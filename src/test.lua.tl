@@ -10,9 +10,9 @@
 
 @start_debug_adapter
 
--- local debug_neovim_conn_add = [[\\.\pipe\nvim-4316-0]]
--- local debug_neovim_conn = vim.fn.sockconnect('pipe', debug_neovim_conn_add, {rpc = true})
-@create_debug_neovim_instance
+local debug_neovim_conn_add = [[\\.\pipe\nvim-19944-0]]
+local debug_neovim_conn = vim.fn.sockconnect('pipe', debug_neovim_conn_add, {rpc = true})
+-- @create_debug_neovim_instance
 
 @send_dap_configuration
 
@@ -26,7 +26,9 @@ vim.wait(500)
 -- @next_in_debug_session
 -- @step_in_debug_session
 -- @continue_in_debug_session
-@step_out_debug_session
+-- @step_out_debug_session
+-- @test_hover_debug_session
+@test_repl
 
 @capture_output_from_host
 
@@ -114,3 +116,16 @@ vim.wait(500)
 @step_out_debug_session+=
 vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".step_out()\n', "n", false)
 vim.wait(500)
+
+@test_hover_debug_session+=
+vim.fn.rpcnotify(debug_neovim_conn, "nvim_win_set_cursor", 0, {2, 8})
+vim.wait(100)
+vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap.ui.variables".hover()\n', "n", false)
+vim.wait(100)
+
+@test_repl+=
+vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".repl.open()\n', "n", false)
+vim.wait(200)
+vim.fn.rpcnotify(debug_neovim_conn, "nvim_exec", "wincmd p", false)
+vim.wait(200)
+vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", 'iprint(2)\n', "n", false)
