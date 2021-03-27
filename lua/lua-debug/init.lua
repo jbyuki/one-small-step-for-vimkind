@@ -1,4 +1,4 @@
--- Generated from attach.lua.tl, breakpoint_hit.lua.tl, continue.lua.tl, evaluate.lua.tl, init.lua.tl, initialize.lua.tl, launch.lua.tl, log_remote.lua.tl, message_loop.lua.tl, next.lua.tl, receive.lua.tl, scopes.lua.tl, send.lua.tl, server.lua.tl, set_breakpoints.lua.tl, stack_trace.lua.tl, step_in.lua.tl, step_out.lua.tl, threads.lua.tl, variables.lua.tl using ntangle.nvim
+-- Generated from attach.lua.tl, breakpoint_hit.lua.tl, continue.lua.tl, disconnect.lua.tl, evaluate.lua.tl, init.lua.tl, initialize.lua.tl, launch.lua.tl, log_remote.lua.tl, message_loop.lua.tl, next.lua.tl, pause.lua.tl, receive.lua.tl, scopes.lua.tl, send.lua.tl, server.lua.tl, set_breakpoints.lua.tl, stack_trace.lua.tl, step_in.lua.tl, step_out.lua.tl, threads.lua.tl, variables.lua.tl using ntangle.nvim
 local limit = 0
 
 local running = true
@@ -10,6 +10,8 @@ local nvim_server
 local stack_level = 0
 local next = false
 local monitor_stack = false
+
+local pause = false
 
 local vars_id = 1
 local vars_ref = {}
@@ -112,6 +114,18 @@ function M.wait_attach()
       sendProxyDAP(make_response(request,{}))
     end
     
+    function handlers.disconnect(request)
+      debug.sethook()
+      
+      sendProxyDAP(make_response(request, {}))
+      
+      vim.wait(1000)
+      if nvim_server then
+        vim.fn.jobstop(nvim_server)
+        nvim_server = nil
+      end
+    end
+    
     function handlers.evaluate(request)
       local args = request.arguments
       if args.context == "repl" then
@@ -183,6 +197,11 @@ function M.wait_attach()
       sendProxyDAP(make_response(request, {}))
     end
     
+    function handlers.pause(request)
+      pause = true
+      
+    end
+    
     function handlers.scopes(request)
       local args = request.arguments
       local frame = frames[args.frameId]
@@ -215,6 +234,9 @@ function M.wait_attach()
     
     function handlers.setBreakpoints(request)
       local args = request.arguments
+      for line, line_bps in pairs(breakpoints) do
+        line_bps[args.source.path] = nil
+      end
       local results_bps = {}
       
       for _, bp in ipairs(args.breakpoints) do
@@ -230,6 +252,7 @@ function M.wait_attach()
           breakpoints = results_bps
         }
       }))
+      
       
     end
     
@@ -387,6 +410,7 @@ function M.wait_attach()
               threadId = 1
             }
             sendProxyDAP(msg)
+            log("Stopped")
             running = false
             while not running do
               local i = 1
@@ -501,6 +525,35 @@ function M.wait_attach()
           vim.wait(50)
         end
         
+      elseif event == "line" and pause then
+        pause = false
+        
+        local msg = make_event("stopped")
+        msg.body = {
+          reason = "pause",
+          threadId = 1
+        }
+        sendProxyDAP(msg)
+        running = false
+        while not running do
+          local i = 1
+          while i <= #M.server_messages do
+            local msg = M.server_messages[i]
+            local f = handlers[msg.command]
+            if f then
+              f(msg)
+            else
+              log("Could not handle " .. msg.command)
+            end
+            i = i + 1
+          end
+          
+          M.server_messages = {}
+          
+          vim.wait(50)
+        end
+        
+      
       end
     end, "clr")
     

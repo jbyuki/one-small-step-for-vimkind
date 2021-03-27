@@ -5,6 +5,7 @@ local breakpoints = {}
 @implement_handlers+=
 function handlers.setBreakpoints(request)
   local args = request.arguments
+  @clear_breakpoints_in_source
   @save_breakpoints_informations
   @send_back_breakpoint_verification
 end
@@ -35,3 +36,8 @@ sendProxyDAP(make_response(request, {
   }
 }))
 
+
+@clear_breakpoints_in_source+=
+for line, line_bps in pairs(breakpoints) do
+  line_bps[args.source.path] = nil
+end

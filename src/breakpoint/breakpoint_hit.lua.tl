@@ -37,3 +37,4 @@ msg.body = {
   threadId = 1
 }
 sendProxyDAP(msg)
+log("Stopped")

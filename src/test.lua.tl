@@ -3,16 +3,16 @@
 @declare
 @implement
 @script_variables
--- local host_neovim_conn_add = [[\\.\pipe\nvim-17308-0]]
+-- local host_neovim_conn_add = [[\\.\pipe\nvim-9328-0]]
 -- local host_neovim_conn = vim.fn.sockconnect('pipe', host_neovim_conn_add, {rpc = true})
 @create_host_neovim_instance
 @redefine_print_in_host_neovim_instance
 
 @start_debug_adapter
 
--- local debug_neovim_conn_add = [[\\.\pipe\nvim-21744-0]]
--- local debug_neovim_conn = vim.fn.sockconnect('pipe', debug_neovim_conn_add, {rpc = true})
-@create_debug_neovim_instance
+local debug_neovim_conn_add = [[\\.\pipe\nvim-20528-0]]
+local debug_neovim_conn = vim.fn.sockconnect('pipe', debug_neovim_conn_add, {rpc = true})
+-- @create_debug_neovim_instance
 
 @send_dap_configuration
 
@@ -28,7 +28,9 @@ vim.wait(500)
 -- @continue_in_debug_session
 -- @step_out_debug_session
 -- @test_hover_debug_session
-@test_repl
+-- @test_repl
+-- @test_pause_session
+@test_disconnect_session
 
 @capture_output_from_host
 
@@ -68,6 +70,10 @@ vim.fn.rpcnotify(host_neovim_conn, "nvim_exec_lua", "require'lua-debug'.wait_att
 @start_dap_session+=
 -- for some reason I can't nvim_exec_lua here
 vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", 'jj', "n", false) -- go down one line
+vim.wait(200)
+vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".toggle_breakpoint()\n', "n", false)
+vim.wait(200)
+vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", 'jjjj', "n", false) -- go down one line
 vim.wait(200)
 vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".toggle_breakpoint()\n', "n", false)
 vim.wait(200)
@@ -130,3 +136,19 @@ vim.fn.rpcnotify(debug_neovim_conn, "nvim_exec", "wincmd p", false)
 vim.wait(200)
 vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", 'i2*a\n', "n", false)
 vim.wait(200)
+vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", '10+10\n', "n", false)
+vim.wait(200)
+
+local results = vim.fn.rpcrequest(debug_neovim_conn, "nvim_buf_get_lines", 0, 0, -1, true)
+print(vim.inspect(results))
+
+@test_pause_session+=
+vim.wait(50)
+vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".continue()\n', "n", false)
+vim.wait(50)
+vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".pause(1)\n', "n", false)
+vim.wait(200)
+
+@test_disconnect_session+=
+vim.wait(50)
+vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".disconnect()\n', "n", false)

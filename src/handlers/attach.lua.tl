@@ -13,6 +13,7 @@ debug.sethook(function(event, line)
   @check_if_step_into
   @check_if_next
   @check_if_step_out
+  @check_if_pause
   end
 end, "clr")
 

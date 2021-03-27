@@ -57,9 +57,9 @@ Handlers:
 * [x] stepOut
 * [x] continue
 * [x] evaluate
-* [ ] pause
+* [x] pause
 * [ ] terminate
-* [ ] disconnect
+* [x] disconnect
 * [ ] setVariable
 * [ ] setFunctionBreakpoints
 * [ ] setExceptionBreakpoints
@@ -77,6 +77,7 @@ Capabilities:
 
 * [ ] variableReferences
 * [ ] condition
+* [ ] hit condition
 * [ ] watch
 * [ ] hover
 
