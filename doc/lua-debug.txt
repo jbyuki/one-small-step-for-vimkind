@@ -62,6 +62,24 @@ address to nvim-dap. >
   end
 <
 
+You might prefer to have a constant port number so that you don't have to
+enter it everytime. |lua-debug.launch| can be launched on a specific port if
+you pass it as an argument.
+>
+  local dap = require"dap"
+  dap.configurations.lua = { 
+    { 
+      type = 'nlua', 
+      request = 'attach',
+      name = "Attach to running Neovim instance",
+    }
+  }
+
+  dap.adapters.nlua = function(callback, config)
+    callback({ type = 'server', host = "127.0.0.1", port = 8080 })
+  end
+<
+
 Once the |lua-debug-server| has been launched, nvim-dap can be attached
 to the Neovim instance. The usual procedure is:
 
@@ -94,6 +112,10 @@ execution, a prompt message will display the port it's running on.
     Return:~
         An server info object which contains {host = {host}, port = {port}} or
         nil on failure
+
+The |lua-debug.launch()| function will actually not run the server in the
+running process but spawn a child process. This ensures that DAP requests are
+still processed even in a frozen state when a breakpoint is hit for exemple.
 
 ==============================================================================
 lua-debug development                              *lua-debug-development*
