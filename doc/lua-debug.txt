@@ -124,7 +124,7 @@ Most of the development and testing is done through `src/test.lua.tl`. It
 allows to start a debug session automatically. Otherwise the time of
 development would be much longer. It also provides a script which test most of
 the functionalities of lua-debug. In order to be run, you will at least need
-the ntangle.nvim plugin available at:
+the ntangle.nvim plug-in available at:
 
     https://github.com/jbyuki/ntangle.nvim
 
