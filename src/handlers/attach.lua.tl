@@ -7,7 +7,10 @@ debug.sethook(function(event, line)
   @handle_new_messages
   @clear_messages
 
-  @if_call_or_return_update_stack_level
+  local depth = 0
+  if monitor_stack then
+    @get_stack_depth_with_debug_getinfo
+  end
 
   @check_if_breakpoint_hit
   @check_if_step_into

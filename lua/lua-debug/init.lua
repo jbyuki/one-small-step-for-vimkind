@@ -188,7 +188,16 @@ function M.wait_attach()
     end
     
     function handlers.next(request)
-      stack_level = 0
+      local depth = 0
+      while true do
+        local info = debug.getinfo(depth+3, "S")
+        if not info then
+          break
+        end
+        depth = depth + 1
+      end
+      stack_level = depth-1
+      log("stack level " .. stack_level)
       
       next = true
       monitor_stack = true
@@ -310,7 +319,16 @@ function M.wait_attach()
       step_out = true
       monitor_stack = true
       
-      stack_level = 0
+      local depth = 0
+      while true do
+        local info = debug.getinfo(depth+3, "S")
+        if not info then
+          break
+        end
+        depth = depth + 1
+      end
+      stack_level = depth-1
+      log("stack level " .. stack_level)
       
       running = true
       
@@ -383,16 +401,16 @@ function M.wait_attach()
       M.server_messages = {}
       
     
-      if monitor_stack and event == "call" then
-        local info = debug.getinfo(2, "S")
-        local c_function = info.what == "C"
-        if not c_function then
-          stack_level = stack_level + 1
+      local depth = 0
+      if monitor_stack then
+        while true do
+          local info = debug.getinfo(depth+3, "S")
+          if not info then
+            break
+          end
+          depth = depth + 1
         end
-      elseif monitor_stack and event == "return" then
-        stack_level = stack_level - 1
       end
-      
     
       local bps = breakpoints[line]
       if event == "line" and bps then
@@ -409,7 +427,6 @@ function M.wait_attach()
               threadId = 1
             }
             sendProxyDAP(msg)
-            log("Stopped")
             running = false
             while not running do
               local i = 1
@@ -463,7 +480,8 @@ function M.wait_attach()
         end
         
       
-      elseif event == "line" and next and stack_level == 0 then
+      elseif event == "line" and next and depth == stack_level then
+        log("next stopped!")
         local msg = make_event("stopped")
         msg.body = {
           reason = "step",
@@ -494,7 +512,7 @@ function M.wait_attach()
         end
         
       
-      elseif event == "line" and step_out and stack_level == -1 then
+      elseif event == "line" and step_out and stack_level-1 == depth then
         local msg = make_event("stopped")
         msg.body = {
           reason = "step",

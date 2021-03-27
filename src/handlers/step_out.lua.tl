@@ -2,7 +2,9 @@
 @implement_handlers+=
 function handlers.stepOut(request)
   @set_step_out
-  @set_stack_level_to_zero
+  local depth = 0
+  @get_stack_depth_with_debug_getinfo
+  @set_stack_level_to_current
   @continue_running
 
   @acknowledge_step_out
@@ -23,7 +25,7 @@ step_out = false
 monitor_stack = false
 
 @check_if_step_out+=
-elseif event == "line" and step_out and stack_level == -1 then
+elseif event == "line" and step_out and stack_level-1 == depth then
   @send_stopped_event_step
   @disable_step_out
 
