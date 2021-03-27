@@ -5,7 +5,7 @@ local breakpoints = {}
 @implement_handlers+=
 function handlers.setBreakpoints(request)
   local args = request.arguments
-  @clear_breakpoints_in_source
+  -- @clear_breakpoints_in_source
   @save_breakpoints_informations
   @send_back_breakpoint_verification
 end

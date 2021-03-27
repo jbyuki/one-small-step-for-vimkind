@@ -10,9 +10,9 @@
 
 @start_debug_adapter
 
-local debug_neovim_conn_add = [[\\.\pipe\nvim-20528-0]]
-local debug_neovim_conn = vim.fn.sockconnect('pipe', debug_neovim_conn_add, {rpc = true})
--- @create_debug_neovim_instance
+-- local debug_neovim_conn_add = [[\\.\pipe\nvim-20528-0]]
+-- local debug_neovim_conn = vim.fn.sockconnect('pipe', debug_neovim_conn_add, {rpc = true})
+@create_debug_neovim_instance
 
 @send_dap_configuration
 
@@ -28,9 +28,9 @@ vim.wait(500)
 -- @continue_in_debug_session
 -- @step_out_debug_session
 -- @test_hover_debug_session
--- @test_repl
+@test_repl
 -- @test_pause_session
-@test_disconnect_session
+-- @test_disconnect_session
 
 @capture_output_from_host
 
@@ -65,7 +65,7 @@ end
 
 @start_debug_adapter+=
 local server = vim.fn.rpcrequest(host_neovim_conn, "nvim_exec_lua", "return require'lua-debug'.launch()", {})
-vim.fn.rpcnotify(host_neovim_conn, "nvim_exec_lua", "require'lua-debug'.wait_attach()", {})
+-- vim.fn.rpcnotify(host_neovim_conn, "nvim_exec_lua", "require'lua-debug'.wait_attach()", {})
 
 @start_dap_session+=
 -- for some reason I can't nvim_exec_lua here

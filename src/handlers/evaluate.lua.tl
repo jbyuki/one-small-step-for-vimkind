@@ -49,7 +49,7 @@ setmetatable(cur, {
 
 @set_frame_environment_for_execution+=
 local succ, f = pcall(loadstring, "return " .. args.expression)
-if succ then
+if succ and f then
   setfenv(f, first)
 end
 

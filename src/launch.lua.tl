@@ -7,6 +7,7 @@ function M.launch(opts)
   @set_hook_instance_address
   @launch_server
   log("Server started on port " .. server.port)
+  vim.defer_fn(M.wait_attach, 0)
   return server
 end
 

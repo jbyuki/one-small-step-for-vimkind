@@ -82,6 +82,7 @@ function M.launch(opts)
   local server = vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"lua-debug".start_server(...)]], {host, port})
   
   log("Server started on port " .. server.port)
+  vim.defer_fn(M.wait_attach, 0)
   return server
 end
 
@@ -164,7 +165,7 @@ function M.wait_attach()
         })
         
         local succ, f = pcall(loadstring, "return " .. args.expression)
-        if succ then
+        if succ and f then
           setfenv(f, first)
         end
         
@@ -234,9 +235,7 @@ function M.wait_attach()
     
     function handlers.setBreakpoints(request)
       local args = request.arguments
-      for line, line_bps in pairs(breakpoints) do
-        line_bps[args.source.path] = nil
-      end
+      -- @clear_breakpoints_in_source
       local results_bps = {}
       
       for _, bp in ipairs(args.breakpoints) do
