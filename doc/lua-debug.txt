@@ -115,7 +115,7 @@ execution, a prompt message will display the port it's running on.
 
 The |lua-debug.launch()| function will actually not run the server in the
 running process but spawn a child process. This ensures that DAP requests are
-still processed even in a frozen state when a breakpoint is hit for exemple.
+still processed even in a frozen state.
 
 ==============================================================================
 lua-debug development                              *lua-debug-development*
@@ -139,4 +139,4 @@ lua-debug evaluation                               *lua-debug-evaluation*
 
 The REPL supports evaluation of expression. It will prepend a "return "
 statement which will return the value of the expression to the debugger. This
-means expression such as assignements will not be valid syntax.
+means expression such as assignments will not be valid syntax.
