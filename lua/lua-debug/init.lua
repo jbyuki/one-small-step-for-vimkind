@@ -363,7 +363,6 @@ function M.wait_attach()
           
           else
             local v = {}
-            log(ln)
             v.name = ln
             v.variablesReference = 0
             if type(lv) == "table" then
@@ -382,7 +381,6 @@ function M.wait_attach()
       elseif type(ref) == "table" then
         for ln, lv in pairs(ref) do
             local v = {}
-            log(ln)
             v.name = ln
             v.variablesReference = 0
             if type(lv) == "table" then

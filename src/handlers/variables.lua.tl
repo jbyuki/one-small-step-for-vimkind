@@ -40,7 +40,6 @@ end
 if vim.startswith(ln, "(*") then
 
 @fill_variable_struct+=
-log(ln)
 v.name = ln
 v.variablesReference = 0
 if type(lv) == "table" then
