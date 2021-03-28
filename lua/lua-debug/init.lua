@@ -348,31 +348,54 @@ function M.wait_attach()
     function handlers.variables(request)
       local args = request.arguments
     
-      local frame = vars_ref[args.variablesReference]
-      if not frame then
-        log("VariablesReference not found")
-        return
-      end
-    
+      local ref = vars_ref[args.variablesReference]
       local variables = {}
-      local a = 1
-      while true do
-        local ln, lv = debug.getlocal(frame, a)
-        if not ln then
-          break
-        end
-      
-        if vim.startswith(ln, "(*") then
+      if type(ref) == "number" then
+        local a = 1
+        local frame = ref
+        while true do
+          local ln, lv = debug.getlocal(frame, a)
+          if not ln then
+            break
+          end
         
-        else
-          local v = {}
-          v.name = ln
-          v.value = vim.inspect(lv)
-          table.insert(variables, v)
+          if vim.startswith(ln, "(*") then
+          
+          else
+            local v = {}
+            log(ln)
+            v.name = ln
+            v.variablesReference = 0
+            if type(lv) == "table" then
+              vars_ref[vars_id] = lv
+              v.variablesReference = vars_id
+              vars_id = vars_id + 1
+              
+            end
+            v.value = tostring(lv) 
+            
+            table.insert(variables, v)
+          end
+          a = a + 1
         end
-        a = a + 1
+        
+      elseif type(ref) == "table" then
+        for lv, ln in pairs(ref) do
+            local v = {}
+            log(ln)
+            v.name = ln
+            v.variablesReference = 0
+            if type(lv) == "table" then
+              vars_ref[vars_id] = lv
+              v.variablesReference = vars_id
+              vars_id = vars_id + 1
+              
+            end
+            v.value = tostring(lv) 
+            
+            table.insert(variables, v)
+        end
       end
-      
     
       sendProxyDAP(make_response(request, {
         body = {

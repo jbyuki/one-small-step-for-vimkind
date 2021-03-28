@@ -86,6 +86,7 @@ to the Neovim instance. The usual procedure is:
   * Toggle breakpoints using |dap.toggle_breakpoint()|.
   * Start the debugging session using |dap.continue()|.
   * Open the REPL using |dap.repl.open()|.
+  * Inspect variable under cursor |dap.ui.variables.hover()|.
 
 ==============================================================================
 vimspector configuration                           *lua-debug-vimspector*

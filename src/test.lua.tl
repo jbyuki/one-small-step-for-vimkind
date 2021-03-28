@@ -10,9 +10,9 @@
 
 @start_debug_adapter
 
--- local debug_neovim_conn_add = [[\\.\pipe\nvim-24792-0]]
--- local debug_neovim_conn = vim.fn.sockconnect('pipe', debug_neovim_conn_add, {rpc = true})
-@create_debug_neovim_instance
+local debug_neovim_conn_add = [[\\.\pipe\nvim-15020-0]]
+local debug_neovim_conn = vim.fn.sockconnect('pipe', debug_neovim_conn_add, {rpc = true})
+-- @create_debug_neovim_instance
 
 @send_dap_configuration
 
@@ -27,11 +27,11 @@ vim.wait(500)
 -- @step_in_debug_session
 -- @continue_in_debug_session
 -- @step_out_debug_session
--- @test_hover_debug_session
+@test_hover_debug_session
 -- @test_repl
 -- @test_pause_session
 -- @test_disconnect_session
-@test_next_over
+-- @test_next_over
 
 @capture_output_from_host
 
@@ -70,12 +70,8 @@ local server = vim.fn.rpcrequest(host_neovim_conn, "nvim_exec_lua", "return requ
 
 @start_dap_session+=
 -- for some reason I can't nvim_exec_lua here
-vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", 'jj', "n", false) -- go down one line
-vim.wait(200)
--- vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".toggle_breakpoint()\n', "n", false)
-vim.wait(200)
 -- vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", 'jjjj', "n", false) -- go down one line
-vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", '77gg', "n", false) -- go down one line
+vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", '3gg', "n", false) -- go down one line
 vim.wait(200)
 vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".toggle_breakpoint()\n', "n", false)
 vim.wait(200)
@@ -126,7 +122,7 @@ vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".step_out
 vim.wait(500)
 
 @test_hover_debug_session+=
-vim.fn.rpcnotify(debug_neovim_conn, "nvim_win_set_cursor", 0, {2, 8})
+vim.fn.rpcnotify(debug_neovim_conn, "nvim_win_set_cursor", 0, {3, 6})
 vim.wait(100)
 vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap.ui.variables".hover()\n', "n", false)
 vim.wait(100)

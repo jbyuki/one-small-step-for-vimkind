@@ -3,14 +3,13 @@
 function handlers.variables(request)
   local args = request.arguments
 
-  local frame = vars_ref[args.variablesReference]
-  if not frame then
-    log("VariablesReference not found")
-    return
-  end
-
+  local ref = vars_ref[args.variablesReference]
   local variables = {}
-  @inspect_local_variables
+  if type(ref) == "number" then
+    @inspect_local_variables
+  elseif type(ref) == "table" then
+    @inspect_table_elements
+  end
 
   sendProxyDAP(make_response(request, {
     body = {
@@ -21,6 +20,7 @@ end
 
 @inspect_local_variables+=
 local a = 1
+local frame = ref
 while true do
   local ln, lv = debug.getlocal(frame, a)
   if not ln then
@@ -40,5 +40,22 @@ end
 if vim.startswith(ln, "(*") then
 
 @fill_variable_struct+=
+log(ln)
 v.name = ln
-v.value = vim.inspect(lv)
+v.variablesReference = 0
+if type(lv) == "table" then
+  @make_variable_reference_for_table
+end
+v.value = tostring(lv) 
+
+@make_variable_reference_for_table+=
+vars_ref[vars_id] = lv
+v.variablesReference = vars_id
+vars_id = vars_id + 1
+
+@inspect_table_elements+=
+for lv, ln in pairs(ref) do
+    local v = {}
+    @fill_variable_struct
+    table.insert(variables, v)
+end
