@@ -22,7 +22,6 @@ end, "clr")
 
 @implement_handlers+=
 function handlers.attach(request)
-  log("Attached!")
   @acknowledge_attach
 end
 

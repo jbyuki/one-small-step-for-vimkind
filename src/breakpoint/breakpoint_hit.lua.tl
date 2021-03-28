@@ -15,7 +15,7 @@ local running = true
 @if_source_path_match_break+=
 if source_path:sub(1, 1) == "@" or step_in then
   local path = source_path:sub(2)
-  path = vim.fn.fnamemodify(path, ":p")
+  path = vim.fn.fnamemodify(path, ":p"):lower()
   if bps[path] then
     @send_stopped_event_breakpoint
     @freeze_neovim_instance

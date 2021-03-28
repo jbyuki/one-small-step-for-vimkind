@@ -32,7 +32,6 @@ function M.wait_attach()
   timer:start(0, 100, vim.schedule_wrap(function()
     @wait_for_attach_message
     if not has_attach then return end
-    log("Attach!")
     timer:close()
 
     local handlers = {}

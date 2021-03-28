@@ -16,7 +16,6 @@ local monitor_stack = false
 
 @set_stack_level_to_current+=
 stack_level = depth-1
-log("stack level " .. stack_level)
 
 @set_next_variable+=
 next = true
@@ -28,7 +27,6 @@ monitor_stack = false
 
 @check_if_next+=
 elseif event == "line" and next and depth == stack_level then
-  log("next stopped!")
   @send_stopped_event_step
   @disable_next
 

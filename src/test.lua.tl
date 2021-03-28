@@ -3,14 +3,14 @@
 @declare
 @implement
 @script_variables
--- local host_neovim_conn_add = [[\\.\pipe\nvim-9328-0]]
+-- local host_neovim_conn_add = [[\\.\pipe\nvim-5364-0]]
 -- local host_neovim_conn = vim.fn.sockconnect('pipe', host_neovim_conn_add, {rpc = true})
 @create_host_neovim_instance
 @redefine_print_in_host_neovim_instance
 
 @start_debug_adapter
 
--- local debug_neovim_conn_add = [[\\.\pipe\nvim-19544-0]]
+-- local debug_neovim_conn_add = [[\\.\pipe\nvim-24792-0]]
 -- local debug_neovim_conn = vim.fn.sockconnect('pipe', debug_neovim_conn_add, {rpc = true})
 @create_debug_neovim_instance
 
@@ -74,7 +74,8 @@ vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", 'jj', "n", false) -- go dow
 vim.wait(200)
 -- vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".toggle_breakpoint()\n', "n", false)
 vim.wait(200)
-vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", 'jjjj', "n", false) -- go down one line
+-- vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", 'jjjj', "n", false) -- go down one line
+vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", '77gg', "n", false) -- go down one line
 vim.wait(200)
 vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".toggle_breakpoint()\n', "n", false)
 vim.wait(200)

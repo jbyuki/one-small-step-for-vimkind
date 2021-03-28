@@ -97,14 +97,12 @@ function M.wait_attach()
     end
     
     if not has_attach then return end
-    log("Attach!")
     timer:close()
 
     local handlers = {}
     local breakpoints = {}
     
     function handlers.attach(request)
-      log("Attached!")
       sendProxyDAP(make_response(request, {}))
     end
     
@@ -197,7 +195,6 @@ function M.wait_attach()
         depth = depth + 1
       end
       stack_level = depth-1
-      log("stack level " .. stack_level)
       
       next = true
       monitor_stack = true
@@ -250,7 +247,7 @@ function M.wait_attach()
       for _, bp in ipairs(args.breakpoints) do
         breakpoints[bp.line] = breakpoints[bp.line] or {}
         local line_bps = breakpoints[bp.line]
-        line_bps[args.source.path] = true
+        line_bps[args.source.path:lower()] = true
         table.insert(results_bps, { verified = true })
         log("Set breakpoint at line " .. bp.line .. " in " .. args.source.path)
       end
@@ -328,7 +325,6 @@ function M.wait_attach()
         depth = depth + 1
       end
       stack_level = depth-1
-      log("stack level " .. stack_level)
       
       running = true
       
@@ -419,7 +415,7 @@ function M.wait_attach()
         
         if source_path:sub(1, 1) == "@" or step_in then
           local path = source_path:sub(2)
-          path = vim.fn.fnamemodify(path, ":p")
+          path = vim.fn.fnamemodify(path, ":p"):lower()
           if bps[path] then
             local msg = make_event("stopped")
             msg.body = {
@@ -481,7 +477,6 @@ function M.wait_attach()
         
       
       elseif event == "line" and next and depth == stack_level then
-        log("next stopped!")
         local msg = make_event("stopped")
         msg.body = {
           reason = "step",
