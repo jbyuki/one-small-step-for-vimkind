@@ -75,7 +75,7 @@ Events:
 
 Capabilities:
 
-* [ ] variableReferences
+* [x] variableReferences
 * [ ] condition
 * [ ] hit condition
 * [ ] watch
