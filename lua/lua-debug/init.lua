@@ -67,7 +67,7 @@ function M.launch(opts)
   
   if opts then
     vim.validate {
-      ["opts.host"] = {opts.host, isIPv4, true},
+      ["opts.host"] = {opts.host, "s", true},
       ["opts.port"] = {opts.port, "n", true},
     }
   end
