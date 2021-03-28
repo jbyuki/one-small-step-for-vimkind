@@ -42,6 +42,12 @@ dap.adapters.nlua = function(callback, config)
 end
 ```
 
+## Quickstart
+
+* Launch the server in the debuggee using `require"lua-debug".launch()`
+* Open another Neovim instance
+* Connect using the DAP client
+
 ## Status
 
 Handlers:
