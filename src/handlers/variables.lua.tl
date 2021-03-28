@@ -54,7 +54,7 @@ v.variablesReference = vars_id
 vars_id = vars_id + 1
 
 @inspect_table_elements+=
-for lv, ln in pairs(ref) do
+for ln, lv in pairs(ref) do
     local v = {}
     @fill_variable_struct
     table.insert(variables, v)

@@ -380,7 +380,7 @@ function M.wait_attach()
         end
         
       elseif type(ref) == "table" then
-        for lv, ln in pairs(ref) do
+        for ln, lv in pairs(ref) do
             local v = {}
             log(ln)
             v.name = ln
