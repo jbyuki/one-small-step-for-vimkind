@@ -18,7 +18,7 @@ for _, bp in ipairs(args.breakpoints) do
   local line_bps = breakpoints[bp.line]
   line_bps[args.source.path:lower()] = true
   table.insert(results_bps, { verified = true })
-  log("Set breakpoint at line " .. bp.line .. " in " .. args.source.path)
+  -- log("Set breakpoint at line " .. bp.line .. " in " .. args.source.path)
 end
 
 @declare+=

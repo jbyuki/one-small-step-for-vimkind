@@ -249,7 +249,7 @@ function M.wait_attach()
         local line_bps = breakpoints[bp.line]
         line_bps[args.source.path:lower()] = true
         table.insert(results_bps, { verified = true })
-        log("Set breakpoint at line " .. bp.line .. " in " .. args.source.path)
+        -- log("Set breakpoint at line " .. bp.line .. " in " .. args.source.path)
       end
       
       sendProxyDAP(make_response(request, {
