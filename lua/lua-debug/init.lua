@@ -241,7 +241,9 @@ function M.wait_attach()
     
     function handlers.setBreakpoints(request)
       local args = request.arguments
-      -- @clear_breakpoints_in_source
+      for line, line_bps in pairs(breakpoints) do
+        line_bps[args.source.path:lower()] = nil
+      end
       local results_bps = {}
       
       for _, bp in ipairs(args.breakpoints) do
