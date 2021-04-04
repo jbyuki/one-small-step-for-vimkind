@@ -27,7 +27,7 @@ correctly the debugging environment.
 
                                   Type |gO| to the table of contents.
 
-==============================================================================
+==========================================================================
 nvim-dap                                               *lua-debug-dap*
 
 nvim-dap has the concepts of configurations and adapters. The configuration
@@ -88,12 +88,12 @@ to the Neovim instance. The usual procedure is:
   * Open the REPL using |dap.repl.open()|.
   * Inspect variable under cursor |dap.ui.variables.hover()|.
 
-==============================================================================
+==========================================================================
 vimspector configuration                           *lua-debug-vimspector*
 
 Todo
 
-==============================================================================
+==========================================================================
 Launch lua-debug's server                          *lua-debug-server*
 
 To start a debugging session, you will first need to launch the server. This
@@ -118,7 +118,7 @@ The |lua-debug.launch()| function will actually not run the server in the
 running process but spawn a child process. This ensures that DAP requests are
 still processed even in a frozen state.
 
-==============================================================================
+==========================================================================
 lua-debug development                              *lua-debug-development*
 
 Most of the development and testing is done through `src/test.lua.tl`. It 
@@ -135,9 +135,11 @@ tangle file.
 
     https://github.com/jbyuki/dash.nvim
 
-==============================================================================
+==========================================================================
 lua-debug evaluation                               *lua-debug-evaluation*
 
 The REPL supports evaluation of expression. It will prepend a "return "
 statement which will return the value of the expression to the debugger. This
 means expression such as assignments will not be valid syntax.
+
+ vim:tw=78:ts=8:ft=help:norl:
