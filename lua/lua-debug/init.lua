@@ -72,7 +72,7 @@ function M.launch(opts)
     }
   end
 
-  nvim_server = vim.fn.jobstart({'nvim', '--embed', '--headless'}, {rpc = true})
+  nvim_server = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
   
   local hook_address = vim.fn.serverstart()
   vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[debug_hook_conn_address = ...]], {hook_address})
