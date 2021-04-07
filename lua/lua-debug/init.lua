@@ -628,6 +628,7 @@ function M.start_server(host, port)
     
   
     client = sock
+    log("Client connected!")
   
     local function read_body(length)
       while string.len(tcp_data) < length do

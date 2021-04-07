@@ -29,6 +29,7 @@ server:listen(128, function(err)
   @socket_variables
 
   client = sock
+  log("Client connected!")
 
   @create_reading_coroutine
   @start_reading
