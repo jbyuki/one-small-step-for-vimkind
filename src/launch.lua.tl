@@ -15,7 +15,7 @@ end
 local nvim_server
 
 @spawn_nvim_instance_for_server+=
-nvim_server = vim.fn.jobstart({'nvim', '--embed', '--headless'}, {rpc = true})
+nvim_server = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
 
 @set_hook_instance_address+=
 local hook_address = vim.fn.serverstart()
