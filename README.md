@@ -43,9 +43,11 @@ end
 
 ## Quickstart
 
-* Launch the server in the debuggee using `require"lua-debug".launch()`
-* Open another Neovim instance
+* Launch the server in the debuggee using `require"one-small-step-for-vimkind".launch()`
+* Open another Neovim instance with the source file
+* Place breakpoint
 * Connect using the DAP client
+* Run your script/plugin in the debuggee
 
 See [one-small-step-for-vimkind.txt](https://github.com/jbyuki/lua-debug.nvim/blob/main/doc/one-small-step-for-vimkind.txt) for more detailed instructions.
 
