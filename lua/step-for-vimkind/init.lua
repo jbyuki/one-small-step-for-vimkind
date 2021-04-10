@@ -79,7 +79,7 @@ function M.launch(opts)
   
   local host = (opts and opts.host) or "127.0.0.1"
   local port = (opts and opts.port) or 0
-  local server = vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"one-small-step-for-vimkind".start_server(...)]], {host, port})
+  local server = vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"step-for-vimkind".start_server(...)]], {host, port})
   
   log("Server started on port " .. server.port)
   vim.defer_fn(M.wait_attach, 0)
@@ -680,7 +680,7 @@ function M.start_server(host, port)
         end
         
         if debug_hook_conn then
-          vim.fn.rpcrequest(debug_hook_conn, "nvim_exec_lua", [[table.insert(require"one-small-step-for-vimkind".server_messages, ...)]], {msg})
+          vim.fn.rpcrequest(debug_hook_conn, "nvim_exec_lua", [[table.insert(require"step-for-vimkind".server_messages, ...)]], {msg})
         end
         
       end
@@ -713,7 +713,7 @@ function M.start_server(host, port)
 end
 
 function sendProxyDAP(data)
-  vim.fn.rpcnotify(nvim_server, 'nvim_exec_lua', [[require"one-small-step-for-vimkind".sendDAP(...)]], {data})
+  vim.fn.rpcnotify(nvim_server, 'nvim_exec_lua', [[require"step-for-vimkind".sendDAP(...)]], {data})
 end
 
 return M
