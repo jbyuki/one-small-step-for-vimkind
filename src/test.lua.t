@@ -41,7 +41,7 @@ vim.wait(500)
 @close_debug_neovim_instance
 
 @create_debug_neovim_instance+=
-local debug_neovim_conn = vim.fn.jobstart({'nvim', '--embed', '--headless'}, {rpc = true})
+local debug_neovim_conn = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
 
 @close_debug_neovim_instance+=
 if debug_neovim_conn then
