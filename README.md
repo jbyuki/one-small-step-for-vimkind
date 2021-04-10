@@ -1,11 +1,11 @@
-# step-for-vimkind
+# one-small-step-for-vimkind
 
 
-`step-for-vimkind` is an **adapter** for the Neovim lua language. See the [DAP protocol](https://microsoft.github.io/debug-adapter-protocol/overview) to know more about adapters. It allows you to debug any lua code running in a Neovim instance.
+`one-small-step-for-vimkind` is an **adapter** for the Neovim lua language. See the [DAP protocol](https://microsoft.github.io/debug-adapter-protocol/overview) to know more about adapters. It allows you to debug any lua code running in a Neovim instance.
 
 ## Install
 
-After installing `step-for-vimkind`, you will also need a DAP plugin which will allow you to interact with the adapter. There are mainly two available:
+After installing `one-small-step-for-vimkind`, you will also need a DAP plugin which will allow you to interact with the adapter. There are mainly two available:
 
   * [nvim-dap](https://github.com/mfussenegger/nvim-dap)
   * [vimspector](https://github.com/puremourning/vimspector) 
@@ -43,13 +43,13 @@ end
 
 ## Quickstart
 
-* Launch the server in the debuggee using `require"step-for-vimkind".launch()`
+* Launch the server in the debuggee using `require"osv".launch()`
 * Open another Neovim instance with the source file
 * Place breakpoint
 * Connect using the DAP client
 * Run your script/plugin in the debuggee
 
-See [step-for-vimkind.txt](https://github.com/jbyuki/lua-debug.nvim/blob/main/doc/step-for-vimkind.txt) for more detailed instructions.
+See [osv.txt](https://github.com/jbyuki/lua-debug.nvim/blob/main/doc/osv.txt) for more detailed instructions.
 
 ## Status
 

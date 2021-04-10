@@ -1,5 +1,5 @@
 ##lua-debug
-@../lua/step-for-vimkind/init.lua=
+@../lua/osv/init.lua=
 @script_variables
 @declare
 local M = {}

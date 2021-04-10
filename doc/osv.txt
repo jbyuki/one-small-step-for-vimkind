@@ -1,7 +1,7 @@
-one-small-step-for-vimkind                  *one-small-step-for-vimkind*
+one-small-step-for-vimkind             *one-small-step-for-vimkind* *osv*
 
-|one-small-step-for-vimkind| is an adapter for Lua running inside Neovim. It
-will allow you to:
+|one-small-step-for-vimkind| (osv) is an adapter for Lua running inside Neovim. 
+It will allow you to:
 
   * Debug Lua scripts
   * Debug a running component inside Neovim (like a plug-in)
@@ -19,13 +19,13 @@ is the one recommanded.
                                   Type |gO| to the table of contents.
 
 =========================================================================
-nvim-dap                                *one-small-step-for-vimkind-dap*
+nvim-dap                                                        *osv-dap*
 
 Please refer |dap-adapter| and |dap-configuration| to know about about
 nvim-dap configurations.
 
 The following configuration will allow you to attach a nvim-dap
-client to |one-small-step-for-vimkind|.
+client to |osv|.
 >
 
   local dap = require"dap"
@@ -55,7 +55,7 @@ client to |one-small-step-for-vimkind|.
 <
 
 You might prefer to have a constant port number so that you don't have to
-enter it everytime. |one-small-step-for-vimkind.launch| can be 
+enter it everytime. |osv.launch| can be 
 launched on a specific port if you pass it the port number as an argument.
 >
   local dap = require"dap"
@@ -88,7 +88,7 @@ It has the following content: >
 <
 1. Open a Neovim instance (instance A)
 2. Launch the DAP server with (A) >
- :lua require"one-small-step-for-vimkind".launch()
+ :lua require"osv".launch()
 < Note: Write down the port number
 3. Open another Neovim instance (instance B)
 4. Open `myscript.lua` (B)
@@ -108,11 +108,11 @@ vimspector configuration                           *lua-debug-vimspector*
 Todo
 
 =========================================================================
-Launch server                         *one-small-step-for-vimkind-server*
+Launch server                                               *osv-server*
 
 To start a debugging session, you will first need to launch the server. 
 
-launch({opts})                    *one-small-step-for-vimkind.launch()*
+launch({opts})                                           *osv.launch()*
 
 This command will launch the DAP server awaiting any connections. On
 execution, a prompt message will display the port it's running on.
@@ -128,13 +128,13 @@ execution, a prompt message will display the port it's running on.
           {host = {host}, port = {port}} 
         or nil on failure
 
-The |one-small-step-for-vimkind.launch()| function will actually not 
+The |osv.launch()| function will actually not 
 run the server in the running process but spawn a child process. 
 This ensures that DAP requests are still processed even in a 
 frozen state.
 
 =========================================================================
-one-small-step-for-vimkind-repl         *one-small-step-for-vimkind-repl*
+osv repl                                                      *osv-repl*
 
 The REPL supports evaluation of expression. It will prepend a "return "
 statement which will return the value of the expression to the debugger.

@@ -24,7 +24,7 @@ vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[debug_hook_conn_address = ...]
 @launch_server+=
 local host = (opts and opts.host) or "127.0.0.1"
 local port = (opts and opts.port) or 0
-local server = vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"step-for-vimkind".start_server(...)]], {host, port})
+local server = vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"osv".start_server(...)]], {host, port})
 
 @implement+=
 function M.wait_attach()
