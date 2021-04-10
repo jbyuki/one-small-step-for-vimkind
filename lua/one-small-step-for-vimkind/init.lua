@@ -1,4 +1,4 @@
--- Generated from attach.lua.tl, breakpoint_hit.lua.tl, continue.lua.tl, disconnect.lua.tl, evaluate.lua.tl, init.lua.tl, initialize.lua.tl, launch.lua.tl, log_remote.lua.tl, message_loop.lua.tl, next.lua.tl, pause.lua.tl, receive.lua.tl, scopes.lua.tl, send.lua.tl, server.lua.tl, set_breakpoints.lua.tl, stack_trace.lua.tl, step_in.lua.tl, step_out.lua.tl, threads.lua.tl, variables.lua.tl using ntangle.nvim
+-- Generated from attach.lua.t, breakpoint_hit.lua.t, continue.lua.t, disconnect.lua.t, evaluate.lua.t, init.lua.t, initialize.lua.t, launch.lua.t, log_remote.lua.t, message_loop.lua.t, next.lua.t, pause.lua.t, receive.lua.t, scopes.lua.t, send.lua.t, server.lua.t, set_breakpoints.lua.t, stack_trace.lua.t, step_in.lua.t, step_out.lua.t, threads.lua.t, variables.lua.t using ntangle.nvim
 local limit = 0
 
 local running = true
@@ -79,7 +79,7 @@ function M.launch(opts)
   
   local host = (opts and opts.host) or "127.0.0.1"
   local port = (opts and opts.port) or 0
-  local server = vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"lua-debug".start_server(...)]], {host, port})
+  local server = vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"one-small-step-for-vimkind".start_server(...)]], {host, port})
   
   log("Server started on port " .. server.port)
   vim.defer_fn(M.wait_attach, 0)
@@ -680,7 +680,7 @@ function M.start_server(host, port)
         end
         
         if debug_hook_conn then
-          vim.fn.rpcrequest(debug_hook_conn, "nvim_exec_lua", [[table.insert(require"lua-debug".server_messages, ...)]], {msg})
+          vim.fn.rpcrequest(debug_hook_conn, "nvim_exec_lua", [[table.insert(require"one-small-step-for-vimkind".server_messages, ...)]], {msg})
         end
         
       end
@@ -713,7 +713,7 @@ function M.start_server(host, port)
 end
 
 function sendProxyDAP(data)
-  vim.fn.rpcnotify(nvim_server, 'nvim_exec_lua', [[require"lua-debug".sendDAP(...)]], {data})
+  vim.fn.rpcnotify(nvim_server, 'nvim_exec_lua', [[require"one-small-step-for-vimkind".sendDAP(...)]], {data})
 end
 
 return M

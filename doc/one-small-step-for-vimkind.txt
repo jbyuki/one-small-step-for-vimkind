@@ -1,0 +1,143 @@
+one-small-step-for-vimkind                  *one-small-step-for-vimkind*
+
+|one-small-step-for-vimkind| is an adapter for Lua running inside Neovim. It
+will allow you to:
+
+  * Debug Lua scripts
+  * Debug a running component inside Neovim (like a plug-in)
+  * Debug Neovim internal Lua scripts
+
+In order to use |one-small-step-for-vimkind|, you will need a DAP client.
+You can choose between two alternatives which are:
+
+  nvim-dap: https://github.com/mfussenegger/nvim-dap
+  vimspector: https://github.com/puremourning/vimspector
+
+|one-small-step-for-vimkind| was mainly developed with nvim-dap which
+is the one recommanded.
+
+                                  Type |gO| to the table of contents.
+
+=========================================================================
+nvim-dap                                *one-small-step-for-vimkind-dap*
+
+Please refer |dap-adapter| and |dap-configuration| to know about about
+nvim-dap configurations.
+
+The following configuration will allow you to attach a nvim-dap
+client to |one-small-step-for-vimkind|.
+>
+
+  local dap = require"dap"
+  dap.configurations.lua = { 
+    { 
+      type = 'nlua', 
+      request = 'attach',
+      name = "Attach to running Neovim instance",
+      host = function()
+        local value = vim.fn.input('Host [127.0.0.1]: ')
+        if value ~= "" then
+          return value
+        end
+        return '127.0.0.1'
+      end,
+      port = function()
+        local val = tonumber(vim.fn.input('Port: '))
+        assert(val, "Please provide a port number")
+        return val
+      end,
+    }
+  }
+
+  dap.adapters.nlua = function(callback, config)
+    callback({ type = 'server', host = config.host, port = config.port })
+  end
+<
+
+You might prefer to have a constant port number so that you don't have to
+enter it everytime. |one-small-step-for-vimkind.launch| can be 
+launched on a specific port if you pass it the port number as an argument.
+>
+  local dap = require"dap"
+  dap.configurations.lua = { 
+    { 
+      type = 'nlua', 
+      request = 'attach',
+      name = "Attach to running Neovim instance",
+    }
+  }
+
+  dap.adapters.nlua = function(callback, config)
+    callback({ type = 'server', host = "127.0.0.1", port = 8080 })
+  end
+
+<
+Quickstart~
+
+The following steps will guide you through the process to start
+a debugging session using nvim-dap.
+
+Let's say you have a lua script `myscript.lua` in your home directory.
+It has the following content: >
+
+  print("start")
+  for i=1,10 do
+    print(i)
+  end
+  print("end")
+<
+1. Open a Neovim instance (instance A)
+2. Launch the DAP server with (A) >
+ :lua require"one-small-step-for-vimkind".launch()
+< Note: Write down the port number
+3. Open another Neovim instance (instance B)
+4. Open `myscript.lua` (B)
+5. Place a breakpoint on line 2 using (B) >
+  :lua require"dap".toggle_breakpoint()
+<6. Connect the DAP client using (B) >
+  :lua require"dap".continue()
+< Note: host - Press return, leave default
+       port - Enter the port you wrote down
+7. Run `myscript.lua` in the other instance (A) >
+  :luafile myscript.lua
+<8. The breakpoint should hit and freeze the instance (B)
+
+=========================================================================
+vimspector configuration                           *lua-debug-vimspector*
+
+Todo
+
+=========================================================================
+Launch server                         *one-small-step-for-vimkind-server*
+
+To start a debugging session, you will first need to launch the server. 
+
+launch({opts})                    *one-small-step-for-vimkind.launch()*
+
+This command will launch the DAP server awaiting any connections. On
+execution, a prompt message will display the port it's running on.
+
+    Parameters:~
+        {opts} Optional parameters.
+               • `host`: defaults to "127.0.0.1"
+               • `port`: Specify a port number or if nil, lets the server
+               choose an available port.
+
+    Return:~
+        An server info object which contains 
+          {host = {host}, port = {port}} 
+        or nil on failure
+
+The |one-small-step-for-vimkind.launch()| function will actually not 
+run the server in the running process but spawn a child process. 
+This ensures that DAP requests are still processed even in a 
+frozen state.
+
+=========================================================================
+one-small-step-for-vimkind-repl         *one-small-step-for-vimkind-repl*
+
+The REPL supports evaluation of expression. It will prepend a "return "
+statement which will return the value of the expression to the debugger.
+This means expressions such as assignments will not be valid syntax.
+
+ vim:tw=78:ts=8:ft=help:norl:

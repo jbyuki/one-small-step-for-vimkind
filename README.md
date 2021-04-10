@@ -1,12 +1,11 @@
-# lua-debug.nvim
+# one-small-step-for-vimkind
 
-`lua-debug.nvim` is an **adapter** to debug a running Neovim instance. See the [DAP protocol](https://microsoft.github.io/debug-adapter-protocol/overview) to know more about adapters. It allows you to debug any lua code running in a Neovim instance.
 
-**Disclaimer**: `lua-debug.nvim` has a similar name to [lua-debug](https://github.com/actboy168/lua-debug) but is not affiliated with the latter in any form.
+`one-small-step-for-vimkind` is an **adapter** for the Neovim lua language. See the [DAP protocol](https://microsoft.github.io/debug-adapter-protocol/overview) to know more about adapters. It allows you to debug any lua code running in a Neovim instance.
 
 ## Install
 
-In addition to installing `lua-debug.nvim`, you will also need a DAP plugin which will allow you to interact with the adapter. There are mainly two available:
+After installing `one-small-step-for-vimkind`, you will also need a DAP plugin which will allow you to interact with the adapter. There are mainly two available:
 
   * [nvim-dap](https://github.com/mfussenegger/nvim-dap)
   * [vimspector](https://github.com/puremourning/vimspector) 
@@ -47,6 +46,8 @@ end
 * Launch the server in the debuggee using `require"lua-debug".launch()`
 * Open another Neovim instance
 * Connect using the DAP client
+
+See [one-small-step-for-vimkind.txt](https://github.com/jbyuki/lua-debug.nvim/blob/main/doc/one-small-step-for-vimkind.txt) for more detailed instructions.
 
 ## Status
 

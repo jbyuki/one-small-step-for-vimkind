@@ -26,7 +26,7 @@ local sendProxyDAP
 
 @implement+=
 function sendProxyDAP(data)
-  vim.fn.rpcnotify(nvim_server, 'nvim_exec_lua', [[require"lua-debug".sendDAP(...)]], {data})
+  vim.fn.rpcnotify(nvim_server, 'nvim_exec_lua', [[require"one-small-step-for-vimkind".sendDAP(...)]], {data})
 end
 
 @send_back_breakpoint_verification+=
