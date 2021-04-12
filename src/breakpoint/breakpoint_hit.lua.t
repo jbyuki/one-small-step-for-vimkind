@@ -25,6 +25,7 @@ end
 @freeze_neovim_instance+=
 running = false
 while not running do
+  @check_disconnected
   @handle_new_messages
   @clear_messages
   vim.wait(50)

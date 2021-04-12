@@ -4,6 +4,7 @@ sock:read_start(vim.schedule_wrap(function(err, chunk)
   if chunk then
     @read_tcp
   else
+    @send_disconnect
     sock:shutdown()
     sock:close()
   end

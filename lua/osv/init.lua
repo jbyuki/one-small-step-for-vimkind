@@ -38,6 +38,8 @@ local log
 local sendProxyDAP
 
 local M = {}
+M.disconnected = false
+
 function make_response(request, response)
   local msg = {
     type = "response",
@@ -111,18 +113,6 @@ function M.wait_attach()
       running = true
       
       sendProxyDAP(make_response(request,{}))
-    end
-    
-    function handlers.disconnect(request)
-      debug.sethook()
-      
-      sendProxyDAP(make_response(request, {}))
-      
-      vim.wait(1000)
-      if nvim_server then
-        vim.fn.jobstop(nvim_server)
-        nvim_server = nil
-      end
     end
     
     function handlers.evaluate(request)
@@ -448,6 +438,9 @@ function M.wait_attach()
             sendProxyDAP(msg)
             running = false
             while not running do
+              if M.disconnected then
+                break
+              end
               local i = 1
               while i <= #M.server_messages do
                 local msg = M.server_messages[i]
@@ -481,6 +474,9 @@ function M.wait_attach()
       
         running = false
         while not running do
+          if M.disconnected then
+            break
+          end
           local i = 1
           while i <= #M.server_messages do
             local msg = M.server_messages[i]
@@ -512,6 +508,9 @@ function M.wait_attach()
       
         running = false
         while not running do
+          if M.disconnected then
+            break
+          end
           local i = 1
           while i <= #M.server_messages do
             local msg = M.server_messages[i]
@@ -543,6 +542,9 @@ function M.wait_attach()
       
         running = false
         while not running do
+          if M.disconnected then
+            break
+          end
           local i = 1
           while i <= #M.server_messages do
             local msg = M.server_messages[i]
@@ -571,6 +573,9 @@ function M.wait_attach()
         sendProxyDAP(msg)
         running = false
         while not running do
+          if M.disconnected then
+            break
+          end
           local i = 1
           while i <= #M.server_messages do
             local msg = M.server_messages[i]
@@ -621,6 +626,8 @@ function M.start_server(host, port)
   server:bind(host, port)
   
   server:listen(128, function(err)
+    M.disconnected = false
+    
     local sock = vim.loop.new_tcp()
     server:accept(sock)
     
@@ -692,6 +699,8 @@ function M.start_server(host, port)
         coroutine.resume(dap_read)
         
       else
+        vim.fn.rpcrequest(debug_hook_conn, "nvim_exec_lua", [[require"osv".disconnected = true]], {})
+        
         sock:shutdown()
         sock:close()
       end
