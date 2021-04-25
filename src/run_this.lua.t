@@ -4,6 +4,7 @@ function M.run_this()
   local dap = require"dap"
   assert(dap, "nvim-dap not found. Please make sure it's installed.")
 
+  @close_previous_neovim_instance
   @create_neovim_instance
   @launch_osv_server
   @check_has_adapter_config
@@ -11,10 +12,10 @@ function M.run_this()
 end
 
 @create_neovim_instance+=
-local nvim = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
+auto_nvim = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
 
 @launch_osv_server+=
-local server = vim.fn.rpcrequest(nvim, "nvim_exec_lua", [[return require"osv".launch()]], {})
+local server = vim.fn.rpcrequest(auto_nvim, "nvim_exec_lua", [[return require"osv".launch()]], {})
 vim.wait(100)
 
 @check_has_adapter_config+=
@@ -38,7 +39,7 @@ dap.listeners.after['attach']['osv'] = function(session, body)
 end
 
 @run_current_script+=
-vim.fn.rpcnotify(nvim, "nvim_command", "luafile " .. vim.fn.expand("%:p"))
+vim.fn.rpcnotify(auto_nvim, "nvim_command", "luafile " .. vim.fn.expand("%:p"))
 
 @wait_for_breakpoints+=
 -- Currently I didn't find a better
@@ -46,3 +47,12 @@ vim.fn.rpcnotify(nvim, "nvim_command", "luafile " .. vim.fn.expand("%:p"))
 -- time is waited for the breakpoints to 
 -- be set
 vim.wait(100)
+
+@script_variables+=
+local auto_nvim
+
+@close_previous_neovim_instance+=
+if auto_nvim then
+  vim.fn.jobstop(auto_nvim)
+  auto_nvim = nil
+end

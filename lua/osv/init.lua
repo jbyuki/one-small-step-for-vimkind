@@ -23,6 +23,8 @@ local seq_id = 1
 
 local nvim_server
 
+local auto_nvim
+
 -- for now, only accepts a single
 -- connection
 local client
@@ -628,9 +630,13 @@ function M.run_this()
   local dap = require"dap"
   assert(dap, "nvim-dap not found. Please make sure it's installed.")
 
-  local nvim = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
+  if auto_nvim then
+    vim.fn.jobstop(auto_nvim)
+    auto_nvim = nil
+  end
+  auto_nvim = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
   
-  local server = vim.fn.rpcrequest(nvim, "nvim_exec_lua", [[return require"osv".launch()]], {})
+  local server = vim.fn.rpcrequest(auto_nvim, "nvim_exec_lua", [[return require"osv".launch()]], {})
   vim.wait(100)
   
   assert(dap.adapters.nlua, "nvim-dap adapter configuration for nlua not found. Please refer to the README.md or :help osv.txt")
@@ -651,7 +657,8 @@ function M.run_this()
       -- time is waited for the breakpoints to 
       -- be set
       vim.wait(100)
-      vim.fn.rpcnotify(nvim, "nvim_command", "luafile " .. vim.fn.expand("%:p"))
+      
+      vim.fn.rpcnotify(auto_nvim, "nvim_command", "luafile " .. vim.fn.expand("%:p"))
       
     end)
   end
