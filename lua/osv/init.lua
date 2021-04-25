@@ -445,7 +445,6 @@ function M.wait_attach()
         if source_path:sub(1, 1) == "@" or step_in then
           local path = source_path:sub(2)
           path = vim.uri_from_fname(vim.fn.fnamemodify(path, ":p"):lower())
-          print(path)
           if bps[path] then
             local msg = make_event("stopped")
             msg.body = {
