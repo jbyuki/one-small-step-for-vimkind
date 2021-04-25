@@ -15,7 +15,7 @@ local nvim = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = t
 
 @launch_osv_server+=
 local server = vim.fn.rpcrequest(nvim, "nvim_exec_lua", [[return require"osv".launch()]], {})
-vim.wait(1000)
+vim.wait(100)
 
 @check_has_adapter_config+=
 assert(dap.adapters.nlua, "nvim-dap adapter configuration for nlua not found. Please refer to the README.md or :help osv.txt")
@@ -38,7 +38,7 @@ dap.listeners.after['attach']['osv'] = function(session, body)
 end
 
 @run_current_script+=
-vim.fn.rpcnotify(nvim, "nvim_command", "luafile " .. vim.fn.expand("%"))
+vim.fn.rpcnotify(nvim, "nvim_command", "luafile " .. vim.fn.expand("%:p"))
 
 @wait_for_breakpoints+=
 -- Currently I didn't find a better

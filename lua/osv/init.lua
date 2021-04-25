@@ -414,6 +414,7 @@ function M.wait_attach()
       local i = 1
       while i <= #M.server_messages do
         local msg = M.server_messages[i]
+        log(msg.command)
         local f = handlers[msg.command]
         if f then
           f(msg)
@@ -445,6 +446,7 @@ function M.wait_attach()
         if source_path:sub(1, 1) == "@" or step_in then
           local path = source_path:sub(2)
           path = vim.uri_from_fname(vim.fn.fnamemodify(path, ":p"):lower())
+          print(path)
           if bps[path] then
             local msg = make_event("stopped")
             msg.body = {
@@ -460,6 +462,7 @@ function M.wait_attach()
               local i = 1
               while i <= #M.server_messages do
                 local msg = M.server_messages[i]
+                log(msg.command)
                 local f = handlers[msg.command]
                 if f then
                   f(msg)
@@ -496,6 +499,7 @@ function M.wait_attach()
           local i = 1
           while i <= #M.server_messages do
             local msg = M.server_messages[i]
+            log(msg.command)
             local f = handlers[msg.command]
             if f then
               f(msg)
@@ -530,6 +534,7 @@ function M.wait_attach()
           local i = 1
           while i <= #M.server_messages do
             local msg = M.server_messages[i]
+            log(msg.command)
             local f = handlers[msg.command]
             if f then
               f(msg)
@@ -564,6 +569,7 @@ function M.wait_attach()
           local i = 1
           while i <= #M.server_messages do
             local msg = M.server_messages[i]
+            log(msg.command)
             local f = handlers[msg.command]
             if f then
               f(msg)
@@ -595,6 +601,7 @@ function M.wait_attach()
           local i = 1
           while i <= #M.server_messages do
             local msg = M.server_messages[i]
+            log(msg.command)
             local f = handlers[msg.command]
             if f then
               f(msg)
@@ -631,7 +638,7 @@ function M.run_this()
   local nvim = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
   
   local server = vim.fn.rpcrequest(nvim, "nvim_exec_lua", [[return require"osv".launch()]], {})
-  vim.wait(1000)
+  vim.wait(100)
   
   assert(dap.adapters.nlua, "nvim-dap adapter configuration for nlua not found. Please refer to the README.md or :help osv.txt")
   
@@ -651,7 +658,7 @@ function M.run_this()
       -- time is waited for the breakpoints to 
       -- be set
       vim.wait(100)
-      vim.fn.rpcnotify(nvim, "nvim_command", "luafile " .. vim.fn.expand("%"))
+      vim.fn.rpcnotify(nvim, "nvim_command", "luafile " .. vim.fn.expand("%:p"))
       
     end)
   end
