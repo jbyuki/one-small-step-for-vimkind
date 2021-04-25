@@ -414,7 +414,6 @@ function M.wait_attach()
       local i = 1
       while i <= #M.server_messages do
         local msg = M.server_messages[i]
-        log(msg.command)
         local f = handlers[msg.command]
         if f then
           f(msg)
@@ -462,7 +461,6 @@ function M.wait_attach()
               local i = 1
               while i <= #M.server_messages do
                 local msg = M.server_messages[i]
-                log(msg.command)
                 local f = handlers[msg.command]
                 if f then
                   f(msg)
@@ -499,7 +497,6 @@ function M.wait_attach()
           local i = 1
           while i <= #M.server_messages do
             local msg = M.server_messages[i]
-            log(msg.command)
             local f = handlers[msg.command]
             if f then
               f(msg)
@@ -534,7 +531,6 @@ function M.wait_attach()
           local i = 1
           while i <= #M.server_messages do
             local msg = M.server_messages[i]
-            log(msg.command)
             local f = handlers[msg.command]
             if f then
               f(msg)
@@ -569,7 +565,6 @@ function M.wait_attach()
           local i = 1
           while i <= #M.server_messages do
             local msg = M.server_messages[i]
-            log(msg.command)
             local f = handlers[msg.command]
             if f then
               f(msg)
@@ -601,7 +596,6 @@ function M.wait_attach()
           local i = 1
           while i <= #M.server_messages do
             local msg = M.server_messages[i]
-            log(msg.command)
             local f = handlers[msg.command]
             if f then
               f(msg)
