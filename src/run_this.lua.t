@@ -1,6 +1,6 @@
 ##lua-debug
 @implement+=
-function M.debug_this()
+function M.run_this()
   local dap = require"dap"
   assert(dap, "nvim-dap not found. Please make sure it's installed.")
 
