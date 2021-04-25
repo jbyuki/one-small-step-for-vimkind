@@ -39,26 +39,35 @@ local log
 
 local M = {}
 function M.debug_this()
+  local dap = require"dap"
+  assert(dap, "nvim-dap not found. Please make sure it's installed.")
+
   local nvim = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
   
   local server = vim.fn.rpcrequest(nvim, "nvim_exec_lua", [[return require"osv".launch()]], {})
+  vim.wait(1000)
+  
+  assert(dap.adapters.nlua, "nvim-dap adapter configuration for nlua not found. Please refer to the README.md or :help osv.txt")
   
   local osv_config = {
     type = "nlua",
     request = "attach",
+    name = "Debug current file",
     host = server.host,
     port = server.port,
   }
-  local dap = require"dap"
   dap.run(osv_config)
+  
   dap.listeners.after['attach']['osv'] = function(session, body)
-    -- Currently I didn't find a better
-    -- way to do this. An arbitrary amount of
-    -- time is waited for the breakpoints to 
-    -- be set
-    vim.wait(1000)
-    vim.fn.rpcnotify(nvim, "nvim_command", "luafile " .. vim.fn.expand("%"))
-    
+    vim.schedule(function()
+      -- Currently I didn't find a better
+      -- way to do this. An arbitrary amount of
+      -- time is waited for the breakpoints to 
+      -- be set
+      vim.wait(100)
+      vim.fn.rpcnotify(nvim, "nvim_command", "luafile " .. vim.fn.expand("%"))
+      
+    end)
   end
   
 end

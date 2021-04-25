@@ -133,6 +133,12 @@ run the server in the running process but spawn a child process.
 This ensures that DAP requests are still processed even in a 
 frozen state.
 
+debug_this()                                        *osv.debug_this()*
+
+This command will automatically start the DAP server and connect
+nvim-dap to it. You still need to set the `dap.adapters.nlua` as 
+explained in the configuration section.
+
 =========================================================================
 osv repl                                                      *osv-repl*
 
