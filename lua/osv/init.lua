@@ -1,11 +1,7 @@
--- Generated from attach.lua.t, breakpoint_hit.lua.t, continue.lua.t, disconnect.lua.t, evaluate.lua.t, init.lua.t, initialize.lua.t, launch.lua.t, log_remote.lua.t, message_loop.lua.t, next.lua.t, pause.lua.t, receive.lua.t, scopes.lua.t, send.lua.t, server.lua.t, set_breakpoints.lua.t, stack_trace.lua.t, step_in.lua.t, step_out.lua.t, threads.lua.t, variables.lua.t using ntangle.nvim
-local limit = 0
-
+-- Generated from breakpoint_hit.lua.t, debug_this.lua.t, disconnect.lua.t, attach.lua.t, continue.lua.t, disconnect.lua.t, evaluate.lua.t, next.lua.t, pause.lua.t, scopes.lua.t, set_breakpoints.lua.t, stack_trace.lua.t, step_in.lua.t, step_out.lua.t, threads.lua.t, variables.lua.t, init.lua.t, initialize.lua.t, launch.lua.t, log_remote.lua.t, message_loop.lua.t, receive.lua.t, send.lua.t, server.lua.t using ntangle.nvim
 local running = true
 
-local seq_id = 1
-
-local nvim_server
+local limit = 0
 
 local stack_level = 0
 local next = false
@@ -16,12 +12,6 @@ local pause = false
 local vars_id = 1
 local vars_ref = {}
 
--- for now, only accepts a single
--- connection
-local client
-
-local debug_hook_conn 
-
 local frame_id = 1
 local frames = {}
 
@@ -29,16 +19,55 @@ local step_in
 
 local step_out = false
 
+local seq_id = 1
+
+local nvim_server
+
+-- for now, only accepts a single
+-- connection
+local client
+
+local debug_hook_conn 
+
+local sendProxyDAP
+
 local make_response
 
 local make_event
 
 local log
 
-local sendProxyDAP
-
 local M = {}
+function M.debug_this()
+  local nvim = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
+  
+  local server = vim.fn.rpcrequest(nvim, "nvim_exec_lua", [[return require"osv".launch()]], {})
+  
+  local osv_config = {
+    type = "nlua",
+    request = "attach",
+    host = server.host,
+    port = server.port,
+  }
+  local dap = require"dap"
+  dap.run(osv_config)
+  dap.listeners.after['attach']['osv'] = function(session, body)
+    -- Currently I didn't find a better
+    -- way to do this. An arbitrary amount of
+    -- time is waited for the breakpoints to 
+    -- be set
+    vim.wait(1000)
+    vim.fn.rpcnotify(nvim, "nvim_command", "luafile " .. vim.fn.expand("%"))
+    
+  end
+  
+end
+
 M.disconnected = false
+
+function sendProxyDAP(data)
+  vim.fn.rpcnotify(nvim_server, 'nvim_exec_lua', [[require"osv".sendDAP(...)]], {data})
+end
 
 function make_response(request, response)
   local msg = {
@@ -113,6 +142,18 @@ function M.wait_attach()
       running = true
       
       sendProxyDAP(make_response(request,{}))
+    end
+    
+    function handlers.disconnect(request)
+      debug.sethook()
+      
+      sendProxyDAP(make_response(request, {}))
+      
+      vim.wait(1000)
+      if nvim_server then
+        vim.fn.jobstop(nvim_server)
+        nvim_server = nil
+      end
     end
     
     function handlers.evaluate(request)
@@ -239,7 +280,7 @@ function M.wait_attach()
       for _, bp in ipairs(args.breakpoints) do
         breakpoints[bp.line] = breakpoints[bp.line] or {}
         local line_bps = breakpoints[bp.line]
-        line_bps[args.source.path:lower()] = true
+        line_bps[vim.uri_from_fname(args.source.path:lower())] = true
         table.insert(results_bps, { verified = true })
         -- log("Set breakpoint at line " .. bp.line .. " in " .. args.source.path)
       end
@@ -428,7 +469,7 @@ function M.wait_attach()
         
         if source_path:sub(1, 1) == "@" or step_in then
           local path = source_path:sub(2)
-          path = vim.fn.fnamemodify(path, ":p"):lower()
+          path = vim.uri_from_fname(vim.fn.fnamemodify(path, ":p"):lower())
           if bps[path] then
             local msg = make_event("stopped")
             msg.body = {
@@ -719,10 +760,6 @@ function M.start_server(host, port)
     host = host,
     port = server:getsockname().port
   }
-end
-
-function sendProxyDAP(data)
-  vim.fn.rpcnotify(nvim_server, 'nvim_exec_lua', [[require"osv".sendDAP(...)]], {data})
 end
 
 return M

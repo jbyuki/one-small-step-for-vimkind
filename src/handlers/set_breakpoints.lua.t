@@ -16,7 +16,7 @@ local results_bps = {}
 for _, bp in ipairs(args.breakpoints) do
   breakpoints[bp.line] = breakpoints[bp.line] or {}
   local line_bps = breakpoints[bp.line]
-  line_bps[args.source.path:lower()] = true
+  line_bps[vim.uri_from_fname(args.source.path:lower())] = true
   table.insert(results_bps, { verified = true })
   -- log("Set breakpoint at line " .. bp.line .. " in " .. args.source.path)
 end

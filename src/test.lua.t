@@ -10,9 +10,9 @@
 
 @start_debug_adapter
 
-local debug_neovim_conn_add = [[\\.\pipe\nvim-15020-0]]
-local debug_neovim_conn = vim.fn.sockconnect('pipe', debug_neovim_conn_add, {rpc = true})
--- @create_debug_neovim_instance
+-- local debug_neovim_conn_add = [[\\.\pipe\nvim-15020-0]]
+-- local debug_neovim_conn = vim.fn.sockconnect('pipe', debug_neovim_conn_add, {rpc = true})
+@create_debug_neovim_instance
 
 @send_dap_configuration
 
@@ -50,7 +50,7 @@ if debug_neovim_conn then
 end
 
 @open_lua_file+=
-vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':edit test4.lua\n', "n", false)
+vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':edit test.lua\n', "n", false)
 
 @close_lua_file
 vim.fn.rpcrequest(debug_neovim_conn, "nvim_exec", "bw", true)
@@ -65,13 +65,13 @@ if host_neovim_conn then
 end
 
 @start_debug_adapter+=
-local server = vim.fn.rpcrequest(host_neovim_conn, "nvim_exec_lua", "return require'lua-debug'.launch()", {})
--- vim.fn.rpcnotify(host_neovim_conn, "nvim_exec_lua", "require'lua-debug'.wait_attach()", {})
+local server = vim.fn.rpcrequest(host_neovim_conn, "nvim_exec_lua", "return require'osv'.launch()", {})
+-- vim.fn.rpcnotify(host_neovim_conn, "nvim_exec_lua", "require'osv'.wait_attach()", {})
 
 @start_dap_session+=
 -- for some reason I can't nvim_exec_lua here
 -- vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", 'jjjj', "n", false) -- go down one line
-vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", '3gg', "n", false) -- go down one line
+vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", '2gg', "n", false) -- go down one line
 vim.wait(200)
 vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".toggle_breakpoint()\n', "n", false)
 vim.wait(200)
@@ -90,7 +90,7 @@ vim.fn.rpcrequest(host_neovim_conn, "nvim_exec_lua", [[debug_output = {}]], {})
 vim.fn.rpcrequest(debug_neovim_conn, "nvim_exec_lua", [[require"dap".configurations.lua = { { type = 'nlua', request = 'attach', name = "Attach to running Neovim instance", host = '127.0.0.1', port = ]] .. server.port .. [[} }]], {})
 
 @execute_in_host+=
-local result = vim.fn.rpcnotify(host_neovim_conn, "nvim_exec", [[luafile test4.lua]], true)
+local result = vim.fn.rpcnotify(host_neovim_conn, "nvim_exec", [[luafile test.lua]], true)
 print(vim.inspect(result))
 
 @capture_output_from_host+=
