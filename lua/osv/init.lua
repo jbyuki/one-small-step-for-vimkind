@@ -1,4 +1,4 @@
--- Generated from breakpoint_hit.lua.t, disconnect.lua.t, attach.lua.t, continue.lua.t, disconnect.lua.t, evaluate.lua.t, next.lua.t, pause.lua.t, scopes.lua.t, set_breakpoints.lua.t, stack_trace.lua.t, step_in.lua.t, step_out.lua.t, threads.lua.t, variables.lua.t, init.lua.t, initialize.lua.t, launch.lua.t, log_remote.lua.t, message_loop.lua.t, receive.lua.t, run_this.lua.t, send.lua.t, server.lua.t using ntangle.nvim
+-- Generated using ntangle.nvim
 local running = true
 
 local limit = 0
@@ -634,7 +634,14 @@ function M.run_this()
     vim.fn.jobstop(auto_nvim)
     auto_nvim = nil
   end
+  
   auto_nvim = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
+  
+  assert(auto_nvim, "Could not create neovim instance with jobstart!")
+  
+  
+  local mode = vim.fn.rpcrequest(auto_nvim, "nvim_get_mode")
+  assert(not mode.blocking, "Neovim is waiting for input at startup. Aborting.")
   
   local server = vim.fn.rpcrequest(auto_nvim, "nvim_exec_lua", [[return require"osv".launch()]], {})
   vim.wait(100)

@@ -6,6 +6,7 @@ function M.run_this()
 
   @close_previous_neovim_instance
   @create_neovim_instance
+  @check_neovim_is_not_blocking
   @launch_osv_server
   @check_has_adapter_config
   @run_nvim_dap
@@ -56,3 +57,12 @@ if auto_nvim then
   vim.fn.jobstop(auto_nvim)
   auto_nvim = nil
 end
+
+@check_neovim_is_not_blocking+=
+local mode = vim.fn.rpcrequest(auto_nvim, "nvim_get_mode")
+assert(not mode.blocking, "Neovim is waiting for input at startup. Aborting.")
+
+@create_neovim_instance+=
+assert(auto_nvim, "Could not create neovim instance with jobstart!")
+
+
