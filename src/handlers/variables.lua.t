@@ -7,6 +7,7 @@ function handlers.variables(request)
   local variables = {}
   if type(ref) == "number" then
     @inspect_local_variables
+    @inspect_up_values
   elseif type(ref) == "table" then
     @inspect_table_elements
   end
@@ -57,4 +58,20 @@ for ln, lv in pairs(ref) do
     local v = {}
     @fill_variable_struct
     table.insert(variables, v)
+end
+
+@inspect_up_values+=
+local func = debug.getinfo(frame).func
+local a = 1
+while true do
+  local ln,lv = debug.getupvalue(func, a)
+  if not ln then break end
+
+  @omit_temporary_values
+  else
+    local v = {}
+    @fill_variable_struct
+    table.insert(variables, v)
+  end
+  a = a + 1
 end

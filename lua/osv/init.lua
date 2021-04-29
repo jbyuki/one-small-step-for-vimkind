@@ -388,6 +388,30 @@ function M.wait_attach()
           a = a + 1
         end
         
+        local func = debug.getinfo(frame).func
+        local a = 1
+        while true do
+          local ln,lv = debug.getupvalue(func, a)
+          if not ln then break end
+        
+          if vim.startswith(ln, "(*") then
+          
+          else
+            local v = {}
+            v.name = ln
+            v.variablesReference = 0
+            if type(lv) == "table" then
+              vars_ref[vars_id] = lv
+              v.variablesReference = vars_id
+              vars_id = vars_id + 1
+              
+            end
+            v.value = tostring(lv) 
+            
+            table.insert(variables, v)
+          end
+          a = a + 1
+        end
       elseif type(ref) == "table" then
         for ln, lv in pairs(ref) do
             local v = {}
@@ -403,6 +427,7 @@ function M.wait_attach()
             
             table.insert(variables, v)
         end
+        
       end
     
       sendProxyDAP(make_response(request, {
