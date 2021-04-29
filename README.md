@@ -96,6 +96,10 @@ Capabilities:
 * [ ] watch
 * [ ] hover
 
+## Name
+
+> it's a debugger for the moon language. - @tjdevries
+
 ## Credits
 
 * [mfussenegger/nvim-lua-debugger](https://github.com/mfussenegger/nvim-lua-debugger)
