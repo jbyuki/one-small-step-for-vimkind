@@ -250,7 +250,7 @@ function M.wait_attach()
     function handlers.setBreakpoints(request)
       local args = request.arguments
       for line, line_bps in pairs(breakpoints) do
-        line_bps[args.source.path:lower()] = nil
+        line_bps[vim.uri_from_fname(args.source.path:lower())] = nil
       end
       local results_bps = {}
       
