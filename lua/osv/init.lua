@@ -79,9 +79,12 @@ function M.launch(opts)
       ["opts.port"] = {opts.port, "n", true},
     }
   end
+  
 
   nvim_server = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
   
+  local mode = vim.fn.rpcrequest(nvim_server, "nvim_get_mode")
+  assert(not mode.blocking, "Neovim is waiting for input at startup. Aborting.")
   local hook_address = vim.fn.serverstart()
   vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[debug_hook_conn_address = ...]], {hook_address})
   

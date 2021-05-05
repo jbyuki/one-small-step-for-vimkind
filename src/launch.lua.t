@@ -4,6 +4,7 @@ function M.launch(opts)
   @verify_launch_arguments
 
   @spawn_nvim_instance_for_server
+  @detect_if_nvim_is_blocking
   @set_hook_instance_address
   @launch_server
   log("Server started on port " .. server.port)
@@ -52,3 +53,7 @@ if opts then
     ["opts.port"] = {opts.port, "n", true},
   }
 end
+
+@detect_if_nvim_is_blocking+=
+local mode = vim.fn.rpcrequest(nvim_server, "nvim_get_mode")
+assert(not mode.blocking, "Neovim is waiting for input at startup. Aborting.")
