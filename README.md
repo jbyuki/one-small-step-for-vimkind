@@ -7,10 +7,10 @@
 
 Install using your prefered method for example using [vim-plug](https://github.com/junegunn/vim-plug)
 
-```
+```vim
 Plug "jbyuki/one-small-step-for-vimkind"
 
-# You will also need a comptabile DAP client
+" You will also need a comptabile DAP client
 
 Plug "mfussenegger/nvim-dap"
 ```
