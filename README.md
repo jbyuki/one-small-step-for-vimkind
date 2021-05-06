@@ -51,6 +51,15 @@ dap.adapters.nlua = function(callback, config)
 end
 ```
 
+If you're still have a init.vim in Vimscript, include the nvim-dap
+configurations inside lua delimiters.
+
+```
+lua << END
+  ...
+END
+```
+
 ## Quickstart
 
 * Launch the server in the debuggee using `require"osv".launch()`
