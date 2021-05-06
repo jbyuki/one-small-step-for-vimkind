@@ -8,11 +8,11 @@
 Install using your prefered method for example using [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```vim
-Plug "jbyuki/one-small-step-for-vimkind"
+Plug 'jbyuki/one-small-step-for-vimkind'
 
 " You will also need a comptabile DAP client
 
-Plug "mfussenegger/nvim-dap"
+Plug 'mfussenegger/nvim-dap'
 ```
 
 After installing `one-small-step-for-vimkind`, you will also need a DAP plugin which will allow you to interact with the adapter. There are mainly two available:
