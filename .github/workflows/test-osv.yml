@@ -21,7 +21,7 @@ jobs:
           }
           mkdir -p ~/.local/share/nvim/site/pack/vendor/start
           git clone --depth 1 https://github.com/mfussenegger/nvim-dap ~/.local/share/nvim/site/pack/vendor/start/nvim-dap
-          git clone --depth 1 https://github.com/jbyuki/ntangle.nvim ~/.local/share/nvim/site/pack/vendor/start/ntangle.nvim
+          git clone --depth 1 https://github.com/jbyuki/one-small-step-for-vimkind ~/.local/share/nvim/site/pack/vendor/start/one-small-step-for-vimkind
       - run: echo "Neovim has been installed."
       - run: echo "🖥️ The workflow is now ready to test your code on the runner."
       - name: List files in the repository
