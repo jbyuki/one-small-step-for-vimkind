@@ -685,14 +685,8 @@ function M.run_this()
   }
   dap.run(osv_config)
   
-  dap.listeners.after['attach']['osv'] = function(session, body)
+  dap.listeners.after['setBreakpoints']['osv'] = function(session, body)
     vim.schedule(function()
-      -- Currently I didn't find a better
-      -- way to do this. An arbitrary amount of
-      -- time is waited for the breakpoints to 
-      -- be set
-      vim.wait(100)
-      
       vim.fn.rpcnotify(auto_nvim, "nvim_command", "luafile " .. vim.fn.expand("%:p"))
       
     end)
