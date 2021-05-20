@@ -60,7 +60,7 @@ for _, line in ipairs(output) do
   print(line)
 end
 
-assert(output[2] == "breakpoint hit", "breakpoint hit")
+assert(output[1] == "breakpoint hit", "breakpoint hit")
 
 
 vim.fn.rpcrequest(debug_neovim_conn, "nvim_exec_lua", "vim.api.nvim_buf_delete(...)", {0, {force = true}})

@@ -163,7 +163,7 @@ vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".step_ove
 vim.wait(200)
 
 @check_capture_output+=
-assert(output[2] == "breakpoint hit", "breakpoint hit")
+assert(output[1] == "breakpoint hit", "breakpoint hit")
 
 @output_result_ok+=
 local f = io.open("result.txt", "w")
