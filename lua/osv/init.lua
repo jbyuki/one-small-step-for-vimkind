@@ -92,7 +92,7 @@ function M.launch(opts)
   local port = (opts and opts.port) or 0
   local server = vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"osv".start_server(...)]], {host, port})
   
-  log("Server started on port " .. server.port)
+  print("Server started on port " .. server.port)
   vim.defer_fn(M.wait_attach, 0)
   return server
 end
