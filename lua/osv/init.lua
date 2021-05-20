@@ -651,7 +651,7 @@ function log(str)
   if debug_output then
     table.insert(debug_output, tostring(str))
   else
-    print(str)
+    -- print(str)
   end
 end
 M.server_messages = {}
