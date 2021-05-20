@@ -29,8 +29,8 @@ jobs:
           ls ${{ github.workspace }}
       - name: Run tests
         run: |
-          echo "print(2)\nprint(2)\nprint(2)\nprint(2)\nprint(2)" > test.lua
-          cat test.lua
+          echo "local a = 0\nfor i=1,10 do\nprint(i)\nend" > input.lua
+          cat input.lua
           cat test/test.lua
           ./build/nvim --headless -c "luafile test/test.lua" -c "exit"
           echo "Done"

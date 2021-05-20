@@ -1,5 +1,5 @@
 ##lua-debug-test
-@*=
+@../test/test.lua=
 @declare
 @implement
 @script_variables
@@ -25,7 +25,7 @@ vim.wait(500)
 
 -- @next_in_debug_session
 -- @step_in_debug_session
-@continue_in_debug_session
+-- @continue_in_debug_session
 -- @step_out_debug_session
 -- @test_hover_debug_session
 -- @test_repl
@@ -34,11 +34,14 @@ vim.wait(500)
 -- @test_next_over
 
 @capture_output_from_host
+@check_capture_output
 
 @close_lua_file
 
 @close_host_neovim_instance
 @close_debug_neovim_instance
+
+@output_result_ok
 
 @create_debug_neovim_instance+=
 local debug_neovim_conn = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
@@ -50,10 +53,10 @@ if debug_neovim_conn then
 end
 
 @open_lua_file+=
-vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':edit test.lua\n', "n", false)
+vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':edit input.lua\n', "n", false)
 
 @close_lua_file+=
-vim.fn.rpcrequest(debug_neovim_conn, "nvim_exec", "bw", true)
+vim.fn.rpcrequest(debug_neovim_conn, "nvim_exec_lua", "vim.api.nvim_buf_delete(...)", {0, {force = true}})
 
 @create_host_neovim_instance+=
 local host_neovim_conn = vim.fn.jobstart({'nvim', '--embed', '--headless'}, {rpc = true})
@@ -87,10 +90,12 @@ print("Done!")
 vim.fn.rpcrequest(host_neovim_conn, "nvim_exec_lua", [[debug_output = {}]], {})
 
 @send_dap_configuration+=
-vim.fn.rpcrequest(debug_neovim_conn, "nvim_exec_lua", [[require"dap".configurations.lua = { { type = 'nlua', request = 'attach', name = "Attach to running Neovim instance", host = '127.0.0.1', port = ]] .. server.port .. [[} }]], {})
+vim.fn.rpcrequest(debug_neovim_conn, "nvim_exec_lua", [[require"dap".configurations.lua = {...  }]], { { type = 'nlua', request = 'attach', name = "Attach to running Neovim instance", host = server.host, port = server.port } })
+vim.fn.rpcrequest(debug_neovim_conn, "nvim_exec_lua", [[require"dap".adapters.nlua = function(callback, config) callback({ type = 'server', host = config.host, port = config.port }) end]], {})
+
 
 @execute_in_host+=
-local result = vim.fn.rpcnotify(host_neovim_conn, "nvim_exec", [[luafile test.lua]], true)
+local result = vim.fn.rpcnotify(host_neovim_conn, "nvim_exec", [[luafile input.lua]], true)
 print(vim.inspect(result))
 
 @capture_output_from_host+=
@@ -156,3 +161,12 @@ vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".step_ove
 vim.wait(200)
 vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".step_over()\n', "n", false)
 vim.wait(200)
+
+@check_capture_output+=
+assert(output[2] == "breakpoint hit", "breakpoint hit")
+
+@output_result_ok+=
+local f = io.open("result.txt", "w")
+f:write("OK")
+f:close()
+print("OK!")

@@ -34,7 +34,7 @@ server:listen(128, function(err)
   @start_reading
 end)
 
-log("Server started on " .. server:getsockname().port)
+print("Server started on " .. server:getsockname().port)
 
 @accept_server+=
 local sock = vim.loop.new_tcp()

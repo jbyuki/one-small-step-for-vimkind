@@ -476,6 +476,7 @@ function M.wait_attach()
           local path = source_path:sub(2)
           path = vim.uri_from_fname(vim.fn.fnamemodify(path, ":p"):lower())
           if bps[path] then
+            log("breakpoint hit")
             local msg = make_event("stopped")
             msg.body = {
               reason = "breakpoint",
@@ -793,7 +794,7 @@ function M.start_server(host, port)
     
   end)
   
-  log("Server started on " .. server:getsockname().port)
+  print("Server started on " .. server:getsockname().port)
   
   if debug_hook_conn_address then
     debug_hook_conn = vim.fn.sockconnect("pipe", debug_hook_conn_address, {rpc = true})
