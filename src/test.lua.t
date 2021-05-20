@@ -59,7 +59,7 @@ vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':edit input.lua\n', "n", f
 vim.fn.rpcrequest(debug_neovim_conn, "nvim_exec_lua", "vim.api.nvim_buf_delete(...)", {0, {force = true}})
 
 @create_host_neovim_instance+=
-local host_neovim_conn = vim.fn.jobstart({'nvim', '--embed', '--headless'}, {rpc = true})
+local host_neovim_conn = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
 
 @close_host_neovim_instance+=
 if host_neovim_conn then

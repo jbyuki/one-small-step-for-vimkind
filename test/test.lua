@@ -1,7 +1,7 @@
 -- Generated using ntangle.nvim
 -- local host_neovim_conn_add = [[\\.\pipe\nvim-21064-0]]
 -- local host_neovim_conn = vim.fn.sockconnect('pipe', host_neovim_conn_add, {rpc = true})
-local host_neovim_conn = vim.fn.jobstart({'nvim', '--embed', '--headless'}, {rpc = true})
+local host_neovim_conn = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
 
 vim.fn.rpcrequest(host_neovim_conn, "nvim_exec_lua", [[debug_output = {}]], {})
 
