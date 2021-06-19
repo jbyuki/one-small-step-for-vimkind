@@ -122,6 +122,7 @@ execution, a prompt message will display the port it's running on.
                • `host`: defaults to "127.0.0.1"
                • `port`: Specify a port number or if nil, lets the server
                choose an available port.
+               • `log`: boolean which you can use to enable logging
 
     Return:~
         An server info object which contains 
@@ -133,11 +134,24 @@ run the server in the running process but spawn a child process.
 This ensures that DAP requests are still processed even in a 
 frozen state.
 
-run_this()                                        *osv.run_this()*
+run_this({opts})                                        *osv.run_this()*
+
+    Parameters:~
+        {opts} Optional parameters.
+               • `log`: boolean which you can use to enable logging
 
 This command will automatically start the DAP server and connect
 nvim-dap to it. You still need to set the `dap.adapters.nlua` as 
 explained in the configuration section.
+
+=========================================================================
+osv logging                                                 *osv-logging*
+
+Logging can be enabled by passing the corresponding parameter in
+|osv.launch|. The log will be written in:
+>
+  echo stdpath('data') . '/osv.log'
+<
 
 =========================================================================
 osv repl                                                      *osv-repl*

@@ -12,6 +12,7 @@ local i = 1
 while i <= #M.server_messages do
   local msg = M.server_messages[i]
   local f = handlers[msg.command]
+  log(vim.inspect(msg))
   if f then
     f(msg)
   else

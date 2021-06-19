@@ -38,7 +38,7 @@ while true do
 end
 
 @omit_temporary_values+=
-if vim.startswith(ln, "(*") then
+if vim.startswith(ln, "(") then
 
 @fill_variable_struct+=
 v.name = ln

@@ -1,6 +1,6 @@
 ##lua-debug
 @implement+=
-function M.run_this()
+function M.run_this(opts)
   local dap = require"dap"
   assert(dap, "nvim-dap not found. Please make sure it's installed.")
 
@@ -16,7 +16,7 @@ end
 auto_nvim = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
 
 @launch_osv_server+=
-local server = vim.fn.rpcrequest(auto_nvim, "nvim_exec_lua", [[return require"osv".launch()]], {})
+local server = vim.fn.rpcrequest(auto_nvim, "nvim_exec_lua", [[return require"osv".launch(...)]], { opts })
 vim.wait(100)
 
 @check_has_adapter_config+=

@@ -3,6 +3,7 @@
 function M.launch(opts)
   @verify_launch_arguments
 
+  @init_logger
   @spawn_nvim_instance_for_server
   @detect_if_nvim_is_blocking
   @set_hook_instance_address
