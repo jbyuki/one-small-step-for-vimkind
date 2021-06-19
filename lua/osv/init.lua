@@ -482,38 +482,41 @@ function M.wait_attach()
 
         if source_path:sub(1, 1) == "@" or step_in then
           local path = source_path:sub(2)
-          path = vim.uri_from_fname(vim.fn.fnamemodify(path, ":p"):lower())
-          if bps[path] then
-            log("breakpoint hit")
-            local msg = make_event("stopped")
-            msg.body = {
-              reason = "breakpoint",
-              threadId = 1
-            }
-            sendProxyDAP(msg)
-            running = false
-            while not running do
-              if M.disconnected then
-                break
-              end
-              local i = 1
-              while i <= #M.server_messages do
-                local msg = M.server_messages[i]
-                local f = handlers[msg.command]
-                log(vim.inspect(msg))
-                if f then
-                  f(msg)
-                else
-                  log("Could not handle " .. msg.command)
+          local succ, path = pcall(vim.fn.fnamemodify, path, ":p")
+          if succ then
+            path = vim.uri_from_fname(path:lower())
+            if bps[path] then
+              log("breakpoint hit")
+              local msg = make_event("stopped")
+              msg.body = {
+                reason = "breakpoint",
+                threadId = 1
+              }
+              sendProxyDAP(msg)
+              running = false
+              while not running do
+                if M.disconnected then
+                  break
                 end
-                i = i + 1
+                local i = 1
+                while i <= #M.server_messages do
+                  local msg = M.server_messages[i]
+                  local f = handlers[msg.command]
+                  log(vim.inspect(msg))
+                  if f then
+                    f(msg)
+                  else
+                    log("Could not handle " .. msg.command)
+                  end
+                  i = i + 1
+                end
+
+                M.server_messages = {}
+
+                vim.wait(50)
               end
 
-              M.server_messages = {}
-
-              vim.wait(50)
             end
-
           end
         end
 
