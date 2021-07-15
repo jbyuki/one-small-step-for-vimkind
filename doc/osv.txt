@@ -152,6 +152,19 @@ Logging can be enabled by passing the corresponding parameter in
 >
   echo stdpath('data') . '/osv.log'
 <
+=========================================================================
+osv plugins debugging                             *osv-plugins-debugging*
+
+If you're developing your own local plugin and using `packer.nvim` to manage
+it, the breakpoint might not hit if you set it directly inside the source
+file.
+
+The reason is that `packer.nvim` copies the plugin's files into a another
+directory.  In order to debug your plugin, you need to set the breakpoint in
+the copied plugin directory source files which are located inside `nvim-data`
+(see `:echo stdpath('data')`).  The copied plugin directory can be then found
+at `nvim-data/site/pack/packer/start/YOUR_PLUGIN`.
+
 
 =========================================================================
 osv repl                                                      *osv-repl*
