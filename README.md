@@ -78,13 +78,13 @@ See [osv.txt](https://github.com/jbyuki/lua-debug.nvim/blob/main/doc/osv.txt) fo
 
 ## Debugging plugins
 
-Breakpoints should always be set in the files which are executed. Sometimes this
-could be tricky in case, copies are made on the system in the background.
+Breakpoints are path-sensitive so they should always be set in the executed file
+even though they might be multiple copies on the system.
 
 This is the case for [packer.nvim](https://github.com/wbthomason/packer.nvim) when developing
-local plugins. packer.nvim will copy the files in the `nvim-data` directory (it can be located
-using `:echo stdpath('data')`). Make sure to set the breakpoints inside the source files
-in the `nvim-data` directory and not the local copy. The plugin directory
+local plugins. packer.nvim will create a symlink to the plugins files in the `nvim-data` directory (
+it can be located using `:echo stdpath('data')`). Make sure to set the breakpoints inside 
+the source files in the `nvim-data` directory and not the local copy. The plugin directory
 can be found in `nvim-data/site/pack/packer/start/YOUR_PLUGIN`.
 
 ## Status
