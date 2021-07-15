@@ -76,6 +76,12 @@ Alternaltively you can:
 
 See [osv.txt](https://github.com/jbyuki/lua-debug.nvim/blob/main/doc/osv.txt) for more detailed instructions.
 
+## Debugging plugins
+
+If you're developing your own local plugin and using [packer.nvim](https://github.com/wbthomason/packer.nvim) to manage it, the breakpoint might not hit if you set it directly inside the source file.
+
+The reason is that packer.nvim copies the plugin's file into a another directory. In order to debug your plugin, you need to set the breakpoint in the copied plugin directory source files which are located inside `nvim-data` (see `:echo stdpath('data')`). The copied plugin directory can be then found in `site/pack/packer/start/YOUR_PLUGIN`.
+
 ## Status
 
 Handlers:
