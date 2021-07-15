@@ -153,18 +153,32 @@ Logging can be enabled by passing the corresponding parameter in
   echo stdpath('data') . '/osv.log'
 <
 =========================================================================
-osv plugins debugging                             *osv-plugins-debugging*
+osv plugins debugging                             *osv-plugins-debugging
 
-If you're developing your own local plugin and using `packer.nvim` to manage
-it, the breakpoint might not hit if you set it directly inside the source
-file.
+Note: These explanations only are valid if you're using packer.nvim for
+other plugin managers such as vim-plug you don't need to take special
+precautions to debug plugins
 
-The reason is that `packer.nvim` copies the plugin's files into a another
-directory.  In order to debug your plugin, you need to set the breakpoint in
-the copied plugin directory source files which are located inside `nvim-data`
-(see `:echo stdpath('data')`).  The copied plugin directory can be then found
-at `nvim-data/site/pack/packer/start/YOUR_PLUGIN`.
+As an example, let's say you're developing a plugin which is located
+in a directory on your system. You would install it using:
+>
+  use '...path to your plugin.../my-plugin.nvim'
+<
+After installing `my-plugin.nvim` using packer.nvim, a symlink will be created
+inside the `nvim-data`  which points to your local plugin directory.
 
+The symlink is located in `nvim-data/pack/packer/start/my-plugin.nvim`.  See
+`:echo stdpath('data')` to check where your `nvim-data` directory is located.
+
+When your plugin is executed from within nvim, it won't call the files
+located inside your local directory but go through the symlink.
+
+This means that breakpoints should also be set in the files which are
+located inside the symlink so that executed files and the files which
+contain breakpoints match and stop on trigger.
+
+In consequence, reopen the files through the symlink and place the breakpoints
+there to properly trigger them.
 
 =========================================================================
 osv repl                                                      *osv-repl*
