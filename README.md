@@ -87,6 +87,8 @@ it can be located using `:echo stdpath('data')`). Make sure to set the breakpoin
 the source files in the `nvim-data` directory and not the local copy. The plugin directory
 can be found in `nvim-data/site/pack/packer/start/YOUR_PLUGIN`.
 
+See [osv.txt](https://github.com/jbyuki/lua-debug.nvim/blob/main/doc/osv.txt) for more detailed instructions.
+
 ## Status
 
 Handlers:
