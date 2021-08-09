@@ -1,5 +1,5 @@
 name: Test osv
-on: [push]
+on: [push, pull_request]
 jobs:
   Test-osv:
     runs-on: ubuntu-latest
