@@ -383,7 +383,7 @@ function M.wait_attach()
 
           else
             local v = {}
-            v.name = ln
+            v.name = tostring(ln)
             v.variablesReference = 0
             if type(lv) == "table" then
               vars_ref[vars_id] = lv
@@ -408,7 +408,7 @@ function M.wait_attach()
 
           else
             local v = {}
-            v.name = ln
+            v.name = tostring(ln)
             v.variablesReference = 0
             if type(lv) == "table" then
               vars_ref[vars_id] = lv
@@ -425,7 +425,7 @@ function M.wait_attach()
       elseif type(ref) == "table" then
         for ln, lv in pairs(ref) do
             local v = {}
-            v.name = ln
+            v.name = tostring(ln)
             v.variablesReference = 0
             if type(lv) == "table" then
               vars_ref[vars_id] = lv

@@ -41,7 +41,7 @@ end
 if vim.startswith(ln, "(") then
 
 @fill_variable_struct+=
-v.name = ln
+v.name = tostring(ln)
 v.variablesReference = 0
 if type(lv) == "table" then
   @make_variable_reference_for_table
