@@ -1,6 +1,13 @@
 Software architecture of `osv`
 ==============================
 
+This document was created to still give a "easy" to
+understand explanation because the plugin's inner workings
+are probably hard to understand only by reading code.
+
+This should give "something" to work with if you plan to
+make modifications to the code, make your own debugger or
+ any other purpose involving `osv`.
 
 Terminology:
 
@@ -9,18 +16,6 @@ Terminology:
 
 Launching
 ---------
-
-Notes:
-
-* Another child neovim process is spawned in
-order to receive messages from DAP client even
-when the debuggee nvim is frozen (for ex. paused by a breakpoint ).
-
-The freezing of neovim is explained better in the
-`frozen` diagram.
-
-* The diagrams were drawn using [venn.nvim](https://github.com/jbyuki/venn.nvim).
-
 
 ```
                       DEBUGGEE              
@@ -60,6 +55,8 @@ The freezing of neovim is explained better in the
                 │                    │         │                  │
                 └────────────────────┘         └──────────────────┘
 ```
+
+* The diagrams were drawn using [venn.nvim](https://github.com/jbyuki/venn.nvim).
 
 Message handling
 ----------------
