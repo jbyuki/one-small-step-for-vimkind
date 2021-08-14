@@ -47,4 +47,3 @@ local debug_hook_conn
 if debug_hook_conn_address then
   debug_hook_conn = vim.fn.sockconnect("pipe", debug_hook_conn_address, {rpc = true})
 end
-

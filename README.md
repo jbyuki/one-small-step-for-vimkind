@@ -132,6 +132,10 @@ Capabilities:
 
 > it's a debugger for the moon language. - @tjdevries
 
+## Plugin architecture
+
+Please refer to [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ## Credits
 
 * [mfussenegger/nvim-lua-debugger](https://github.com/mfussenegger/nvim-lua-debugger)

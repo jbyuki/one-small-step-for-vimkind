@@ -825,7 +825,6 @@ function M.start_server(host, port)
     debug_hook_conn = vim.fn.sockconnect("pipe", debug_hook_conn_address, {rpc = true})
   end
 
-
   return {
     host = host,
     port = server:getsockname().port
