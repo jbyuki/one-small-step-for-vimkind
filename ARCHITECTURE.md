@@ -101,7 +101,8 @@ Frozen
 * neovim is single-threaded.  By going into a loop
 it stops any execution. Even when calling `vim.wait`,
 neovim won't execute other any other lua code in the
-idle time.
+idle time. Note: This is not entierly true since code
+inside _fast-api_ calls can still be executed.
 
 ```
 
