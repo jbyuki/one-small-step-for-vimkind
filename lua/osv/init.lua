@@ -23,6 +23,8 @@ local seq_id = 1
 
 local nvim_server
 
+local hook_address
+
 local log_filename
 
 local auto_nvim
@@ -92,7 +94,10 @@ function M.launch(opts)
 
   local mode = vim.fn.rpcrequest(nvim_server, "nvim_get_mode")
   assert(not mode.blocking, "Neovim is waiting for input at startup. Aborting.")
-  local hook_address = vim.fn.serverstart()
+  if not hook_addres then
+    hook_address = vim.fn.serverstart()
+  end
+
   vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[debug_hook_conn_address = ...]], {hook_address})
 
   local host = (opts and opts.host) or "127.0.0.1"
@@ -100,6 +105,7 @@ function M.launch(opts)
   local server = vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"osv".start_server(...)]], {host, port})
 
   print("Server started on port " .. server.port)
+  M.disconnected = false
   vim.defer_fn(M.wait_attach, 0)
   return server
 end
@@ -829,6 +835,45 @@ function M.start_server(host, port)
     host = host,
     port = server:getsockname().port
   }
+end
+
+function M.stop()
+  debug.sethook()
+
+  sendProxyDAP(make_event("terminated"))
+
+  local msg = make_event("exited")
+  msg.body = {
+    exitCode = 0,
+  }
+  sendProxyDAP(msg)
+
+  if nvim_server then
+    vim.fn.jobstop(nvim_server)
+    nvim_server = nil
+  end
+  -- this is sketchy....
+  running = true
+
+  limit = 0
+
+  stack_level = 0
+  next = false
+  monitor_stack = false
+
+  pause = false
+
+  vars_id = 1
+  vars_ref = {}
+
+  frame_id = 1
+  frames = {}
+
+  step_out = false
+
+  seq_id = 1
+
+  M.disconnected = false
 end
 
 return M

@@ -98,7 +98,7 @@ Notes:
 Frozen
 ------
 
-* neovim is single-thread.  By going into a loop
+* neovim is single-threaded.  By going into a loop
 it stops any execution. Even when calling `vim.wait`,
 neovim won't execute other any other lua code in the
 idle time.
