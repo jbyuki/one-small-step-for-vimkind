@@ -144,6 +144,12 @@ This command will automatically start the DAP server and connect
 nvim-dap to it. You still need to set the `dap.adapters.nlua` as 
 explained in the configuration section.
 
+stop()                                                     *osv.stop()*
+
+This command will stop the running dap server. Following the DAP
+standard, an "exited" event + an "terminated" will be sent to the client
+so that it knows the server has exited.
+
 =========================================================================
 osv logging                                                 *osv-logging*
 
