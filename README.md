@@ -91,7 +91,7 @@ See [osv.txt](https://github.com/jbyuki/lua-debug.nvim/blob/main/doc/osv.txt) fo
 
 ## Dropbox
 
-If you're using a service like Dropbox to share your plugin file, there might be some issue arising with osu. The reason is that the path executed within Neovim and the path opened in dap doesn't match. Consequently, osv has no way to know if the current running script is the same file as the file opened inside the dap client. Try falling back to a local folder to see if this is the cause.
+If you're using a service like Dropbox to share your plugin file, there might be some issue arising with osv. The reason is that the path executed within Neovim and the path opened in dap doesn't match. Consequently, osv has no way to know if the current running script is the same file as the file opened inside the dap client. Try falling back to a local folder to see if this is the cause.
 
 ## Status
 
