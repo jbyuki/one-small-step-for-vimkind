@@ -116,8 +116,8 @@ Events:
 
 * [x] initialized
 * [x] stopped
-* [ ] terminated
-* [ ] exited
+* [x] terminated
+* [x] exited
 * [ ] output
 
 Capabilities:
