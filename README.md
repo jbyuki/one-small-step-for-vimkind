@@ -146,3 +146,7 @@ Please refer to [ARCHITECTURE.md](ARCHITECTURE.md).
 ## Credits
 
 * [mfussenegger/nvim-lua-debugger](https://github.com/mfussenegger/nvim-lua-debugger)
+ 
+## Contribute
+
+See [here](https://github.com/jbyuki/ntangle.nvim/wiki/How-to-use-ntangle.nvim).
