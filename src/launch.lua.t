@@ -18,7 +18,11 @@ end
 local nvim_server
 
 @spawn_nvim_instance_for_server+=
-nvim_server = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
+if opts.config_file then
+  nvim_server = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless', '-u', config_file}, {rpc = true})
+else
+  nvim_server = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
+end
 
 @script_variables+=
 local hook_address
@@ -65,3 +69,10 @@ end
 @detect_if_nvim_is_blocking+=
 local mode = vim.fn.rpcrequest(nvim_server, "nvim_get_mode")
 assert(not mode.blocking, "Neovim is waiting for input at startup. Aborting.")
+
+@verify_launch_arguments+=
+if opts then
+  vim.validate {
+    ["opts.config_file"] = {opts.config_file, "s", true},
+  }
+end
