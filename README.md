@@ -31,38 +31,29 @@ dap.configurations.lua = {
     type = 'nlua', 
     request = 'attach',
     name = "Attach to running Neovim instance",
-    host = function()
-      local value = vim.fn.input('Host [127.0.0.1]: ')
-      if value ~= "" then
-        return value
-      end
-      return '127.0.0.1'
-    end,
-    port = function()
-      local val = tonumber(vim.fn.input('Port: '))
-      assert(val, "Please provide a port number")
-      return val
-    end,
   }
 }
 
 dap.adapters.nlua = function(callback, config)
-  callback({ type = 'server', host = config.host, port = config.port })
+  callback({ type = 'server', host = config.host or "127.0.0.1", port = config.port or 8086 })
 end
 ```
 
-If you have a init.vim in Vimscript, include the nvim-dap
-configurations inside lua delimiters.
+Set some keybindings to interact with dap.
 
-```vim
-lua << END
-  ...
-END
+```lua
+vim.api.nvim_set_keymap('n', '<F8>', [[:lua require"dap".toggle_breakpoint()<CR>]], { noremap = true })
+vim.api.nvim_set_keymap('n', '<F9>', [[:lua require"dap".continue()<CR>]], { noremap = true })
+vim.api.nvim_set_keymap('n', '<F10>', [[:lua require"dap".step_over()<CR>]], { noremap = true })
+vim.api.nvim_set_keymap('n', '<S-F10>', [[:lua require"dap".step_into()<CR>]], { noremap = true })
+vim.api.nvim_set_keymap('n', '<F12>', [[:lua require"dap.ui.widgets".hover()<CR>]], { noremap = true })
+vim.api.nvim_set_keymap('n', '<F5>', [[:lua require"osv".launch({port = 8086})<CR>]], { noremap = true })
 ```
+
 
 ## Quickstart
 
-* Launch the server in the debuggee using `require"osv".launch()`
+* Launch the server in the debuggee using `F5`
 * Open another Neovim instance with the source file
 * Place breakpoint
 * Connect using the DAP client
