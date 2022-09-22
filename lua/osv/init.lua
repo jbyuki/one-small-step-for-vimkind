@@ -95,7 +95,7 @@ function M.launch(opts)
     log_filename = vim.fn.stdpath("data") .. "/osv.log"
   end
 
-  if opts.config_file then
+  if opts and opts.config_file then
     nvim_server = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless', '-u', config_file}, {rpc = true})
   else
     nvim_server = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
