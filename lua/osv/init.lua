@@ -693,6 +693,13 @@ function log(str)
       f:close()
     end
   end
+
+  -- required for regression testing
+  if debug_output then
+    table.insert(debug_output, tostring(str))
+  else
+    -- print(str)
+  end
 end
 
 function M.add_message(msg)

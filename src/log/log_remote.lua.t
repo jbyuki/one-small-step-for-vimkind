@@ -7,6 +7,13 @@ function log(str)
   if log_filename then
     @write_to_logfile
   end
+
+  -- required for regression testing
+  if debug_output then
+    table.insert(debug_output, tostring(str))
+  else
+    -- print(str)
+  end
 end
 
 @script_variables+=
