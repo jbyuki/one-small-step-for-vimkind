@@ -121,6 +121,8 @@ execution, a prompt message will display the port it's running on.
         {opts} Optional parameters.
                • `host`: defaults to "127.0.0.1"
                • `port`: Specify a port number or if nil, lets the server
+               • `config_file`: Specify a configuration file used when
+                              spawning nvim
                choose an available port.
                • `log`: boolean to enable logging
 
