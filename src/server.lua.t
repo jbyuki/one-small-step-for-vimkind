@@ -1,6 +1,7 @@
 ##lua-debug
 @implement+=
-function M.start_server(host, port)
+function M.start_server(host, port, do_log)
+  @init_logger_server
   @create_server
   @bind_server
   @listen_server
@@ -10,6 +11,11 @@ function M.start_server(host, port)
     host = host,
     port = server:getsockname().port
   }
+end
+
+@init_logger_server+=
+if do_log then
+  log_filename = vim.fn.stdpath("data") .. "/osv.log"
 end
 
 @create_server+=

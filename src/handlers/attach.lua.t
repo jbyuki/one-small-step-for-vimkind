@@ -4,6 +4,8 @@ local limit = 0
 
 @attach_to_current_instance+=
 debug.sethook(function(event, line)
+  if lock_debug_loop then return end
+
   @handle_new_messages
   @clear_messages
 

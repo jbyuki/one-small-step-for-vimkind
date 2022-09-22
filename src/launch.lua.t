@@ -7,10 +7,12 @@ function M.launch(opts)
   @spawn_nvim_instance_for_server
   @detect_if_nvim_is_blocking
   @set_hook_instance_address
+  @clear_messages
   @launch_server
   print("Server started on port " .. server.port)
   M.disconnected = false
   vim.defer_fn(M.wait_attach, 0)
+
   return server
 end
 
@@ -37,7 +39,7 @@ vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[debug_hook_conn_address = ...]
 @launch_server+=
 local host = (opts and opts.host) or "127.0.0.1"
 local port = (opts and opts.port) or 0
-local server = vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"osv".start_server(...)]], {host, port})
+local server = vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"osv".start_server(...)]], {host, port, opts and opts.log})
 
 @implement+=
 function M.wait_attach()

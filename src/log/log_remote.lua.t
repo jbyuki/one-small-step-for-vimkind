@@ -7,12 +7,6 @@ function log(str)
   if log_filename then
     @write_to_logfile
   end
-
-  if debug_output then
-    table.insert(debug_output, tostring(str))
-  else
-    -- print(str)
-  end
 end
 
 @script_variables+=
@@ -20,7 +14,6 @@ local log_filename
 
 @init_logger+=
 if opts and opts.log then
-  logging = true
   log_filename = vim.fn.stdpath("data") .. "/osv.log"
 end
 

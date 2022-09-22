@@ -2,6 +2,7 @@
 @implement+=
 function M.stop()
   @turn_off_debug_hook
+  @turn_off_breakpoint_handler
   @send_terminated_event
   @send_exited_event
   @terminate_adapter_server_process

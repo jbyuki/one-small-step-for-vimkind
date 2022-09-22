@@ -26,7 +26,17 @@ M.server_messages = {}
 
 @add_message_to_hook_instance+=
 if debug_hook_conn then
-  vim.fn.rpcrequest(debug_hook_conn, "nvim_exec_lua", [[table.insert(require"osv".server_messages, ...)]], {msg})
+  vim.fn.rpcnotify(debug_hook_conn, "nvim_exec_lua", [[require"osv".add_message(...)]], {msg})
+end
+
+@script_variables+=
+local lock_debug_loop = false
+
+@implement+=
+function M.add_message(msg)
+  lock_debug_loop = true
+  table.insert(M.server_messages, msg)
+  lock_debug_loop = false
 end
 
 @implement+=

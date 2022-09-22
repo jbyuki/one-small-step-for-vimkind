@@ -27,6 +27,8 @@ local hook_address
 
 local log_filename
 
+local lock_debug_loop = false
+
 local auto_nvim
 
 -- for now, only accepts a single
@@ -91,7 +93,6 @@ function M.launch(opts)
   end
 
   if opts and opts.log then
-    logging = true
     log_filename = vim.fn.stdpath("data") .. "/osv.log"
   end
 
@@ -110,13 +111,16 @@ function M.launch(opts)
 
   vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[debug_hook_conn_address = ...]], {hook_address})
 
+  M.server_messages = {}
+
   local host = (opts and opts.host) or "127.0.0.1"
   local port = (opts and opts.port) or 0
-  local server = vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"osv".start_server(...)]], {host, port})
+  local server = vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"osv".start_server(...)]], {host, port, opts and opts.log})
 
   print("Server started on port " .. server.port)
   M.disconnected = false
   vim.defer_fn(M.wait_attach, 0)
+
   return server
 end
 
@@ -464,6 +468,8 @@ function M.wait_attach()
     end
 
     debug.sethook(function(event, line)
+      if lock_debug_loop then return end
+
       local i = 1
       while i <= #M.server_messages do
         local msg = M.server_messages[i]
@@ -687,12 +693,12 @@ function log(str)
       f:close()
     end
   end
+end
 
-  if debug_output then
-    table.insert(debug_output, tostring(str))
-  else
-    -- print(str)
-  end
+function M.add_message(msg)
+  lock_debug_loop = true
+  table.insert(M.server_messages, msg)
+  lock_debug_loop = false
 end
 
 M.server_messages = {}
@@ -748,7 +754,11 @@ function M.sendDAP(msg)
   end
 end
 
-function M.start_server(host, port)
+function M.start_server(host, port, do_log)
+  if do_log then
+    log_filename = vim.fn.stdpath("data") .. "/osv.log"
+  end
+
   local server = vim.loop.new_tcp()
 
   server:bind(host, port)
@@ -814,7 +824,7 @@ function M.start_server(host, port)
         end
 
         if debug_hook_conn then
-          vim.fn.rpcrequest(debug_hook_conn, "nvim_exec_lua", [[table.insert(require"osv".server_messages, ...)]], {msg})
+          vim.fn.rpcnotify(debug_hook_conn, "nvim_exec_lua", [[require"osv".add_message(...)]], {msg})
         end
 
       end
