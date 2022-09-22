@@ -39,7 +39,7 @@ dap.adapters.nlua = function(callback, config)
 end
 ```
 
-Set some keybindings to interact with dap.
+Set keykindings to interact with the nvim-dap client.
 
 ```lua
 vim.api.nvim_set_keymap('n', '<F8>', [[:lua require"dap".toggle_breakpoint()<CR>]], { noremap = true })
@@ -55,8 +55,8 @@ vim.api.nvim_set_keymap('n', '<F5>', [[:lua require"osv".launch({port = 8086})<C
 
 * Launch the server in the debuggee using `F5`
 * Open another Neovim instance with the source file
-* Place breakpoint
-* Connect using the DAP client
+* Place breakpoint with `F8`
+* Connect using the DAP client with `F9`
 * Run your script/plugin in the debuggee
 
 Alternaltively you can:
