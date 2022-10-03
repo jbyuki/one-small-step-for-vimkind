@@ -39,7 +39,7 @@ dap.adapters.nlua = function(callback, config)
 end
 ```
 
-Set keykindings to interact with the nvim-dap client.
+Set keybindings to interact with the nvim-dap client.
 
 ```lua
 vim.api.nvim_set_keymap('n', '<F8>', [[:lua require"dap".toggle_breakpoint()<CR>]], { noremap = true })
