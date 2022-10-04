@@ -67,7 +67,9 @@ Alternaltively you can:
 
 See [osv.txt](https://github.com/jbyuki/lua-debug.nvim/blob/main/doc/osv.txt) for more detailed instructions.
 
-## Debugging plugins
+## Troubleshoot
+
+### Debugging plugins
 
 Breakpoints are path-sensitive so they should always be set in the executed file
 even though they might be multiple copies on the system.
@@ -80,18 +82,19 @@ can be found in `nvim-data/site/pack/packer/start/YOUR_PLUGIN`.
 
 See [osv.txt](https://github.com/jbyuki/lua-debug.nvim/blob/main/doc/osv.txt) for more detailed instructions.
 
-## Dropbox
+### Dropbox
 
 If you're using a service like Dropbox to share your plugin file, there might be some issue arising with osv. The reason is that the path executed within Neovim and the path opened in dap doesn't match. Consequently, osv has no way to know if the current running script is the same file as the file opened inside the dap client. Try falling back to a local folder to see if this is the cause.
 
 ### `Neovim is waiting for input at startup. Aborting`
 
 This appears when the osv's spawned headless neovim instance has an error at startup. Vim will usually wait for an user input but in case of osv, the instance is simply blocked. Resolve any errors that you see at startup. If there are none, the error might be due to the "headlessness". Start using `nvim --headless` to see if there are any errors.
-## Status
 
 ### LunarVim
 
 According to [this comment](https://github.com/jbyuki/one-small-step-for-vimkind/issues/11#issuecomment-1182688587), the distribution requires to be run with a configuration file. This is now possible via the `config_file` option passed to `launch(...)`.
+
+## Status
 
 Handlers:
 
