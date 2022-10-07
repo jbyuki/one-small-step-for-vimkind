@@ -301,6 +301,17 @@ function M.wait_attach()
 
     end
 
+    function handlers.setExceptionBreakpoints(request)
+      local args = request.arguments
+
+      -- For now just send back an empty 
+      -- answer
+      sendProxyDAP(make_response(request, {
+        body = {
+          breakpoints = {}
+        }
+      }))
+    end
     function handlers.stackTrace(request)
       local args = request.arguments
       local start_frame = args.startFrame or 0

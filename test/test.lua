@@ -41,7 +41,7 @@ local result = vim.fn.rpcnotify(host_neovim_conn, "nvim_exec", [[luafile input.l
 print(vim.inspect(result))
 
 
-vim.wait(1000)
+vim.wait(500)
 
 -- @next_in_debug_session
 -- @step_in_debug_session
@@ -53,7 +53,7 @@ vim.wait(1000)
 -- @test_disconnect_session
 -- @test_next_over
 
-vim.wait(1000)
+vim.wait(500)
 local output = vim.fn.rpcrequest(host_neovim_conn, "nvim_exec_lua", [[return debug_output]], {})
 
 for _, line in ipairs(output) do
