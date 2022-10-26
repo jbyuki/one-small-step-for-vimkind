@@ -332,7 +332,7 @@ function M.wait_attach()
         if info.source:sub(1, 1) == '@' then
           stack_frame.source = {
             name = info.source,
-            path = vim.fn.fnamemodify(info.source:sub(2), ":p"),
+        		path = vim.fn.resolve(vim.fn.fnamemodify(info.source:sub(2), ":p")),
           }
           stack_frame.line = info.currentline 
           stack_frame.column = 0
@@ -517,6 +517,7 @@ function M.wait_attach()
           local path = source_path:sub(2)
           local succ, path = pcall(vim.fn.fnamemodify, path, ":p")
           if succ then
+        		path = vim.fn.resolve(path)
             path = vim.uri_from_fname(path:lower())
             if bps[path] then
               log("breakpoint hit")

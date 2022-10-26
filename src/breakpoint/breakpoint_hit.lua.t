@@ -17,6 +17,7 @@ if source_path:sub(1, 1) == "@" or step_in then
   local path = source_path:sub(2)
   local succ, path = pcall(vim.fn.fnamemodify, path, ":p")
   if succ then
+		path = vim.fn.resolve(path)
     path = vim.uri_from_fname(path:lower())
     if bps[path] then
       log("breakpoint hit")

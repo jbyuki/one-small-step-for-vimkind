@@ -46,7 +46,7 @@ stack_frame.name = info.name or info.what
 if info.source:sub(1, 1) == '@' then
   stack_frame.source = {
     name = info.source,
-    path = vim.fn.fnamemodify(info.source:sub(2), ":p"),
+		path = vim.fn.resolve(vim.fn.fnamemodify(info.source:sub(2), ":p")),
   }
   stack_frame.line = info.currentline 
   stack_frame.column = 0
