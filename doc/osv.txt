@@ -68,7 +68,7 @@ launched on a specific port if you pass it the port number as an argument.
   }
 
   dap.adapters.nlua = function(callback, config)
-    callback({ type = 'server', host = config.host or "127.0.0.1", port = config.port or 8088 })
+    callback({ type = 'server', host = config.host or "127.0.0.1", port = config.port or 8086 })
   end
 
 <
