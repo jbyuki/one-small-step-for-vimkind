@@ -3,27 +3,28 @@ on: [push, pull_request]
 jobs:
   Test-osv:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        neovim_version: ['nightly', 'v0.7.2', 'v0.8.0']
     steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
       - name: Check out repository code
         uses: actions/checkout@v2
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - run: date +%F > todays-date
+      - name: Restore cache for today's nightly
+        uses: actions/cache@v2
+        with:
+          path: _neovim
+          key: ${{ runner.os }}-x64-${{ hashFiles('todays-date') }}
+      - name: Setup neovim
+        uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: ${{ matrix.neovim_version }}
       - name: Prepare
         run: |
-          sudo apt install fd-find
-          test -d build || {
-            mkdir -p build
-            wget https://github.com/neovim/neovim/releases/download/stable/nvim.appimage
-            chmod +x nvim.appimage
-            mv nvim.appimage ./build/nvim
-          }
           mkdir -p ~/.local/share/nvim/site/pack/vendor/start
           git clone --depth 1 https://github.com/mfussenegger/nvim-dap ~/.local/share/nvim/site/pack/vendor/start/nvim-dap
           git clone --depth 1 https://github.com/jbyuki/one-small-step-for-vimkind ~/.local/share/nvim/site/pack/vendor/start/one-small-step-for-vimkind
-      - run: echo "Neovim has been installed."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
       - name: List files in the repository
         run: |
           ls ${{ github.workspace }}
@@ -32,7 +33,6 @@ jobs:
           cp test/input.lua input.lua
           cat input.lua
           cat test/test.lua
-          ./build/nvim --headless -c "luafile test/test.lua" -c "exit"
+          nvim --headless -c "luafile test/test.lua" -c "exit"
           echo "Done"
           cat result.txt
-      - run: echo "🍏 This job's status is ${{ job.status }}."
