@@ -50,6 +50,11 @@ vim.api.nvim_set_keymap('n', '<F12>', [[:lua require"dap.ui.widgets".hover()<CR>
 vim.api.nvim_set_keymap('n', '<F5>', [[:lua require"osv".launch({port = 8086})<CR>]], { noremap = true })
 ```
 
+For LunarVim users, use this instead for `launch()`. The lvim flag should be set to true.
+
+```lua
+vim.api.nvim_set_keymap('n', '<F5>', [[:lua require"osv".launch({port = 8086, lvim = true})<CR>]], { noremap = true })
+```
 
 ## Quickstart
 
@@ -89,10 +94,6 @@ If you're using a service like Dropbox to share your plugin file, there might be
 ### `Neovim is waiting for input at startup. Aborting`
 
 This appears when the osv's spawned headless neovim instance has an error at startup. Vim will usually wait for an user input but in case of osv, the instance is simply blocked. Resolve any errors that you see at startup. If there are none, the error might be due to the "headlessness". Start using `nvim --headless` to see if there are any errors.
-
-### LunarVim
-
-According to [this comment](https://github.com/jbyuki/one-small-step-for-vimkind/issues/11#issuecomment-1182688587), the distribution requires to be run with a configuration file. This is now possible via the `config_file` option passed to `launch(...)`.
 
 ## Status
 
