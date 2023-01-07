@@ -141,6 +141,8 @@ run_this({opts})                                        *osv.run_this()*
 
     Parameters:~
         {opts} Optional parameters.
+               • `config_file`: See |osv.launch()|
+               • `lvim`: See |osv.launch()|
                • `log`: boolean to enable logging
 
 This command will automatically start the DAP server and connect

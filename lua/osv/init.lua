@@ -750,7 +750,29 @@ function M.run_this(opts)
     auto_nvim = nil
   end
 
-  auto_nvim = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
+  local env = {}
+  local args = {vim.v.progpath, '--embed', '--headless'}
+  if opts and opts.lvim then
+  	log("Setting LunarVim envs")
+
+  	assert(os.getenv("LUNARVIM_CACHE_DIR") and os.getenv("LUNARVIM_RUNTIME_DIR") and os.getenv("LUNARVIM_CONFIG_DIR") and os.getenv("LUNARVIM_BASE_DIR"), "launch with lvim=true but LUNARVIM environments variables are not set")
+
+  	env = {
+  		["LUNARVIM_CACHE_DIR"] = os.getenv("LUNARVIM_CACHE_DIR"),
+  		["LUNARVIM_CONFIG_DIR"] = os.getenv("LUNARVIM_CONFIG_DIR"),
+  		["LUNARVIM_BASE_DIR"] = os.getenv("LUNARVIM_BASE_DIR"),
+  		["LUNARVIM_RUNTIME_DIR"] = os.getenv("LUNARVIM_RUNTIME_DIR"),
+  	}
+  end
+
+  if opts and opts.lvim then
+  	table.insert(args, "-u")
+  	table.insert(args, os.getenv("LUNARVIM_BASE_DIR") .. "/init.lua")
+  elseif opts and opts.config_file then
+  	table.insert(args, "-u")
+  	table.insert(args, opts.config_file)
+  end
+  auto_nvim = vim.fn.jobstart(args, {rpc = true, env = env})
 
   assert(auto_nvim, "Could not create neovim instance with jobstart!")
 

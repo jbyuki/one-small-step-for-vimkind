@@ -13,7 +13,11 @@ function M.run_this(opts)
 end
 
 @create_neovim_instance+=
-auto_nvim = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
+local env = {}
+local args = {vim.v.progpath, '--embed', '--headless'}
+@fill_env_if_lunarvim
+@fill_config_file_in_args
+auto_nvim = vim.fn.jobstart(args, {rpc = true, env = env})
 
 @launch_osv_server+=
 local server = vim.fn.rpcrequest(auto_nvim, "nvim_exec_lua", [[return require"osv".launch(...)]], { opts })
