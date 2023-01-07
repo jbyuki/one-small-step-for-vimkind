@@ -98,7 +98,7 @@ function M.launch(opts)
     log_filename = vim.fn.stdpath("data") .. "/osv.log"
   end
 
-  local env = {}
+  local env = nil
   local args = {vim.v.progpath, '--embed', '--headless'}
   if opts and opts.lvim then
   	log("Setting LunarVim envs")
@@ -750,7 +750,7 @@ function M.run_this(opts)
     auto_nvim = nil
   end
 
-  local env = {}
+  local env = nil
   local args = {vim.v.progpath, '--embed', '--headless'}
   if opts and opts.lvim then
   	log("Setting LunarVim envs")

@@ -13,7 +13,7 @@ function M.run_this(opts)
 end
 
 @create_neovim_instance+=
-local env = {}
+local env = nil
 local args = {vim.v.progpath, '--embed', '--headless'}
 @fill_env_if_lunarvim
 @fill_config_file_in_args

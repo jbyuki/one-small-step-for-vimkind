@@ -20,7 +20,7 @@ end
 local nvim_server
 
 @spawn_nvim_instance_for_server+=
-local env = {}
+local env = nil
 local args = {vim.v.progpath, '--embed', '--headless'}
 @fill_env_if_lunarvim
 @fill_config_file_in_args
