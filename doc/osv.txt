@@ -155,6 +155,19 @@ This command will stop the running dap server. Following the DAP
 standard, an "exited" event + an "terminated" will be sent to the client
 so that it knows the server has exited.
 
+start_trace()						*osv.start_trace()*
+
+Start a tracing session which records every line that gets executed
+in the current Neovim instance. Stop it with |osv.stop_trace()|.
+
+stop_trace()						*osv.stop_trace()*
+
+Stop the tracing session.
+
+    Return:~
+	A dictionary with the source path as key and a table
+	for each key with the executed line numbers.
+
 =========================================================================
 osv logging                                                 *osv-logging*
 
