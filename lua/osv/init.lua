@@ -37,6 +37,8 @@ local client
 
 local debug_hook_conn 
 
+local cache = {}
+
 local sendProxyDAP
 
 local make_response
@@ -955,6 +957,40 @@ function M.stop()
   seq_id = 1
 
   M.disconnected = false
+end
+
+function M.start_trace()
+	function line_hook(event, line)
+		local info = debug.getinfo(2, "S")
+		local source_path = info.source
+		cache[source_path] = cache[source_path] or {}
+		table.insert(cache[source_path], line)
+
+	end
+
+	cache = {}
+
+	debug.sethook(line_hook, "l")
+
+end
+
+function M.stop_trace()
+	debug.sethook()
+
+	local sources = vim.tbl_keys(cache)
+	for _, source in ipairs(sources) do
+		local line_set = {}
+
+		for _, linenr in ipairs(cache[source]) do
+			line_set[linenr] = true
+		end
+
+		line_set = vim.tbl_keys(line_set)
+		table.sort(line_set)
+		cache[source] = line_set
+	end
+	return cache
+
 end
 
 return M

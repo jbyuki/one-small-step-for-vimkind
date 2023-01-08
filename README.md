@@ -95,6 +95,16 @@ If you're using a service like Dropbox to share your plugin file, there might be
 
 This appears when the osv's spawned headless neovim instance has an error at startup. Vim will usually wait for an user input but in case of osv, the instance is simply blocked. Resolve any errors that you see at startup. If there are none, the error might be due to the "headlessness". Start using `nvim --headless` to see if there are any errors.
 
+### Breakpoint is not hit
+
+**Important** : Make sure osv is not running.
+
+1. Start tracing with `:lua require"osv".start_trace()`
+2. Perform the action that should be debugged (for ex. calling a function in your plugin)
+3. Stop tracing and display the results with `:lua =require"osv".stop_trace()` , the `=` will pretty print the resulting lua table.
+
+Make sure that the path is correct and the breakpoint is set to a line which effectively gets executed.
+
 ## Status
 
 Handlers:
