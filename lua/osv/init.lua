@@ -277,6 +277,7 @@ function M.wait_attach()
         end
         depth = depth + 1
       end
+
       stack_level = depth-1
 
       next = true
@@ -420,6 +421,7 @@ function M.wait_attach()
         end
         depth = depth + 1
       end
+
       stack_level = depth-1
 
       running = true
@@ -551,6 +553,7 @@ function M.wait_attach()
           end
           depth = depth + 1
         end
+
       end
 
       local bps = breakpoints[line]
@@ -634,7 +637,7 @@ function M.wait_attach()
         end
 
 
-      elseif event == "line" and next and depth == stack_level then
+      elseif event == "line" and next and depth <= stack_level then
         local msg = make_event("stopped")
         msg.body = {
           reason = "step",

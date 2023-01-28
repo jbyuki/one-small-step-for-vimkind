@@ -26,7 +26,7 @@ next = false
 monitor_stack = false
 
 @check_if_next+=
-elseif event == "line" and next and depth == stack_level then
+elseif event == "line" and next and depth <= stack_level then
   @send_stopped_event_step
   @disable_next
 
@@ -40,3 +40,4 @@ while true do
   end
   depth = depth + 1
 end
+
