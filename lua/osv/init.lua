@@ -183,6 +183,29 @@ function M.wait_attach()
         vim.fn.jobstop(nvim_server)
         nvim_server = nil
       end
+      -- this is sketchy....
+      running = true
+
+      limit = 0
+
+      stack_level = 0
+      next = false
+      monitor_stack = false
+
+      pause = false
+
+      vars_id = 1
+      vars_ref = {}
+
+      frame_id = 1
+      frames = {}
+
+      step_out = false
+
+      seq_id = 1
+
+      M.disconnected = false
+
     end
 
     function handlers.evaluate(request)
@@ -923,6 +946,12 @@ end
 function M.stop()
   debug.sethook()
 
+
+	if not nvim_server then
+		log("Tried stopping osv when it is already.")
+		return 
+	end
+
   sendProxyDAP(make_event("terminated"))
 
   local msg = make_event("exited")
@@ -957,6 +986,11 @@ function M.stop()
   seq_id = 1
 
   M.disconnected = false
+
+end
+
+function M.is_running()
+	return nvim_server ~= nil
 end
 
 function M.start_trace()

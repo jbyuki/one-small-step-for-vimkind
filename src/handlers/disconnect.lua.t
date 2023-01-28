@@ -5,6 +5,7 @@ function handlers.disconnect(request)
   @send_disconnect_aknowledge
   vim.wait(1000)
   @terminate_adapter_server_process
+  @reset_internal_states
 end
 
 @disable_hooks+=

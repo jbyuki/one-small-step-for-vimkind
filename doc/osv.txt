@@ -168,6 +168,14 @@ Stop the tracing session.
 	A dictionary with the source path as key and a table
 	for each key with the executed line numbers.
 
+is_running()						*osv.is_running()*
+
+Checks whether |osv| is currently running.
+
+    Return:~
+	True if osv is running.
+
+
 =========================================================================
 osv logging                                                 *osv-logging*
 

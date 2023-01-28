@@ -1,16 +1,18 @@
 ##lua-debug
 @implement+=
 function M.stop()
-  @turn_off_debug_hook
-  @turn_off_breakpoint_handler
+  @disable_hooks
+
+	if not nvim_server then
+		log("Tried stopping osv when it is already.")
+		return 
+	end
+
   @send_terminated_event
   @send_exited_event
   @terminate_adapter_server_process
   @reset_internal_states
 end
-
-@turn_off_debug_hook+=
-debug.sethook()
 
 @send_terminated_event+=
 sendProxyDAP(make_event("terminated"))
@@ -45,3 +47,9 @@ step_out = false
 seq_id = 1
 
 M.disconnected = false
+
+@implement+=
+function M.is_running()
+	return nvim_server ~= nil
+end
+
