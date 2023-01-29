@@ -50,4 +50,8 @@ if info.source:sub(1, 1) == '@' then
   }
   stack_frame.line = info.currentline 
   stack_frame.column = 0
+else
+	-- Should be ignored by the client
+  stack_frame.line = 0
+  stack_frame.column = 0
 end

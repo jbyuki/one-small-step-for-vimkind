@@ -382,6 +382,10 @@ function M.wait_attach()
           }
           stack_frame.line = info.currentline 
           stack_frame.column = 0
+        else
+        	-- Should be ignored by the client
+          stack_frame.line = 0
+          stack_frame.column = 0
         end
         table.insert(stack_frames, stack_frame)
         frames[frame_id] = 2+levels+start_frame
