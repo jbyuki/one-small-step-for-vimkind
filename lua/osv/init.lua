@@ -128,7 +128,7 @@ function M.launch(opts)
   		env = {}
   	end
 
-  	env["NVIM"] = nil
+  	env["NVIM"] = ""
   end
 
 

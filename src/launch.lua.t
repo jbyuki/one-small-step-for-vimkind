@@ -110,7 +110,7 @@ if opts and opts.flatten_nvim then
 		env = {}
 	end
 
-	env["NVIM"] = nil
+	env["NVIM"] = ""
 end
 
 
