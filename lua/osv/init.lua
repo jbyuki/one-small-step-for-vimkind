@@ -122,6 +122,17 @@ function M.launch(opts)
   	table.insert(args, "-u")
   	table.insert(args, opts.config_file)
   end
+
+  if opts and opts.flatten_nvim then
+  	if not env then
+  		env = {}
+  	end
+
+  	env["NVIM"] = nil
+  end
+
+
+
   nvim_server = vim.fn.jobstart(args, {rpc = true, env = env})
 
   local mode = vim.fn.rpcrequest(nvim_server, "nvim_get_mode")
@@ -804,6 +815,7 @@ function M.run_this(opts)
   	table.insert(args, "-u")
   	table.insert(args, opts.config_file)
   end
+
   auto_nvim = vim.fn.jobstart(args, {rpc = true, env = env})
 
   assert(auto_nvim, "Could not create neovim instance with jobstart!")

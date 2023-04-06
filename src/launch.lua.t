@@ -24,6 +24,7 @@ local env = nil
 local args = {vim.v.progpath, '--embed', '--headless'}
 @fill_env_if_lunarvim
 @fill_config_file_in_args
+@trouble_neovim_workaround
 nvim_server = vim.fn.jobstart(args, {rpc = true, env = env})
 
 @script_variables+=
@@ -34,6 +35,7 @@ if not hook_addres then
   hook_address = vim.fn.serverstart()
 end
 
+@push_trouble_neovim_workaround
 vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[debug_hook_conn_address = ...]], {hook_address})
 
 @launch_server+=
@@ -101,3 +103,15 @@ elseif opts and opts.config_file then
 	table.insert(args, "-u")
 	table.insert(args, opts.config_file)
 end
+
+@trouble_neovim_workaround+=
+if opts and opts.flatten_nvim then
+	if not env then
+		env = {}
+	end
+
+	env["NVIM"] = nil
+end
+
+
+
