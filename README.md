@@ -74,6 +74,10 @@ See [osv.txt](https://github.com/jbyuki/lua-debug.nvim/blob/main/doc/osv.txt) fo
 
 ## Troubleshoot
 
+### `flatten.nvim`
+
+There are some conflicts with this plugin. A temporary workaround is to launch the server with `:lua require"osv".launch({port = 8086, flatten_nvim= true})`.
+
 ### Debugging plugins
 
 Breakpoints are path-sensitive so they should always be set in the executed file
