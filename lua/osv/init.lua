@@ -39,8 +39,6 @@ local debug_hook_conn
 
 local cache = {}
 
-local sendProxyDAPSync
-
 local sendProxyDAP
 
 local make_response
@@ -50,11 +48,6 @@ local make_event
 local log
 
 local M = {}
-function sendProxyDAPSync(data)
-  log(vim.inspect(data))
-  vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[require"osv".sendDAP(...)]], {data})
-end
-
 M.disconnected = false
 
 function sendProxyDAP(data)
@@ -181,10 +174,7 @@ function M.wait_attach()
     local breakpoints = {}
 
     function handlers.disconnect(request)
-    	sendProxyDAPSync(make_response(request, {}))
-    	if request.terminateDebuggee == true then
-    		stop()
-    	end
+    	sendProxyDAP(make_response(request, {}))
     end
 
     function handlers.attach(request)
@@ -202,12 +192,8 @@ function M.wait_attach()
       debug.sethook()
 
       sendProxyDAP(make_response(request, {}))
-
       vim.wait(1000)
-      if nvim_server then
-        vim.fn.jobstop(nvim_server)
-        nvim_server = nil
-      end
+
       -- this is sketchy....
       running = true
 
@@ -929,6 +915,7 @@ function M.start_server(host, port, do_log)
         msg = read_body(len.content_length)
       end
 
+      log(vim.inspect(msg))
       M.sendDAP(make_response(msg, {
         body = {
       		supportTerminateDebuggee = true,
@@ -988,16 +975,17 @@ function M.stop()
 		return 
 	end
 
-  sendProxyDAPSync(make_event("terminated"))
+  sendProxyDAP(make_event("terminated"))
 
   local msg = make_event("exited")
   msg.body = {
     exitCode = 0,
   }
-  sendProxyDAPSync(msg)
+  sendProxyDAP(msg)
 
   if nvim_server then
-    vim.fn.jobstop(nvim_server)
+    vim.fn.rpcnotify(nvim_server, 'nvim_command', [[qa!]])
+    log("jobwait " .. vim.inspect(vim.fn.jobwait({nvim_server}, 5000)))
     nvim_server = nil
   end
   -- this is sketchy....

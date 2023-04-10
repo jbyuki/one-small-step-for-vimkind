@@ -2,20 +2,19 @@
 @support_capabilities+=
 supportTerminateDebuggee = true,
 
-@declare+=
-local sendProxyDAPSync
-
-@implement+=
-function sendProxyDAPSync(data)
-  log(vim.inspect(data))
-  vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[require"osv".sendDAP(...)]], {data})
+@exit_debuggee_if_requested+=
+if request.terminateDebuggee == true then
+	stop()
 end
 
 @implement_handlers+=
 function handlers.disconnect(request)
-	sendProxyDAPSync(make_response(request, {}))
-	if request.terminateDebuggee == true then
-		stop()
-	end
+	sendProxyDAP(make_response(request, {}))
 end
 
+@terminate_adapter_server_process+=
+if nvim_server then
+  vim.fn.rpcnotify(nvim_server, 'nvim_command', [[qa!]])
+  log("jobwait " .. vim.inspect(vim.fn.jobwait({nvim_server}, 5000)))
+  nvim_server = nil
+end
