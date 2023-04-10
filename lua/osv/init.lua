@@ -29,6 +29,8 @@ local log_filename
 
 local lock_debug_loop = false
 
+local exit_autocmd
+
 local auto_nvim
 
 -- for now, only accepts a single
@@ -152,6 +154,12 @@ function M.launch(opts)
 
   print("Server started on port " .. server.port)
   M.disconnected = false
+	exit_autocmd = vim.api.nvim_create_autocmd({"VimLeavePre"}, {
+		callback = function(...)
+			M.stop()
+		end
+	})
+
   vim.defer_fn(M.wait_attach, 0)
 
   return server
@@ -173,10 +181,6 @@ function M.wait_attach()
     local handlers = {}
     local breakpoints = {}
 
-    function handlers.disconnect(request)
-    	sendProxyDAP(make_response(request, {}))
-    end
-
     function handlers.attach(request)
       sendProxyDAP(make_response(request, {}))
     end
@@ -192,7 +196,9 @@ function M.wait_attach()
       debug.sethook()
 
       sendProxyDAP(make_response(request, {}))
-      vim.wait(1000)
+    	if request.terminateDebuggee == true then
+    		M.stop()
+    	end
 
       -- this is sketchy....
       running = true
@@ -960,6 +966,7 @@ function M.start_server(host, port, do_log)
     debug_hook_conn = vim.fn.sockconnect("pipe", debug_hook_conn_address, {rpc = true})
   end
 
+
   return {
     host = host,
     port = server:getsockname().port
@@ -985,7 +992,7 @@ function M.stop()
 
   if nvim_server then
     vim.fn.rpcnotify(nvim_server, 'nvim_command', [[qa!]])
-    log("jobwait " .. vim.inspect(vim.fn.jobwait({nvim_server}, 5000)))
+    log("jobwait " .. vim.inspect(vim.fn.jobwait({nvim_server}, 500)))
     nvim_server = nil
   end
   -- this is sketchy....
@@ -1010,6 +1017,11 @@ function M.stop()
   seq_id = 1
 
   M.disconnected = false
+
+	if exit_autocmd then
+		vim.api.nvim_del_autocmd(exit_autocmd)
+		exit_autocmd = nil
+	end
 
 end
 

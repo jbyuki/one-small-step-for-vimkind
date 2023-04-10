@@ -12,6 +12,7 @@ function M.stop()
   @send_exited_event
   @terminate_adapter_server_process
   @reset_internal_states
+	@unregister_exit_autocmd
 end
 
 @send_terminated_event+=

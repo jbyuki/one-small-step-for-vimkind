@@ -3,9 +3,7 @@
 function handlers.disconnect(request)
   @disable_hooks
   @send_disconnect_aknowledge
-  vim.wait(1000)
-
-	@exit_debuggee_if_requested+=
+	@exit_debuggee_if_requested
   @reset_internal_states
 end
 
