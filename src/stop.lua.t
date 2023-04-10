@@ -15,14 +15,14 @@ function M.stop()
 end
 
 @send_terminated_event+=
-sendProxyDAP(make_event("terminated"))
+sendProxyDAPSync(make_event("terminated"))
 
 @send_exited_event+=
 local msg = make_event("exited")
 msg.body = {
   exitCode = 0,
 }
-sendProxyDAP(msg)
+sendProxyDAPSync(msg)
 
 @reset_internal_states+=
 -- this is sketchy....
