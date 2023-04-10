@@ -19,10 +19,25 @@ if source_path:sub(1, 1) == "@" or step_in then
   if succ then
 		path = vim.fn.resolve(path)
     path = vim.uri_from_fname(path:lower())
-    if bps[path] then
-      log("breakpoint hit")
-      @send_stopped_event_breakpoint
-      @freeze_neovim_instance
+		local bp = bps[path]
+    if bp then
+			log(vim.inspect(bp))
+			local hit = false
+			if type(bp) == "boolean" then
+				hit = true
+			elseif type(bp) == "number" then
+				@check_breakpoint_hit_condition
+			elseif type(bp) == "string" then
+				@check_breakpoint_condition
+			elseif type(bp) == "table" then
+				@check_breakpoint_both
+			end
+
+			if hit then
+				log("breakpoint hit")
+				@send_stopped_event_breakpoint
+				@freeze_neovim_instance
+			end
     end
   end
 end
@@ -43,3 +58,12 @@ msg.body = {
   threadId = 1
 }
 sendProxyDAP(msg)
+
+@check_breakpoint_hit_condition+=
+if bp == 0 then
+	hit = true
+	bps[path] = breakpoints_count[line][path]
+else
+	bps[path] = bps[path] - 1
+end
+

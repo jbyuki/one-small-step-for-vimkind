@@ -181,6 +181,8 @@ function M.wait_attach()
     local handlers = {}
     local breakpoints = {}
 
+    local breakpoints_count = {}
+
     function handlers.attach(request)
       sendProxyDAP(make_response(request, {}))
     end
@@ -346,12 +348,33 @@ function M.wait_attach()
       for line, line_bps in pairs(breakpoints) do
         line_bps[vim.uri_from_fname(args.source.path:lower())] = nil
       end
+
+      for line, line_bps_count in pairs(breakpoints_count) do
+      	line_bps_count[vim.uri_from_fname(args.source.path:lower())] = nil
+      end
       local results_bps = {}
 
       for _, bp in ipairs(args.breakpoints) do
         breakpoints[bp.line] = breakpoints[bp.line] or {}
         local line_bps = breakpoints[bp.line]
-        line_bps[vim.uri_from_fname(args.source.path:lower())] = true
+      	if bp.condition and bp.hitCondition then
+      		breakpoints_count[bp.line] = breakpoints_count[bp.line] or {}
+      		local line_bps_count = breakpoints_count[bp.line]
+      		line_bps_count[vim.uri_from_fname(args.source.path:lower())] = tonumber(bp.hitCondition)
+
+      		line_bps[vim.uri_from_fname(args.source.path:lower())] = {bp.condition, tonumber(bp.hitCondition)}
+      	elseif bp.condition then
+      		line_bps[vim.uri_from_fname(args.source.path:lower())] = bp.condition
+      	elseif bp.hitCondition then
+      		breakpoints_count[bp.line] = breakpoints_count[bp.line] or {}
+      		local line_bps_count = breakpoints_count[bp.line]
+      		line_bps_count[vim.uri_from_fname(args.source.path:lower())] = tonumber(bp.hitCondition)
+
+      		line_bps[vim.uri_from_fname(args.source.path:lower())] = tonumber(bp.hitCondition)
+      	else
+      		line_bps[vim.uri_from_fname(args.source.path:lower())] = true
+      	end
+
         table.insert(results_bps, { verified = true })
         -- log("Set breakpoint at line " .. bp.line .. " in " .. args.source.path)
       end
@@ -650,37 +673,57 @@ function M.wait_attach()
           if succ then
         		path = vim.fn.resolve(path)
             path = vim.uri_from_fname(path:lower())
-            if bps[path] then
-              log("breakpoint hit")
-              local msg = make_event("stopped")
-              msg.body = {
-                reason = "breakpoint",
-                threadId = 1
-              }
-              sendProxyDAP(msg)
-              running = false
-              while not running do
-                if M.disconnected then
-                  break
-                end
-                local i = 1
-                while i <= #M.server_messages do
-                  local msg = M.server_messages[i]
-                  local f = handlers[msg.command]
-                  log(vim.inspect(msg))
-                  if f then
-                    f(msg)
-                  else
-                    log("Could not handle " .. msg.command)
-                  end
-                  i = i + 1
-                end
+        		local bp = bps[path]
+            if bp then
+        			log(vim.inspect(bp))
+        			local hit = false
+        			if type(bp) == "boolean" then
+        				hit = true
+        			elseif type(bp) == "number" then
+        				if bp == 0 then
+        					hit = true
+        					bps[path] = breakpoints_count[line][path]
+        				else
+        					bps[path] = bps[path] - 1
+        				end
 
-                M.server_messages = {}
+        			elseif type(bp) == "string" then
+        			elseif type(bp) == "table" then
+        			end
 
-                vim.wait(50)
-              end
+        			if hit then
+        				log("breakpoint hit")
+        				local msg = make_event("stopped")
+        				msg.body = {
+        				  reason = "breakpoint",
+        				  threadId = 1
+        				}
+        				sendProxyDAP(msg)
 
+        				running = false
+        				while not running do
+        				  if M.disconnected then
+        				    break
+        				  end
+        				  local i = 1
+        				  while i <= #M.server_messages do
+        				    local msg = M.server_messages[i]
+        				    local f = handlers[msg.command]
+        				    log(vim.inspect(msg))
+        				    if f then
+        				      f(msg)
+        				    else
+        				      log("Could not handle " .. msg.command)
+        				    end
+        				    i = i + 1
+        				  end
+
+        				  M.server_messages = {}
+
+        				  vim.wait(50)
+        				end
+
+        			end
             end
           end
         end
@@ -987,6 +1030,10 @@ function M.start_server(host, port, do_log)
       M.sendDAP(make_response(msg, {
         body = {
       		supportTerminateDebuggee = true,
+
+      		supportsHitConditionalBreakpoints = true,
+      		supportsConditionalBreakpoints = true,
+
 
       		supportsSetVariable = true,
 

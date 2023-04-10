@@ -16,7 +16,7 @@ local results_bps = {}
 for _, bp in ipairs(args.breakpoints) do
   breakpoints[bp.line] = breakpoints[bp.line] or {}
   local line_bps = breakpoints[bp.line]
-  line_bps[vim.uri_from_fname(args.source.path:lower())] = true
+	@save_breakpoint
   table.insert(results_bps, { verified = true })
   -- log("Set breakpoint at line " .. bp.line .. " in " .. args.source.path)
 end
@@ -41,4 +41,35 @@ sendProxyDAP(make_response(request, {
 @clear_breakpoints_in_source+=
 for line, line_bps in pairs(breakpoints) do
   line_bps[vim.uri_from_fname(args.source.path:lower())] = nil
+end
+
+@support_capabilities+=
+supportsHitConditionalBreakpoints = true,
+supportsConditionalBreakpoints = true,
+
+
+@save_breakpoint+=
+if bp.condition and bp.hitCondition then
+	@set_breakpoint_hit_condition_in_table
+	line_bps[vim.uri_from_fname(args.source.path:lower())] = {bp.condition, tonumber(bp.hitCondition)}
+elseif bp.condition then
+	line_bps[vim.uri_from_fname(args.source.path:lower())] = bp.condition
+elseif bp.hitCondition then
+	@set_breakpoint_hit_condition_in_table
+	line_bps[vim.uri_from_fname(args.source.path:lower())] = tonumber(bp.hitCondition)
+else
+	line_bps[vim.uri_from_fname(args.source.path:lower())] = true
+end
+
+@attach_variables+=
+local breakpoints_count = {}
+
+@set_breakpoint_hit_condition_in_table+=
+breakpoints_count[bp.line] = breakpoints_count[bp.line] or {}
+local line_bps_count = breakpoints_count[bp.line]
+line_bps_count[vim.uri_from_fname(args.source.path:lower())] = tonumber(bp.hitCondition)
+
+@clear_breakpoints_in_source+=
+for line, line_bps_count in pairs(breakpoints_count) do
+	line_bps_count[vim.uri_from_fname(args.source.path:lower())] = nil
 end
