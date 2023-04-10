@@ -11,6 +11,7 @@ function M.launch(opts)
   @launch_server
   print("Server started on port " .. server.port)
   M.disconnected = false
+	@create_autocommand_when_exit
   vim.defer_fn(M.wait_attach, 0)
 
   return server

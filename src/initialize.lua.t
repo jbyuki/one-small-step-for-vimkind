@@ -19,8 +19,11 @@ function make_response(request, response)
 end
 
 @send_back_initialize_response+=
+log(vim.inspect(msg))
 M.sendDAP(make_response(msg, {
-  body = {}
+  body = {
+		@support_capabilities
+	}
 }))
 
 @declare+=

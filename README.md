@@ -142,11 +142,10 @@ Events:
 
 Capabilities:
 
-* [x] variableReferences
-* [ ] condition
-* [ ] hit condition
-* [ ] watch
-* [ ] hover
+* [x] supportsConditionalBreakpoints
+* [x] supportsHitConditionalBreakpoints
+* [x] supportsSetVariable
+* [x] supportTerminateDebuggee
 
 ## Name
 

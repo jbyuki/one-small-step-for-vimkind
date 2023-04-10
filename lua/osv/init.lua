@@ -29,6 +29,8 @@ local log_filename
 
 local lock_debug_loop = false
 
+local exit_autocmd
+
 local auto_nvim
 
 -- for now, only accepts a single
@@ -152,6 +154,12 @@ function M.launch(opts)
 
   print("Server started on port " .. server.port)
   M.disconnected = false
+	exit_autocmd = vim.api.nvim_create_autocmd({"VimLeavePre"}, {
+		callback = function(...)
+			M.stop()
+		end
+	})
+
   vim.defer_fn(M.wait_attach, 0)
 
   return server
@@ -173,6 +181,8 @@ function M.wait_attach()
     local handlers = {}
     local breakpoints = {}
 
+    local breakpoints_count = {}
+
     function handlers.attach(request)
       sendProxyDAP(make_response(request, {}))
     end
@@ -189,11 +199,10 @@ function M.wait_attach()
 
       sendProxyDAP(make_response(request, {}))
 
-      vim.wait(1000)
-      if nvim_server then
-        vim.fn.jobstop(nvim_server)
-        nvim_server = nil
-      end
+    	if request.terminateDebuggee == true then
+    		M.stop()
+    	end
+
       -- this is sketchy....
       running = true
 
@@ -222,7 +231,7 @@ function M.wait_attach()
     function handlers.evaluate(request)
       local args = request.arguments
       if args.context == "repl" then
-        local frame = frames[args.frameId]
+    		local frame = frames[args.frameId]
         -- what is this abomination...
         --              a former c++ programmer
         local a = 1
@@ -256,7 +265,8 @@ function M.wait_attach()
           __index = _G
         })
 
-        local succ, f = pcall(loadstring, "return " .. args.expression)
+    		local expr = args.expression
+        local succ, f = pcall(loadstring, "return " .. expr)
         if succ and f then
           setfenv(f, first)
         end
@@ -339,12 +349,33 @@ function M.wait_attach()
       for line, line_bps in pairs(breakpoints) do
         line_bps[vim.uri_from_fname(args.source.path:lower())] = nil
       end
+
+      for line, line_bps_count in pairs(breakpoints_count) do
+      	line_bps_count[vim.uri_from_fname(args.source.path:lower())] = nil
+      end
       local results_bps = {}
 
       for _, bp in ipairs(args.breakpoints) do
         breakpoints[bp.line] = breakpoints[bp.line] or {}
         local line_bps = breakpoints[bp.line]
-        line_bps[vim.uri_from_fname(args.source.path:lower())] = true
+      	if bp.condition and bp.hitCondition then
+      		breakpoints_count[bp.line] = breakpoints_count[bp.line] or {}
+      		local line_bps_count = breakpoints_count[bp.line]
+      		line_bps_count[vim.uri_from_fname(args.source.path:lower())] = tonumber(bp.hitCondition)
+
+      		line_bps[vim.uri_from_fname(args.source.path:lower())] = {bp.condition, tonumber(bp.hitCondition)}
+      	elseif bp.condition then
+      		line_bps[vim.uri_from_fname(args.source.path:lower())] = bp.condition
+      	elseif bp.hitCondition then
+      		breakpoints_count[bp.line] = breakpoints_count[bp.line] or {}
+      		local line_bps_count = breakpoints_count[bp.line]
+      		line_bps_count[vim.uri_from_fname(args.source.path:lower())] = tonumber(bp.hitCondition)
+
+      		line_bps[vim.uri_from_fname(args.source.path:lower())] = tonumber(bp.hitCondition)
+      	else
+      		line_bps[vim.uri_from_fname(args.source.path:lower())] = true
+      	end
+
         table.insert(results_bps, { verified = true })
         -- log("Set breakpoint at line " .. bp.line .. " in " .. args.source.path)
       end
@@ -369,6 +400,67 @@ function M.wait_attach()
         }
       }))
     end
+    function handlers.setVariable(request)
+    	local args = request.arguments
+      local ref = vars_ref[args.variablesReference]
+
+    	local body = {}
+
+
+      if type(ref) == "number" then
+    		local a = 1
+    		local frame = ref
+    		while true do
+    		  local ln, lv = debug.getlocal(frame, a)
+    		  if not ln then
+    		    break
+    		  end
+
+    			if ln == args.name then
+    				local succ, f = pcall(loadstring, "return " .. args.value)
+    				if succ and f then
+    					local val = f()
+    					body.value = tostring(val)
+    					body.type = type(val)
+    					if type(val) == "table" then
+    						vars_ref[vars_id] = val
+    						body.variablesReference = vars_id
+    						vars_id = vars_id + 1
+    					else
+    						body.variablesReference = 0
+    					end
+
+    					debug.setlocal(frame, a, val)
+
+    				end
+    		  end
+    		  a = a + 1
+    		end
+
+    	elseif type(ref) == "table" then
+    		local succ, val = pcall(loadstring, "return " .. args.value)
+    		if succ and f then
+    			local val = f()
+    			body.value = tostring(val)
+    			body.type = type(val)
+    			if type(val) == "table" then
+    				vars_ref[vars_id] = val
+    				body.variablesReference = vars_id
+    				vars_id = vars_id + 1
+    			else
+    				body.variablesReference = 0
+    			end
+
+    			ref[args.name] = f
+    		end
+
+    	end
+    	
+    	sendProxyDAP(make_response(request, {
+    		body = body
+    	}))
+    end
+
     function handlers.stackTrace(request)
       local args = request.arguments
       local start_frame = args.startFrame or 0
@@ -582,37 +674,162 @@ function M.wait_attach()
           if succ then
         		path = vim.fn.resolve(path)
             path = vim.uri_from_fname(path:lower())
-            if bps[path] then
-              log("breakpoint hit")
-              local msg = make_event("stopped")
-              msg.body = {
-                reason = "breakpoint",
-                threadId = 1
-              }
-              sendProxyDAP(msg)
-              running = false
-              while not running do
-                if M.disconnected then
-                  break
-                end
-                local i = 1
-                while i <= #M.server_messages do
-                  local msg = M.server_messages[i]
-                  local f = handlers[msg.command]
-                  log(vim.inspect(msg))
-                  if f then
-                    f(msg)
-                  else
-                    log("Could not handle " .. msg.command)
-                  end
-                  i = i + 1
-                end
+        		local bp = bps[path]
+            if bp then
+        			log(vim.inspect(bp))
+        			local hit = false
+        			if type(bp) == "boolean" then
+        				hit = true
+        			elseif type(bp) == "number" then
+        				if bp == 0 then
+        					hit = true
+        					bps[path] = breakpoints_count[line][path]
+        				else
+        					bps[path] = bps[path] - 1
+        				end
 
-                M.server_messages = {}
+        			elseif type(bp) == "string" then
+        				local expr = bp
+        				local frame = 2
+        				-- what is this abomination...
+        				--              a former c++ programmer
+        				local a = 1
+        				local prev
+        				local cur = {}
+        				local first = cur
 
-                vim.wait(50)
-              end
+        				while true do
+        				  local succ, ln, lv = pcall(debug.getlocal, frame+1, a)
+        				  if not succ then
+        				    break
+        				  end
 
+        				  if not ln then
+        				    prev = cur
+
+        				    cur = {}
+        				    setmetatable(prev, {
+        				      __index = cur
+        				    })
+
+        				    frame = frame + 1
+        				    a = 1
+        				  else
+        				    cur[ln] = lv
+        				    a = a + 1
+        				  end
+        				end
+
+        				setmetatable(cur, {
+        				  __index = _G
+        				})
+
+        				local succ, f = pcall(loadstring, "return " .. expr)
+        				if succ and f then
+        				  setfenv(f, first)
+        				end
+
+        				local result_repl
+        				if succ then
+        				  succ, result_repl = pcall(f)
+        				else
+        				  result_repl = f
+        				end
+
+        				hit = result_repl == true
+
+        			elseif type(bp) == "table" then
+        				local expr = bp[1]
+        				local frame = 2
+        				-- what is this abomination...
+        				--              a former c++ programmer
+        				local a = 1
+        				local prev
+        				local cur = {}
+        				local first = cur
+
+        				while true do
+        				  local succ, ln, lv = pcall(debug.getlocal, frame+1, a)
+        				  if not succ then
+        				    break
+        				  end
+
+        				  if not ln then
+        				    prev = cur
+
+        				    cur = {}
+        				    setmetatable(prev, {
+        				      __index = cur
+        				    })
+
+        				    frame = frame + 1
+        				    a = 1
+        				  else
+        				    cur[ln] = lv
+        				    a = a + 1
+        				  end
+        				end
+
+        				setmetatable(cur, {
+        				  __index = _G
+        				})
+
+        				local succ, f = pcall(loadstring, "return " .. expr)
+        				if succ and f then
+        				  setfenv(f, first)
+        				end
+
+        				local result_repl
+        				if succ then
+        				  succ, result_repl = pcall(f)
+        				else
+        				  result_repl = f
+        				end
+
+        				hit = result_repl == true
+
+        				if bp[2] == 0 then
+        					hit = hit and true
+        					bp[2] = breakpoints_count[line][path]
+        				else
+        					bp[2] = bp[2] - 1
+        					hit = false
+        				end
+        			end
+
+        			if hit then
+        				log("breakpoint hit")
+        				local msg = make_event("stopped")
+        				msg.body = {
+        				  reason = "breakpoint",
+        				  threadId = 1
+        				}
+        				sendProxyDAP(msg)
+
+        				running = false
+        				while not running do
+        				  if M.disconnected then
+        				    break
+        				  end
+        				  local i = 1
+        				  while i <= #M.server_messages do
+        				    local msg = M.server_messages[i]
+        				    local f = handlers[msg.command]
+        				    log(vim.inspect(msg))
+        				    if f then
+        				      f(msg)
+        				    else
+        				      log("Could not handle " .. msg.command)
+        				    end
+        				    i = i + 1
+        				  end
+
+        				  M.server_messages = {}
+
+        				  vim.wait(50)
+        				end
+
+        			end
             end
           end
         end
@@ -915,8 +1132,18 @@ function M.start_server(host, port, do_log)
         msg = read_body(len.content_length)
       end
 
+      log(vim.inspect(msg))
       M.sendDAP(make_response(msg, {
-        body = {}
+        body = {
+      		supportTerminateDebuggee = true,
+
+      		supportsHitConditionalBreakpoints = true,
+      		supportsConditionalBreakpoints = true,
+
+
+      		supportsSetVariable = true,
+
+      	}
       }))
 
       M.sendDAP(make_event('initialized'))
@@ -956,6 +1183,7 @@ function M.start_server(host, port, do_log)
     debug_hook_conn = vim.fn.sockconnect("pipe", debug_hook_conn_address, {rpc = true})
   end
 
+
   return {
     host = host,
     port = server:getsockname().port
@@ -980,7 +1208,8 @@ function M.stop()
   sendProxyDAP(msg)
 
   if nvim_server then
-    vim.fn.jobstop(nvim_server)
+    vim.fn.rpcnotify(nvim_server, 'nvim_command', [[qa!]])
+    log("jobwait " .. vim.inspect(vim.fn.jobwait({nvim_server}, 500)))
     nvim_server = nil
   end
   -- this is sketchy....
@@ -1005,6 +1234,11 @@ function M.stop()
   seq_id = 1
 
   M.disconnected = false
+
+	if exit_autocmd then
+		vim.api.nvim_del_autocmd(exit_autocmd)
+		exit_autocmd = nil
+	end
 
 end
 

@@ -6,6 +6,7 @@ function M.start_server(host, port, do_log)
   @bind_server
   @listen_server
   @connect_to_hook
+	@create_autocommand_when_exit_in_server
 
   return {
     host = host,
@@ -53,3 +54,4 @@ local debug_hook_conn
 if debug_hook_conn_address then
   debug_hook_conn = vim.fn.sockconnect("pipe", debug_hook_conn_address, {rpc = true})
 end
+
