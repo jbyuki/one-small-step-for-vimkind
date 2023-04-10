@@ -1,15 +1,4 @@
 ##lua-debug
--- @create_autocommand_when_exit_in_server+=
--- vim.api.nvim_create_autocmd({"VimLeavePre"}, {
-	-- callback = function(...)
-		-- @send_exited_event_from_server
-	-- end
--- })
-
--- @send_exited_event_from_server+=
--- M.sendDAP(make_event('exited'))
--- log("Sent exited event from server")
-
 @script_variables+=
 local exit_autocmd
 

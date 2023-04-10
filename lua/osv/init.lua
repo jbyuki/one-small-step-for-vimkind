@@ -196,6 +196,7 @@ function M.wait_attach()
       debug.sethook()
 
       sendProxyDAP(make_response(request, {}))
+
     	if request.terminateDebuggee == true then
     		M.stop()
     	end
@@ -375,6 +376,67 @@ function M.wait_attach()
         }
       }))
     end
+    function handlers.setVariable(request)
+    	local args = request.arguments
+      local ref = vars_ref[args.variablesReference]
+
+    	local body = {}
+
+
+      if type(ref) == "number" then
+    		local a = 1
+    		local frame = ref
+    		while true do
+    		  local ln, lv = debug.getlocal(frame, a)
+    		  if not ln then
+    		    break
+    		  end
+
+    			if ln == args.name then
+    				local succ, f = pcall(loadstring, "return " .. args.value)
+    				if succ and f then
+    					local val = f()
+    					body.value = tostring(val)
+    					body.type = type(val)
+    					if type(val) == "table" then
+    						vars_ref[vars_id] = val
+    						body.variablesReference = vars_id
+    						vars_id = vars_id + 1
+    					else
+    						body.variablesReference = 0
+    					end
+
+    					debug.setlocal(frame, a, val)
+
+    				end
+    		  end
+    		  a = a + 1
+    		end
+
+    	elseif type(ref) == "table" then
+    		local succ, val = pcall(loadstring, "return " .. args.value)
+    		if succ and f then
+    			local val = f()
+    			body.value = tostring(val)
+    			body.type = type(val)
+    			if type(val) == "table" then
+    				vars_ref[vars_id] = val
+    				body.variablesReference = vars_id
+    				vars_id = vars_id + 1
+    			else
+    				body.variablesReference = 0
+    			end
+
+    			ref[args.name] = f
+    		end
+
+    	end
+    	
+    	sendProxyDAP(make_response(request, {
+    		body = body
+    	}))
+    end
+
     function handlers.stackTrace(request)
       local args = request.arguments
       local start_frame = args.startFrame or 0
@@ -925,6 +987,8 @@ function M.start_server(host, port, do_log)
       M.sendDAP(make_response(msg, {
         body = {
       		supportTerminateDebuggee = true,
+
+      		supportsSetVariable = true,
 
       	}
       }))
