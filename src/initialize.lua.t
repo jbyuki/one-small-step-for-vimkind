@@ -20,7 +20,9 @@ end
 
 @send_back_initialize_response+=
 M.sendDAP(make_response(msg, {
-  body = {}
+  body = {
+		@support_capabilities
+	}
 }))
 
 @declare+=

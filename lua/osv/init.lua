@@ -916,7 +916,8 @@ function M.start_server(host, port, do_log)
       end
 
       M.sendDAP(make_response(msg, {
-        body = {}
+        body = {
+      	}
       }))
 
       M.sendDAP(make_event('initialized'))
