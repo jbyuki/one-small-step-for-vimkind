@@ -3,7 +3,9 @@
 function handlers.evaluate(request)
   local args = request.arguments
   if args.context == "repl" then
+		local frame = frames[args.frameId]
     @retrieve_locals_in_frame
+		local expr = args.expression
     @set_frame_environment_for_execution
     @evaluate_expression
     @send_repl_evaluate_response
@@ -13,7 +15,6 @@ function handlers.evaluate(request)
 end
 
 @retrieve_locals_in_frame+=
-local frame = frames[args.frameId]
 -- what is this abomination...
 --              a former c++ programmer
 local a = 1
@@ -48,7 +49,7 @@ setmetatable(cur, {
 })
 
 @set_frame_environment_for_execution+=
-local succ, f = pcall(loadstring, "return " .. args.expression)
+local succ, f = pcall(loadstring, "return " .. expr)
 if succ and f then
   setfenv(f, first)
 end

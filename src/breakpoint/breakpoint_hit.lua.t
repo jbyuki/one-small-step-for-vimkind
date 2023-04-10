@@ -28,6 +28,7 @@ if source_path:sub(1, 1) == "@" or step_in then
 			elseif type(bp) == "number" then
 				@check_breakpoint_hit_condition
 			elseif type(bp) == "string" then
+				local expr = bp
 				@check_breakpoint_condition
 			elseif type(bp) == "table" then
 				@check_breakpoint_both
@@ -67,3 +68,20 @@ else
 	bps[path] = bps[path] - 1
 end
 
+@check_breakpoint_condition+=
+local frame = 2
+@retrieve_locals_in_frame
+@set_frame_environment_for_execution
+@evaluate_expression
+hit = result_repl == true
+
+@check_breakpoint_both+=
+local expr = bp[1]
+@check_breakpoint_condition
+if bp[2] == 0 then
+	hit = hit and true
+	bp[2] = breakpoints_count[line][path]
+else
+	bp[2] = bp[2] - 1
+	hit = false
+end

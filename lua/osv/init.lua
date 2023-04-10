@@ -231,7 +231,7 @@ function M.wait_attach()
     function handlers.evaluate(request)
       local args = request.arguments
       if args.context == "repl" then
-        local frame = frames[args.frameId]
+    		local frame = frames[args.frameId]
         -- what is this abomination...
         --              a former c++ programmer
         local a = 1
@@ -265,7 +265,8 @@ function M.wait_attach()
           __index = _G
         })
 
-        local succ, f = pcall(loadstring, "return " .. args.expression)
+    		local expr = args.expression
+        local succ, f = pcall(loadstring, "return " .. expr)
         if succ and f then
           setfenv(f, first)
         end
@@ -688,7 +689,112 @@ function M.wait_attach()
         				end
 
         			elseif type(bp) == "string" then
+        				local expr = bp
+        				local frame = 2
+        				-- what is this abomination...
+        				--              a former c++ programmer
+        				local a = 1
+        				local prev
+        				local cur = {}
+        				local first = cur
+
+        				while true do
+        				  local succ, ln, lv = pcall(debug.getlocal, frame+1, a)
+        				  if not succ then
+        				    break
+        				  end
+
+        				  if not ln then
+        				    prev = cur
+
+        				    cur = {}
+        				    setmetatable(prev, {
+        				      __index = cur
+        				    })
+
+        				    frame = frame + 1
+        				    a = 1
+        				  else
+        				    cur[ln] = lv
+        				    a = a + 1
+        				  end
+        				end
+
+        				setmetatable(cur, {
+        				  __index = _G
+        				})
+
+        				local succ, f = pcall(loadstring, "return " .. expr)
+        				if succ and f then
+        				  setfenv(f, first)
+        				end
+
+        				local result_repl
+        				if succ then
+        				  succ, result_repl = pcall(f)
+        				else
+        				  result_repl = f
+        				end
+
+        				hit = result_repl == true
+
         			elseif type(bp) == "table" then
+        				local expr = bp[1]
+        				local frame = 2
+        				-- what is this abomination...
+        				--              a former c++ programmer
+        				local a = 1
+        				local prev
+        				local cur = {}
+        				local first = cur
+
+        				while true do
+        				  local succ, ln, lv = pcall(debug.getlocal, frame+1, a)
+        				  if not succ then
+        				    break
+        				  end
+
+        				  if not ln then
+        				    prev = cur
+
+        				    cur = {}
+        				    setmetatable(prev, {
+        				      __index = cur
+        				    })
+
+        				    frame = frame + 1
+        				    a = 1
+        				  else
+        				    cur[ln] = lv
+        				    a = a + 1
+        				  end
+        				end
+
+        				setmetatable(cur, {
+        				  __index = _G
+        				})
+
+        				local succ, f = pcall(loadstring, "return " .. expr)
+        				if succ and f then
+        				  setfenv(f, first)
+        				end
+
+        				local result_repl
+        				if succ then
+        				  succ, result_repl = pcall(f)
+        				else
+        				  result_repl = f
+        				end
+
+        				hit = result_repl == true
+
+        				if bp[2] == 0 then
+        					hit = hit and true
+        					bp[2] = breakpoints_count[line][path]
+        				else
+        					bp[2] = bp[2] - 1
+        					hit = false
+        				end
         			end
 
         			if hit then
