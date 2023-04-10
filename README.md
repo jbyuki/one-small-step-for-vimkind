@@ -127,7 +127,7 @@ Handlers:
 * [x] pause
 * [ ] terminate
 * [x] disconnect
-* [ ] setVariable
+* [x] setVariable
 * [ ] setFunctionBreakpoints
 * [ ] setExceptionBreakpoints
 * [ ] breakpointLocations
