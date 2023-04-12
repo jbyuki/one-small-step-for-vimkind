@@ -76,7 +76,7 @@ See [osv.txt](https://github.com/jbyuki/lua-debug.nvim/blob/main/doc/osv.txt) fo
 
 ### `flatten.nvim`
 
-There are some conflicts with this plugin. A temporary workaround is to launch the server with `:lua require"osv".launch({port = 8086, flatten_nvim= true})`.
+Set `nest_if_no_args` to true. See [this issue](https://github.com/willothy/flatten.nvim/issues/41) for more informations.
 
 ### Debugging plugins
 

@@ -25,7 +25,6 @@ local env = nil
 local args = {vim.v.progpath, '--embed', '--headless'}
 @fill_env_if_lunarvim
 @fill_config_file_in_args
-@trouble_neovim_workaround
 nvim_server = vim.fn.jobstart(args, {rpc = true, env = env})
 
 @script_variables+=
@@ -104,15 +103,4 @@ elseif opts and opts.config_file then
 	table.insert(args, "-u")
 	table.insert(args, opts.config_file)
 end
-
-@trouble_neovim_workaround+=
-if opts and opts.flatten_nvim then
-	if not env then
-		env = {}
-	end
-
-	env["NVIM"] = ""
-end
-
-
 

@@ -125,16 +125,6 @@ function M.launch(opts)
   	table.insert(args, opts.config_file)
   end
 
-  if opts and opts.flatten_nvim then
-  	if not env then
-  		env = {}
-  	end
-
-  	env["NVIM"] = ""
-  end
-
-
-
   nvim_server = vim.fn.jobstart(args, {rpc = true, env = env})
 
   local mode = vim.fn.rpcrequest(nvim_server, "nvim_get_mode")
