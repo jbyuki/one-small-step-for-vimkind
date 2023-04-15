@@ -27,37 +27,6 @@ nvim-dap configurations.
 The following configuration will allow you to attach a nvim-dap
 client to |osv|.
 >
-
-  local dap = require"dap"
-  dap.configurations.lua = { 
-    { 
-      type = 'nlua', 
-      request = 'attach',
-      name = "Attach to running Neovim instance",
-      host = function()
-        local value = vim.fn.input('Host [127.0.0.1]: ')
-        if value ~= "" then
-          return value
-        end
-        return '127.0.0.1'
-      end,
-      port = function()
-        local val = tonumber(vim.fn.input('Port: '))
-        assert(val, "Please provide a port number")
-        return val
-      end,
-    }
-  }
-
-  dap.adapters.nlua = function(callback, config)
-    callback({ type = 'server', host = config.host, port = config.port })
-  end
-<
-
-You might prefer to have a constant port number so that you don't have to
-enter it everytime. |osv.launch| can be 
-launched on a specific port if you pass it the port number as an argument.
->
   local dap = require"dap"
   dap.configurations.lua = { 
     { 
@@ -72,7 +41,7 @@ launched on a specific port if you pass it the port number as an argument.
   end
 
 <
-Quickstart~
+QUICKSTART
 
 The following steps will guide you through the process to start
 a debugging session using nvim-dap.
@@ -88,24 +57,40 @@ It has the following content: >
 <
 1. Open a Neovim instance (instance A)
 2. Launch the DAP server with (A) >
- :lua require"osv".launch()
-< Note: Write down the port number
+ :lua require"osv".launch({port=8086})
 3. Open another Neovim instance (instance B)
 4. Open `myscript.lua` (B)
 5. Place a breakpoint on line 2 using (B) >
   :lua require"dap".toggle_breakpoint()
-<6. Connect the DAP client using (B) >
+6. Connect the DAP client using (B) >
   :lua require"dap".continue()
-< Note: host - Press return, leave default
-       port - Enter the port you wrote down
 7. Run `myscript.lua` in the other instance (A) >
   :luafile myscript.lua
-<8. The breakpoint should hit and freeze the instance (B)
+8. The breakpoint should hit and freeze the instance (B)
 
 =========================================================================
 vimspector configuration                           *lua-debug-vimspector*
 
-Todo
+>
+  {
+    "$schema": "https://puremourning.github.io/vimspector/schema/vimspector.schema.json#",
+    "adapters": {
+      "nlua": {
+	"host": "127.0.0.1",
+	"port": "8086"
+      }
+    },
+
+    "configurations": {
+      "osv": {
+	"adapter": "nlua",
+	"configuration": {
+	  "request": "attach"
+	}
+      }
+    }
+  }
+<
 
 =========================================================================
 Launch server                                               *osv-server*
@@ -117,17 +102,18 @@ launch({opts})                                           *osv.launch()*
 This command will launch the DAP server awaiting any connections. On
 execution, a prompt message will display the port it's running on.
 
-    Parameters:~
+    Parameters:
         {opts} Optional parameters.
                • `host`: defaults to "127.0.0.1"
                • `port`: Specify a port number or if nil, lets the server
+		       choose it.
                • `config_file`: Specify a configuration file used when
                               spawning nvim
                • `lvim`: Set this to true if you're using LunarVim.
                choose an available port.
                • `log`: boolean to enable logging
 
-    Return:~
+    Return:
         An server info object which contains 
           {host = {host}, port = {port}} 
         or nil on failure
@@ -139,7 +125,7 @@ frozen state.
 
 run_this({opts})                                        *osv.run_this()*
 
-    Parameters:~
+    Parameters:
         {opts} Optional parameters.
                • `config_file`: See |osv.launch()|
                • `lvim`: See |osv.launch()|
@@ -182,7 +168,7 @@ osv logging                                                 *osv-logging*
 Logging can be enabled by passing the corresponding parameter in
 |osv.launch|. The log will be written in:
 >
-  echo stdpath('data') . '/osv.log'
+  vim.fn.stdpath('data') .. '/osv.log'
 <
 =========================================================================
 osv plugins debugging                             *osv-plugins-debugging
