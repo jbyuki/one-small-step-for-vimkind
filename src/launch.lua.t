@@ -35,7 +35,6 @@ if not hook_addres then
   hook_address = vim.fn.serverstart()
 end
 
-@push_trouble_neovim_workaround
 vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[debug_hook_conn_address = ...]], {hook_address})
 
 @launch_server+=
