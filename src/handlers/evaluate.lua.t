@@ -9,6 +9,13 @@ function handlers.evaluate(request)
     @set_frame_environment_for_execution
     @evaluate_expression
     @send_repl_evaluate_response
+	elseif args.context == "hover" then
+		local frame = frames[args.frameId]
+    @retrieve_locals_in_frame
+		local expr = args.expression
+    @set_frame_environment_for_execution
+    @evaluate_expression
+    @send_hover_evaluate_response
   else
     log("evaluate context " .. args.context .. " not supported!")
   end
@@ -63,6 +70,14 @@ else
 end
 
 @send_repl_evaluate_response+=
+sendProxyDAP(make_response(request, {
+  body = {
+    result = vim.inspect(result_repl),
+    variablesReference = 0,
+  }
+}))
+
+@send_hover_evaluate_response+=
 sendProxyDAP(make_response(request, {
   body = {
     result = vim.inspect(result_repl),
