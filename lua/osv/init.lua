@@ -125,6 +125,16 @@ function M.launch(opts)
   	table.insert(args, opts.config_file)
   end
 
+  if opts and opts.env then
+  	env = opts.env
+  end
+
+  if opts and opts.args then
+  	for _, arg in ipairs(opts.args) do
+  		table.insert(args, arg)
+  	end
+  end
+
   nvim_server = vim.fn.jobstart(args, {rpc = true, env = env})
 
   local mode = vim.fn.rpcrequest(nvim_server, "nvim_get_mode")

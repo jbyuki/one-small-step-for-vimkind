@@ -25,6 +25,8 @@ local env = nil
 local args = {vim.v.progpath, '--embed', '--headless'}
 @fill_env_if_lunarvim
 @fill_config_file_in_args
+@fill_env_with_custom
+@fill_args_with_custom
 nvim_server = vim.fn.jobstart(args, {rpc = true, env = env})
 
 @script_variables+=
@@ -101,5 +103,17 @@ if opts and opts.lvim then
 elseif opts and opts.config_file then
 	table.insert(args, "-u")
 	table.insert(args, opts.config_file)
+end
+
+@fill_env_with_custom+=
+if opts and opts.env then
+	env = opts.env
+end
+
+@fill_args_with_custom+=
+if opts and opts.args then
+	for _, arg in ipairs(opts.args) do
+		table.insert(args, arg)
+	end
 end
 
