@@ -102,31 +102,36 @@ function M.launch(opts)
     log_filename = vim.fn.stdpath("data") .. "/osv.log"
   end
 
-  local env = nil
-  local args = {vim.v.progpath, '--embed', '--headless'}
-  if opts and opts.lvim then
-  	log("Setting LunarVim envs")
-
-  	assert(os.getenv("LUNARVIM_CACHE_DIR") and os.getenv("LUNARVIM_RUNTIME_DIR") and os.getenv("LUNARVIM_CONFIG_DIR") and os.getenv("LUNARVIM_BASE_DIR"), "launch with lvim=true but LUNARVIM environments variables are not set")
-
-  	env = {
-  		["LUNARVIM_CACHE_DIR"] = os.getenv("LUNARVIM_CACHE_DIR"),
-  		["LUNARVIM_CONFIG_DIR"] = os.getenv("LUNARVIM_CONFIG_DIR"),
-  		["LUNARVIM_BASE_DIR"] = os.getenv("LUNARVIM_BASE_DIR"),
-  		["LUNARVIM_RUNTIME_DIR"] = os.getenv("LUNARVIM_RUNTIME_DIR"),
-  	}
+  local has_embed = false
+  local has_headless = false
+  local args = {}
+  for _, arg in ipairs(vim.v.argv) do
+  	if arg == '--embed' then
+  		has_embed = true
+  	elseif arg == '--headless' then
+  		has_headless = true
+  	end
+  	table.insert(args, arg)
   end
 
-  if opts and opts.lvim then
-  	table.insert(args, "-u")
-  	table.insert(args, os.getenv("LUNARVIM_BASE_DIR") .. "/init.lua")
-  elseif opts and opts.config_file then
-  	table.insert(args, "-u")
-  	table.insert(args, opts.config_file)
+  if not has_embed then
+  	table.insert(args, "--embed")
+  end
+
+  if not has_headless then
+  	table.insert(args, "--headless")
+  end
+
+  local env = {}
+  for k,v in pairs(vim.fn.environ()) do
+  	env[k] = v
   end
 
   if opts and opts.env then
-  	env = opts.env
+  	env = env or {}
+  	for k,v in pairs(opts.env) do
+  		env[k] = v
+  	end
   end
 
   if opts and opts.args then
@@ -1065,27 +1070,29 @@ function M.run_this(opts)
     auto_nvim = nil
   end
 
-  local env = nil
-  local args = {vim.v.progpath, '--embed', '--headless'}
-  if opts and opts.lvim then
-  	log("Setting LunarVim envs")
-
-  	assert(os.getenv("LUNARVIM_CACHE_DIR") and os.getenv("LUNARVIM_RUNTIME_DIR") and os.getenv("LUNARVIM_CONFIG_DIR") and os.getenv("LUNARVIM_BASE_DIR"), "launch with lvim=true but LUNARVIM environments variables are not set")
-
-  	env = {
-  		["LUNARVIM_CACHE_DIR"] = os.getenv("LUNARVIM_CACHE_DIR"),
-  		["LUNARVIM_CONFIG_DIR"] = os.getenv("LUNARVIM_CONFIG_DIR"),
-  		["LUNARVIM_BASE_DIR"] = os.getenv("LUNARVIM_BASE_DIR"),
-  		["LUNARVIM_RUNTIME_DIR"] = os.getenv("LUNARVIM_RUNTIME_DIR"),
-  	}
+  local has_embed = false
+  local has_headless = false
+  local args = {}
+  for _, arg in ipairs(vim.v.argv) do
+  	if arg == '--embed' then
+  		has_embed = true
+  	elseif arg == '--headless' then
+  		has_headless = true
+  	end
+  	table.insert(args, arg)
   end
 
-  if opts and opts.lvim then
-  	table.insert(args, "-u")
-  	table.insert(args, os.getenv("LUNARVIM_BASE_DIR") .. "/init.lua")
-  elseif opts and opts.config_file then
-  	table.insert(args, "-u")
-  	table.insert(args, opts.config_file)
+  if not has_embed then
+  	table.insert(args, "--embed")
+  end
+
+  if not has_headless then
+  	table.insert(args, "--headless")
+  end
+
+  local env = {}
+  for k,v in pairs(vim.fn.environ()) do
+  	env[k] = v
   end
 
   auto_nvim = vim.fn.jobstart(args, {rpc = true, env = env})

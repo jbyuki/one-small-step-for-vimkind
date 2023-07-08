@@ -13,10 +13,8 @@ function M.run_this(opts)
 end
 
 @create_neovim_instance+=
-local env = nil
-local args = {vim.v.progpath, '--embed', '--headless'}
-@fill_env_if_lunarvim
-@fill_config_file_in_args
+@copy_args
+@copy_env
 auto_nvim = vim.fn.jobstart(args, {rpc = true, env = env})
 
 @launch_osv_server+=
