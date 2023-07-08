@@ -50,12 +50,6 @@ vim.api.nvim_set_keymap('n', '<F12>', [[:lua require"dap.ui.widgets".hover()<CR>
 vim.api.nvim_set_keymap('n', '<F5>', [[:lua require"osv".launch({port = 8086})<CR>]], { noremap = true })
 ```
 
-For LunarVim users, use this instead for `launch()`. The `lvim` flag should be set to `true`.
-
-```lua
-vim.api.nvim_set_keymap('n', '<F5>', [[:lua require"osv".launch({port = 8086, lvim = true})<CR>]], { noremap = true })
-```
-
 ## Quickstart
 
 * Launch the server in the debuggee using `F5`
