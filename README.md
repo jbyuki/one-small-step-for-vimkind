@@ -31,6 +31,7 @@ dap.configurations.lua = {
     type = 'nlua', 
     request = 'attach',
     name = "Attach to running Neovim instance",
+    program = function() require"osv".launch({port = 8086}) end,
   }
 }
 
