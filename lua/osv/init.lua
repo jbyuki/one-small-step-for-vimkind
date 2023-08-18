@@ -143,7 +143,18 @@ function M.launch(opts)
   nvim_server = vim.fn.jobstart(args, {rpc = true, env = env})
 
   local mode = vim.fn.rpcrequest(nvim_server, "nvim_get_mode")
-  assert(not mode.blocking, "Neovim is waiting for input at startup. Aborting.")
+  if mode.blocking then
+  	vim.api.nvim_echo({{"Neovim is waiting for input at startup. Aborting.", "ErrorMsg"}}, true, {})
+  	if nvim_server then
+  	  vim.fn.rpcnotify(nvim_server, 'nvim_command', [[qa!]])
+  		local ret = vim.fn.jobwait({nvim_server}, 1000)
+  		if ret == -1 then
+  			vim.fn.jobstop(nvim_server)
+  		end
+  	  nvim_server = nil
+  	end
+  	return
+  end
 
   if not hook_addres then
     hook_address = vim.fn.serverstart()
@@ -156,6 +167,18 @@ function M.launch(opts)
   local host = (opts and opts.host) or "127.0.0.1"
   local port = (opts and opts.port) or 0
   local server = vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"osv".start_server(...)]], {host, port, opts and opts.log})
+  if server == vim.NIL then
+  	vim.api.nvim_echo({{("Server failed to launch on port %d"):format(port), "ErrorMsg"}}, true, {})
+  	if nvim_server then
+  	  vim.fn.rpcnotify(nvim_server, 'nvim_command', [[qa!]])
+  		local ret = vim.fn.jobwait({nvim_server}, 1000)
+  		if ret == -1 then
+  			vim.fn.jobstop(nvim_server)
+  		end
+  	  nvim_server = nil
+  	end
+  	return
+  end
 
   print("Server started on port " .. server.port)
   M.disconnected = false
@@ -1239,6 +1262,10 @@ function M.start_server(host, port, do_log)
 
   end)
 
+  if not server:getsockname() then
+  	return nil
+  end
+
   print("Server started on " .. server:getsockname().port)
 
   if debug_hook_conn_address then
@@ -1271,7 +1298,10 @@ function M.stop()
 
   if nvim_server then
     vim.fn.rpcnotify(nvim_server, 'nvim_command', [[qa!]])
-    log("jobwait " .. vim.inspect(vim.fn.jobwait({nvim_server}, 500)))
+  	local ret = vim.fn.jobwait({nvim_server}, 1000)
+  	if ret == -1 then
+  		vim.fn.jobstop(nvim_server)
+  	end
     nvim_server = nil
   end
   -- this is sketchy....

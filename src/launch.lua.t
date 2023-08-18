@@ -41,6 +41,11 @@ vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[debug_hook_conn_address = ...]
 local host = (opts and opts.host) or "127.0.0.1"
 local port = (opts and opts.port) or 0
 local server = vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"osv".start_server(...)]], {host, port, opts and opts.log})
+if server == vim.NIL then
+	vim.api.nvim_echo({{("Server failed to launch on port %d"):format(port), "ErrorMsg"}}, true, {})
+	@terminate_adapter_server_process
+	return
+end
 
 @implement+=
 function M.wait_attach()
@@ -71,7 +76,11 @@ end
 
 @detect_if_nvim_is_blocking+=
 local mode = vim.fn.rpcrequest(nvim_server, "nvim_get_mode")
-assert(not mode.blocking, "Neovim is waiting for input at startup. Aborting.")
+if mode.blocking then
+	vim.api.nvim_echo({{"Neovim is waiting for input at startup. Aborting.", "ErrorMsg"}}, true, {})
+	@terminate_adapter_server_process
+	return
+end
 
 @verify_launch_arguments+=
 if opts then

@@ -41,6 +41,10 @@ server:listen(128, function(err)
   @start_reading
 end)
 
+if not server:getsockname() then
+	return nil
+end
+
 print("Server started on " .. server:getsockname().port)
 
 @accept_server+=

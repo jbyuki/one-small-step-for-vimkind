@@ -24,6 +24,9 @@ end
 @terminate_adapter_server_process+=
 if nvim_server then
   vim.fn.rpcnotify(nvim_server, 'nvim_command', [[qa!]])
-  log("jobwait " .. vim.inspect(vim.fn.jobwait({nvim_server}, 500)))
+	local ret = vim.fn.jobwait({nvim_server}, 1000)
+	if ret == -1 then
+		vim.fn.jobstop(nvim_server)
+	end
   nvim_server = nil
 end
