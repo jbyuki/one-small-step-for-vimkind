@@ -274,24 +274,45 @@ function M.wait_attach()
           end
 
           if not ln then
-            prev = cur
-
-            cur = {}
-            setmetatable(prev, {
-              __index = cur
-            })
-
-            frame = frame + 1
-            a = 1
+        		break
           else
             cur[ln] = lv
             a = a + 1
           end
         end
 
-        setmetatable(cur, {
-          __index = _G
-        })
+
+    		prev = cur
+
+    		cur = {}
+    		setmetatable(prev, {
+    			__index = cur
+    		})
+
+    		a = 1
+
+    		local succ, info = pcall(debug.getinfo, frame+1)
+    		if succ and info and info.func then
+    			local func = info.func
+    			local a = 1
+    			while true do
+    				local succ, ln, lv = pcall(debug.getupvalue, func, a)
+    				log("ln " .. vim.inspect(ln))
+    				if not succ then
+    					break
+    				end
+
+    				if not ln then
+    					break
+    				else
+    					cur[ln] = lv
+    					a = a + 1
+    				end
+    			end
+    		end
+    		setmetatable(cur, {
+    		  __index = _G
+    		})
 
     		local expr = args.expression
         local succ, f = pcall(loadstring, "return " .. expr)
@@ -329,24 +350,45 @@ function M.wait_attach()
           end
 
           if not ln then
-            prev = cur
-
-            cur = {}
-            setmetatable(prev, {
-              __index = cur
-            })
-
-            frame = frame + 1
-            a = 1
+        		break
           else
             cur[ln] = lv
             a = a + 1
           end
         end
 
-        setmetatable(cur, {
-          __index = _G
-        })
+
+    		prev = cur
+
+    		cur = {}
+    		setmetatable(prev, {
+    			__index = cur
+    		})
+
+    		a = 1
+
+    		local succ, info = pcall(debug.getinfo, frame+1)
+    		if succ and info and info.func then
+    			local func = info.func
+    			local a = 1
+    			while true do
+    				local succ, ln, lv = pcall(debug.getupvalue, func, a)
+    				log("ln " .. vim.inspect(ln))
+    				if not succ then
+    					break
+    				end
+
+    				if not ln then
+    					break
+    				else
+    					cur[ln] = lv
+    					a = a + 1
+    				end
+    			end
+    		end
+    		setmetatable(cur, {
+    		  __index = _G
+    		})
 
     		local expr = args.expression
         local succ, f = pcall(loadstring, "return " .. expr)
@@ -367,6 +409,7 @@ function M.wait_attach()
             variablesReference = 0,
           }
         }))
+
       else
         log("evaluate context " .. args.context .. " not supported!")
       end
@@ -788,21 +831,42 @@ function M.wait_attach()
         				  end
 
         				  if not ln then
-        				    prev = cur
-
-        				    cur = {}
-        				    setmetatable(prev, {
-        				      __index = cur
-        				    })
-
-        				    frame = frame + 1
-        				    a = 1
+        						break
         				  else
         				    cur[ln] = lv
         				    a = a + 1
         				  end
         				end
 
+
+        				prev = cur
+
+        				cur = {}
+        				setmetatable(prev, {
+        					__index = cur
+        				})
+
+        				a = 1
+
+        				local succ, info = pcall(debug.getinfo, frame+1)
+        				if succ and info and info.func then
+        					local func = info.func
+        					local a = 1
+        					while true do
+        						local succ, ln, lv = pcall(debug.getupvalue, func, a)
+        						log("ln " .. vim.inspect(ln))
+        						if not succ then
+        							break
+        						end
+
+        						if not ln then
+        							break
+        						else
+        							cur[ln] = lv
+        							a = a + 1
+        						end
+        					end
+        				end
         				setmetatable(cur, {
         				  __index = _G
         				})
@@ -838,21 +902,42 @@ function M.wait_attach()
         				  end
 
         				  if not ln then
-        				    prev = cur
-
-        				    cur = {}
-        				    setmetatable(prev, {
-        				      __index = cur
-        				    })
-
-        				    frame = frame + 1
-        				    a = 1
+        						break
         				  else
         				    cur[ln] = lv
         				    a = a + 1
         				  end
         				end
 
+
+        				prev = cur
+
+        				cur = {}
+        				setmetatable(prev, {
+        					__index = cur
+        				})
+
+        				a = 1
+
+        				local succ, info = pcall(debug.getinfo, frame+1)
+        				if succ and info and info.func then
+        					local func = info.func
+        					local a = 1
+        					while true do
+        						local succ, ln, lv = pcall(debug.getupvalue, func, a)
+        						log("ln " .. vim.inspect(ln))
+        						if not succ then
+        							break
+        						end
+
+        						if not ln then
+        							break
+        						else
+        							cur[ln] = lv
+        							a = a + 1
+        						end
+        					end
+        				end
         				setmetatable(cur, {
         				  __index = _G
         				})

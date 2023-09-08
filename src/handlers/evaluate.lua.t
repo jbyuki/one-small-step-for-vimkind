@@ -5,6 +5,8 @@ function handlers.evaluate(request)
   if args.context == "repl" then
 		local frame = frames[args.frameId]
     @retrieve_locals_in_frame
+		@retrieve_upvalues_in_frame
+		@retrieve_globals
 		local expr = args.expression
     @set_frame_environment_for_execution
     @evaluate_expression
@@ -12,6 +14,8 @@ function handlers.evaluate(request)
 	elseif args.context == "hover" then
 		local frame = frames[args.frameId]
     @retrieve_locals_in_frame
+		@retrieve_upvalues_in_frame
+		@retrieve_globals
 		local expr = args.expression
     @set_frame_environment_for_execution
     @evaluate_expression
@@ -36,21 +40,15 @@ while true do
   end
 
   if not ln then
-    prev = cur
-
-    cur = {}
-    setmetatable(prev, {
-      __index = cur
-    })
-
-    frame = frame + 1
-    a = 1
+		break
   else
     cur[ln] = lv
     a = a + 1
   end
 end
 
+
+@retrieve_globals+=
 setmetatable(cur, {
   __index = _G
 })
@@ -84,3 +82,33 @@ sendProxyDAP(make_response(request, {
     variablesReference = 0,
   }
 }))
+
+@retrieve_upvalues_in_frame+=
+prev = cur
+
+cur = {}
+setmetatable(prev, {
+	__index = cur
+})
+
+a = 1
+
+local succ, info = pcall(debug.getinfo, frame+1)
+if succ and info and info.func then
+	local func = info.func
+	local a = 1
+	while true do
+		local succ, ln, lv = pcall(debug.getupvalue, func, a)
+		log("ln " .. vim.inspect(ln))
+		if not succ then
+			break
+		end
+
+		if not ln then
+			break
+		else
+			cur[ln] = lv
+			a = a + 1
+		end
+	end
+end

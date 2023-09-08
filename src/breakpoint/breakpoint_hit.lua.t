@@ -71,6 +71,8 @@ end
 @check_breakpoint_condition+=
 local frame = 2
 @retrieve_locals_in_frame
+@retrieve_upvalues_in_frame
+@retrieve_globals
 @set_frame_environment_for_execution
 @evaluate_expression
 hit = result_repl == true
