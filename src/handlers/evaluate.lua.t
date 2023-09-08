@@ -48,10 +48,6 @@ while true do
 end
 
 
-@retrieve_globals+=
-setmetatable(cur, {
-  __index = _G
-})
 
 @set_frame_environment_for_execution+=
 local succ, f = pcall(loadstring, "return " .. expr)
@@ -111,4 +107,12 @@ if succ and info and info.func then
 			a = a + 1
 		end
 	end
+end
+
+@retrieve_globals+=
+local succ, info = pcall(debug.getinfo, frame+1)
+if succ and info and info.func then
+	setmetatable(cur, {
+		__index = getfenv(info.func)
+	})
 end

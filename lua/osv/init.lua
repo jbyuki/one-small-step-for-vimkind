@@ -282,6 +282,7 @@ function M.wait_attach()
         end
 
 
+
     		prev = cur
 
     		cur = {}
@@ -310,10 +311,13 @@ function M.wait_attach()
     				end
     			end
     		end
-    		setmetatable(cur, {
-    		  __index = _G
-    		})
 
+    		local succ, info = pcall(debug.getinfo, frame+1)
+    		if succ and info and info.func then
+    			setmetatable(cur, {
+    				__index = getfenv(info.func)
+    			})
+    		end
     		local expr = args.expression
         local succ, f = pcall(loadstring, "return " .. expr)
         if succ and f then
@@ -358,6 +362,7 @@ function M.wait_attach()
         end
 
 
+
     		prev = cur
 
     		cur = {}
@@ -386,10 +391,13 @@ function M.wait_attach()
     				end
     			end
     		end
-    		setmetatable(cur, {
-    		  __index = _G
-    		})
 
+    		local succ, info = pcall(debug.getinfo, frame+1)
+    		if succ and info and info.func then
+    			setmetatable(cur, {
+    				__index = getfenv(info.func)
+    			})
+    		end
     		local expr = args.expression
         local succ, f = pcall(loadstring, "return " .. expr)
         if succ and f then
@@ -839,6 +847,7 @@ function M.wait_attach()
         				end
 
 
+
         				prev = cur
 
         				cur = {}
@@ -867,10 +876,13 @@ function M.wait_attach()
         						end
         					end
         				end
-        				setmetatable(cur, {
-        				  __index = _G
-        				})
 
+        				local succ, info = pcall(debug.getinfo, frame+1)
+        				if succ and info and info.func then
+        					setmetatable(cur, {
+        						__index = getfenv(info.func)
+        					})
+        				end
         				local succ, f = pcall(loadstring, "return " .. expr)
         				if succ and f then
         				  setfenv(f, first)
@@ -910,6 +922,7 @@ function M.wait_attach()
         				end
 
 
+
         				prev = cur
 
         				cur = {}
@@ -938,10 +951,13 @@ function M.wait_attach()
         						end
         					end
         				end
-        				setmetatable(cur, {
-        				  __index = _G
-        				})
 
+        				local succ, info = pcall(debug.getinfo, frame+1)
+        				if succ and info and info.func then
+        					setmetatable(cur, {
+        						__index = getfenv(info.func)
+        					})
+        				end
         				local succ, f = pcall(loadstring, "return " .. expr)
         				if succ and f then
         				  setfenv(f, first)
