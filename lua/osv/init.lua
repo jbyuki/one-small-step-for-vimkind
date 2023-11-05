@@ -810,8 +810,6 @@ function M.wait_attach()
 
         if source_path:sub(1, 1) == "@" or step_in then
         	local path
-        	log("TESTING")
-        	log(vim.inspect(source_path))
         	if #source_path >= 4 and source_path:sub(1, 4) == "@vim" then
         		path = os.getenv("VIMRUNTIME") .. "/lua/" .. source_path:sub(2) 
         	else
