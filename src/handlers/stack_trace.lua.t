@@ -44,9 +44,11 @@ local stack_frame = {}
 stack_frame.id = frame_id
 stack_frame.name = info.name or info.what
 if info.source:sub(1, 1) == '@' then
+	local source = info.source:sub(2)
+	@handle_source_in_vim_runtime
   stack_frame.source = {
     name = info.source,
-		path = vim.fn.resolve(vim.fn.fnamemodify(info.source:sub(2), ":p")),
+		path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p")),
   }
   stack_frame.line = info.currentline 
   stack_frame.column = 0
@@ -55,3 +57,9 @@ else
   stack_frame.line = 0
   stack_frame.column = 0
 end
+
+@handle_source_in_vim_runtime+=
+if #info.source >= 4 and info.source:sub(1,4) == "@vim" then
+	source = os.getenv("VIMRUNTIME") .. "/lua/" .. info.source:sub(2) 
+end
+

@@ -14,7 +14,14 @@ local running = true
 
 @if_source_path_match_break+=
 if source_path:sub(1, 1) == "@" or step_in then
-  local path = source_path:sub(2)
+	local path
+	log("TESTING")
+	log(vim.inspect(source_path))
+	if #source_path >= 4 and source_path:sub(1, 4) == "@vim" then
+		@resolve_vim_runtime_directory
+	else
+		path = source_path:sub(2)
+	end
   local succ, path = pcall(vim.fn.fnamemodify, path, ":p")
   if succ then
 		path = vim.fn.resolve(path)
@@ -87,3 +94,6 @@ else
 	bp[2] = bp[2] - 1
 	hit = false
 end
+
+@resolve_vim_runtime_directory+=
+path = os.getenv("VIMRUNTIME") .. "/lua/" .. source_path:sub(2) 

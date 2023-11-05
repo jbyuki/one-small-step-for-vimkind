@@ -613,9 +613,14 @@ function M.wait_attach()
         stack_frame.id = frame_id
         stack_frame.name = info.name or info.what
         if info.source:sub(1, 1) == '@' then
+        	local source = info.source:sub(2)
+        	if #info.source >= 4 and info.source:sub(1,4) == "@vim" then
+        		source = os.getenv("VIMRUNTIME") .. "/lua/" .. info.source:sub(2) 
+        	end
+
           stack_frame.source = {
             name = info.source,
-        		path = vim.fn.resolve(vim.fn.fnamemodify(info.source:sub(2), ":p")),
+        		path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p")),
           }
           stack_frame.line = info.currentline 
           stack_frame.column = 0
@@ -624,6 +629,7 @@ function M.wait_attach()
           stack_frame.line = 0
           stack_frame.column = 0
         end
+
         table.insert(stack_frames, stack_frame)
         frames[frame_id] = 2+levels+start_frame
         frame_id = frame_id + 1
@@ -803,7 +809,14 @@ function M.wait_attach()
         local source_path = info.source
 
         if source_path:sub(1, 1) == "@" or step_in then
-          local path = source_path:sub(2)
+        	local path
+        	log("TESTING")
+        	log(vim.inspect(source_path))
+        	if #source_path >= 4 and source_path:sub(1, 4) == "@vim" then
+        		path = os.getenv("VIMRUNTIME") .. "/lua/" .. source_path:sub(2) 
+        	else
+        		path = source_path:sub(2)
+        	end
           local succ, path = pcall(vim.fn.fnamemodify, path, ":p")
           if succ then
         		path = vim.fn.resolve(path)
@@ -979,6 +992,7 @@ function M.wait_attach()
         					bp[2] = bp[2] - 1
         					hit = false
         				end
+
         			end
 
         			if hit then
