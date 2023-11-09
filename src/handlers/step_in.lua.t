@@ -24,10 +24,14 @@ sendProxyDAP(make_response(request,{}))
 
 @check_if_step_into+=
 elseif event == "line" and step_in then
-  @send_stopped_event_step
-  @disable_step_in
+	local valid = false
+	@make_sure_location_is_valid
+	if valid then
+		@send_stopped_event_step
+		@disable_step_in
 
-  @freeze_neovim_instance
+		@freeze_neovim_instance
+	end
 
 @send_stopped_event_step+=
 local msg = make_event("stopped")
@@ -36,3 +40,9 @@ msg.body = {
   threadId = 1
 }
 sendProxyDAP(msg)
+
+@make_sure_location_is_valid+=
+local info = debug.getinfo(2)
+if info and info.currentline and info.currentline ~= 0 then
+	valid = true
+end

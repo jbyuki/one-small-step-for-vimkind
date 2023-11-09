@@ -13,7 +13,7 @@ local source_path = info.source
 local running = true
 
 @if_source_path_match_break+=
-if source_path:sub(1, 1) == "@" or step_in then
+if source_path:sub(1, 1) == "@" then
 	local path
 	if #source_path >= 4 and source_path:sub(1, 4) == "@vim" then
 		@resolve_vim_runtime_directory

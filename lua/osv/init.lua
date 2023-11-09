@@ -808,7 +808,7 @@ function M.wait_attach()
         local info = debug.getinfo(2, "S")
         local source_path = info.source
 
-        if source_path:sub(1, 1) == "@" or step_in then
+        if source_path:sub(1, 1) == "@" then
         	local path
         	if #source_path >= 4 and source_path:sub(1, 4) == "@vim" then
         		path = os.getenv("VIMRUNTIME") .. "/lua/" .. source_path:sub(2) 
@@ -1032,38 +1032,46 @@ function M.wait_attach()
 
 
       elseif event == "line" and step_in then
-        local msg = make_event("stopped")
-        msg.body = {
-          reason = "step",
-          threadId = 1
-        }
-        sendProxyDAP(msg)
-        step_in = false
+      	local valid = false
+      	local info = debug.getinfo(2)
+      	if info and info.currentline and info.currentline ~= 0 then
+      		valid = true
+      	end
+      	if valid then
+      		local msg = make_event("stopped")
+      		msg.body = {
+      		  reason = "step",
+      		  threadId = 1
+      		}
+      		sendProxyDAP(msg)
+
+      		step_in = false
 
 
-        running = false
-        while not running do
-          if M.disconnected then
-            break
-          end
-          local i = 1
-          while i <= #M.server_messages do
-            local msg = M.server_messages[i]
-            local f = handlers[msg.command]
-            log(vim.inspect(msg))
-            if f then
-              f(msg)
-            else
-              log("Could not handle " .. msg.command)
-            end
-            i = i + 1
-          end
+      		running = false
+      		while not running do
+      		  if M.disconnected then
+      		    break
+      		  end
+      		  local i = 1
+      		  while i <= #M.server_messages do
+      		    local msg = M.server_messages[i]
+      		    local f = handlers[msg.command]
+      		    log(vim.inspect(msg))
+      		    if f then
+      		      f(msg)
+      		    else
+      		      log("Could not handle " .. msg.command)
+      		    end
+      		    i = i + 1
+      		  end
 
-          M.server_messages = {}
+      		  M.server_messages = {}
 
-          vim.wait(50)
-        end
+      		  vim.wait(50)
+      		end
 
+      	end
 
       elseif event == "line" and next and depth <= stack_level then
         local msg = make_event("stopped")
@@ -1072,6 +1080,7 @@ function M.wait_attach()
           threadId = 1
         }
         sendProxyDAP(msg)
+
         next = false
         monitor_stack = false
 
@@ -1107,6 +1116,7 @@ function M.wait_attach()
           threadId = 1
         }
         sendProxyDAP(msg)
+
         step_out = false
         monitor_stack = false
 
