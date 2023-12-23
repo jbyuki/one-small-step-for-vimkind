@@ -42,7 +42,8 @@ while true do
   if not ln then
 		break
   else
-    cur[ln] = lv
+    -- Avoid shadowing of the globals if a local variable is nil
+    cur[ln] = lv or vim.NIL
     a = a + 1
   end
 end
@@ -61,6 +62,10 @@ if succ then
   succ, result_repl = pcall(f)
 else
   result_repl = f
+end
+
+if result_repl == vim.NIL then
+  result_repl = nil 
 end
 
 @send_repl_evaluate_response+=
@@ -95,7 +100,6 @@ if succ and info and info.func then
 	local a = 1
 	while true do
 		local succ, ln, lv = pcall(debug.getupvalue, func, a)
-		log("ln " .. vim.inspect(ln))
 		if not succ then
 			break
 		end
@@ -103,7 +107,8 @@ if succ and info and info.func then
 		if not ln then
 			break
 		else
-			cur[ln] = lv
+      -- Avoid shadowing of the globals if a local variable is nil
+			cur[ln] = lv or vim.NIL
 			a = a + 1
 		end
 	end

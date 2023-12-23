@@ -276,7 +276,8 @@ function M.wait_attach()
           if not ln then
         		break
           else
-            cur[ln] = lv
+            -- Avoid shadowing of the globals if a local variable is nil
+            cur[ln] = lv or vim.NIL
             a = a + 1
           end
         end
@@ -298,7 +299,6 @@ function M.wait_attach()
     			local a = 1
     			while true do
     				local succ, ln, lv = pcall(debug.getupvalue, func, a)
-    				log("ln " .. vim.inspect(ln))
     				if not succ then
     					break
     				end
@@ -306,7 +306,8 @@ function M.wait_attach()
     				if not ln then
     					break
     				else
-    					cur[ln] = lv
+    		      -- Avoid shadowing of the globals if a local variable is nil
+    					cur[ln] = lv or vim.NIL
     					a = a + 1
     				end
     			end
@@ -329,6 +330,10 @@ function M.wait_attach()
           succ, result_repl = pcall(f)
         else
           result_repl = f
+        end
+
+        if result_repl == vim.NIL then
+          result_repl = nil 
         end
 
         sendProxyDAP(make_response(request, {
@@ -356,7 +361,8 @@ function M.wait_attach()
           if not ln then
         		break
           else
-            cur[ln] = lv
+            -- Avoid shadowing of the globals if a local variable is nil
+            cur[ln] = lv or vim.NIL
             a = a + 1
           end
         end
@@ -378,7 +384,6 @@ function M.wait_attach()
     			local a = 1
     			while true do
     				local succ, ln, lv = pcall(debug.getupvalue, func, a)
-    				log("ln " .. vim.inspect(ln))
     				if not succ then
     					break
     				end
@@ -386,7 +391,8 @@ function M.wait_attach()
     				if not ln then
     					break
     				else
-    					cur[ln] = lv
+    		      -- Avoid shadowing of the globals if a local variable is nil
+    					cur[ln] = lv or vim.NIL
     					a = a + 1
     				end
     			end
@@ -409,6 +415,10 @@ function M.wait_attach()
           succ, result_repl = pcall(f)
         else
           result_repl = f
+        end
+
+        if result_repl == vim.NIL then
+          result_repl = nil 
         end
 
         sendProxyDAP(make_response(request, {
@@ -852,7 +862,8 @@ function M.wait_attach()
         				  if not ln then
         						break
         				  else
-        				    cur[ln] = lv
+        				    -- Avoid shadowing of the globals if a local variable is nil
+        				    cur[ln] = lv or vim.NIL
         				    a = a + 1
         				  end
         				end
@@ -874,7 +885,6 @@ function M.wait_attach()
         					local a = 1
         					while true do
         						local succ, ln, lv = pcall(debug.getupvalue, func, a)
-        						log("ln " .. vim.inspect(ln))
         						if not succ then
         							break
         						end
@@ -882,7 +892,8 @@ function M.wait_attach()
         						if not ln then
         							break
         						else
-        							cur[ln] = lv
+        				      -- Avoid shadowing of the globals if a local variable is nil
+        							cur[ln] = lv or vim.NIL
         							a = a + 1
         						end
         					end
@@ -904,6 +915,10 @@ function M.wait_attach()
         				  succ, result_repl = pcall(f)
         				else
         				  result_repl = f
+        				end
+
+        				if result_repl == vim.NIL then
+        				  result_repl = nil 
         				end
 
         				hit = result_repl == true
@@ -927,7 +942,8 @@ function M.wait_attach()
         				  if not ln then
         						break
         				  else
-        				    cur[ln] = lv
+        				    -- Avoid shadowing of the globals if a local variable is nil
+        				    cur[ln] = lv or vim.NIL
         				    a = a + 1
         				  end
         				end
@@ -949,7 +965,6 @@ function M.wait_attach()
         					local a = 1
         					while true do
         						local succ, ln, lv = pcall(debug.getupvalue, func, a)
-        						log("ln " .. vim.inspect(ln))
         						if not succ then
         							break
         						end
@@ -957,7 +972,8 @@ function M.wait_attach()
         						if not ln then
         							break
         						else
-        							cur[ln] = lv
+        				      -- Avoid shadowing of the globals if a local variable is nil
+        							cur[ln] = lv or vim.NIL
         							a = a + 1
         						end
         					end
@@ -979,6 +995,10 @@ function M.wait_attach()
         				  succ, result_repl = pcall(f)
         				else
         				  result_repl = f
+        				end
+
+        				if result_repl == vim.NIL then
+        				  result_repl = nil 
         				end
 
         				hit = result_repl == true
