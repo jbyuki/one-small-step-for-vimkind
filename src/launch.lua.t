@@ -1,6 +1,7 @@
 ##lua-debug
 @implement+=
 function M.launch(opts)
+  @abort_early_if_already_running
   @verify_launch_arguments
 
   @init_logger
@@ -131,3 +132,8 @@ for k,v in pairs(vim.fn.environ()) do
 	env[k] = v
 end
 
+@abort_early_if_already_running+=
+if M.is_running() then
+	vim.api.nvim_echo({{"Server is already running.", "ErrorMsg"}}, true, {})
+  return
+end

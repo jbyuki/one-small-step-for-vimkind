@@ -80,6 +80,10 @@ function make_event(event)
 end
 
 function M.launch(opts)
+  if M.is_running() then
+  	vim.api.nvim_echo({{"Server is already running.", "ErrorMsg"}}, true, {})
+    return
+  end
   vim.validate {
     opts = {opts, 't', true}
   }
