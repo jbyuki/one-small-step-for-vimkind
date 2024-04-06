@@ -14,7 +14,7 @@ You can choose between two alternatives which are:
   vimspector: https://github.com/puremourning/vimspector
 
 |one-small-step-for-vimkind| was mainly developed with nvim-dap which
-is the one recommanded.
+is the one recommended.
 
                                   Type |gO| to the table of contents.
 
