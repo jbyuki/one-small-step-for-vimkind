@@ -26,7 +26,6 @@ msg.body = {
 sendProxyDAP(msg)
 
 @reset_internal_states+=
--- this is sketchy....
 running = true
 
 limit = 0
@@ -47,7 +46,7 @@ step_out = false
 
 seq_id = 1
 
-M.disconnected = false
+M.stop_freeze = false
 
 @implement+=
 function M.is_running()

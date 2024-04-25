@@ -11,9 +11,9 @@ function M.launch(opts)
   @clear_messages
   @launch_server
   print("Server started on port " .. server.port)
-  M.disconnected = false
+  M.stop_freeze = false
 	@create_autocommand_when_exit
-  vim.defer_fn(M.wait_attach, 0)
+  vim.schedule(M.wait_attach)
 
   return server
 end

@@ -28,8 +28,6 @@ function handlers.evaluate(request)
 end
 
 @retrieve_locals_in_frame+=
--- what is this abomination...
---              a former c++ programmer
 local a = 1
 local prev
 local cur = {}

@@ -50,7 +50,13 @@ local make_event
 local log
 
 local M = {}
-M.disconnected = false
+M.stop_freeze = false
+
+function M.unfreeze()
+  if not running then
+    M.stop_freeze = true
+  end
+end
 
 function sendProxyDAP(data)
   log(vim.inspect(data))
@@ -157,6 +163,7 @@ function M.launch(opts)
   		end
   	  nvim_server = nil
   	end
+
   	return
   end
 
@@ -181,18 +188,19 @@ function M.launch(opts)
   		end
   	  nvim_server = nil
   	end
+
   	return
   end
 
   print("Server started on port " .. server.port)
-  M.disconnected = false
+  M.stop_freeze = false
 	exit_autocmd = vim.api.nvim_create_autocmd({"VimLeavePre"}, {
 		callback = function(...)
 			M.stop()
 		end
 	})
 
-  vim.defer_fn(M.wait_attach, 0)
+  vim.schedule(M.wait_attach)
 
   return server
 end
@@ -235,7 +243,6 @@ function M.wait_attach()
     		M.stop()
     	end
 
-      -- this is sketchy....
       running = true
 
       limit = 0
@@ -256,16 +263,17 @@ function M.wait_attach()
 
       seq_id = 1
 
-      M.disconnected = false
+      M.stop_freeze = false
 
+    	if not request.terminateDebuggee then
+    		vim.schedule(M.wait_attach)
+    	end
     end
 
     function handlers.evaluate(request)
       local args = request.arguments
       if args.context == "repl" then
     		local frame = frames[args.frameId]
-        -- what is this abomination...
-        --              a former c++ programmer
         local a = 1
         local prev
         local cur = {}
@@ -359,8 +367,6 @@ function M.wait_attach()
 
     	elseif args.context == "hover" then
     		local frame = frames[args.frameId]
-        -- what is this abomination...
-        --              a former c++ programmer
         local a = 1
         local prev
         local cur = {}
@@ -870,8 +876,6 @@ function M.wait_attach()
         			elseif type(bp) == "string" then
         				local expr = bp
         				local frame = 2
-        				-- what is this abomination...
-        				--              a former c++ programmer
         				local a = 1
         				local prev
         				local cur = {}
@@ -951,8 +955,6 @@ function M.wait_attach()
         			elseif type(bp) == "table" then
         				local expr = bp[1]
         				local frame = 2
-        				-- what is this abomination...
-        				--              a former c++ programmer
         				local a = 1
         				local prev
         				local cur = {}
@@ -1050,7 +1052,8 @@ function M.wait_attach()
 
         				running = false
         				while not running do
-        				  if M.disconnected then
+        				  if M.stop_freeze then
+        				    M.stop_freeze = false
         				    break
         				  end
         				  local i = 1
@@ -1096,7 +1099,8 @@ function M.wait_attach()
 
       		running = false
       		while not running do
-      		  if M.disconnected then
+      		  if M.stop_freeze then
+      		    M.stop_freeze = false
       		    break
       		  end
       		  local i = 1
@@ -1133,7 +1137,8 @@ function M.wait_attach()
 
         running = false
         while not running do
-          if M.disconnected then
+          if M.stop_freeze then
+            M.stop_freeze = false
             break
           end
           local i = 1
@@ -1169,7 +1174,8 @@ function M.wait_attach()
 
         running = false
         while not running do
-          if M.disconnected then
+          if M.stop_freeze then
+            M.stop_freeze = false
             break
           end
           local i = 1
@@ -1201,7 +1207,8 @@ function M.wait_attach()
         sendProxyDAP(msg)
         running = false
         while not running do
-          if M.disconnected then
+          if M.stop_freeze then
+            M.stop_freeze = false
             break
           end
           local i = 1
@@ -1340,7 +1347,7 @@ function M.start_server(host, port, do_log)
   server:bind(host, port)
 
   server:listen(128, function(err)
-    M.disconnected = false
+    M.stop_freeze = false
 
     local sock = vim.loop.new_tcp()
     server:accept(sock)
@@ -1422,7 +1429,7 @@ function M.start_server(host, port, do_log)
         coroutine.resume(dap_read)
 
       else
-        vim.fn.rpcrequest(debug_hook_conn, "nvim_exec_lua", [[require"osv".disconnected = true]], {})
+        vim.fn.rpcrequest(debug_hook_conn, "nvim_exec_lua", [[require"osv".unfreeze()]], {})
 
         sock:shutdown()
         sock:close()
@@ -1473,7 +1480,7 @@ function M.stop()
   	end
     nvim_server = nil
   end
-  -- this is sketchy....
+
   running = true
 
   limit = 0
@@ -1494,7 +1501,7 @@ function M.stop()
 
   seq_id = 1
 
-  M.disconnected = false
+  M.stop_freeze = false
 
 	if exit_autocmd then
 		vim.api.nvim_del_autocmd(exit_autocmd)
