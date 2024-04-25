@@ -323,6 +323,7 @@ function M.wait_attach()
     				__index = getfenv(info.func)
     			})
     		end
+
     		local expr = args.expression
         local succ, f = pcall(loadstring, "return " .. expr)
         if succ and f then
@@ -340,11 +341,20 @@ function M.wait_attach()
           result_repl = nil 
         end
 
+        local v = {}
+        v.result = tostring(result_repl)
+        if type(result_repl) == "table" then
+          local lv = result_repl
+          vars_ref[vars_id] = lv
+          v.variablesReference = vars_id
+          vars_id = vars_id + 1
+
+        else
+          v.variablesReference = 0
+        end
+
         sendProxyDAP(make_response(request, {
-          body = {
-            result = vim.inspect(result_repl),
-            variablesReference = 0,
-          }
+          body = v
         }))
 
     	elseif args.context == "hover" then
@@ -408,6 +418,7 @@ function M.wait_attach()
     				__index = getfenv(info.func)
     			})
     		end
+
     		local expr = args.expression
         local succ, f = pcall(loadstring, "return " .. expr)
         if succ and f then
@@ -425,11 +436,20 @@ function M.wait_attach()
           result_repl = nil 
         end
 
+        local v = {}
+        v.result = tostring(result_repl)
+        if type(result_repl) == "table" then
+          local lv = result_repl
+          vars_ref[vars_id] = lv
+          v.variablesReference = vars_id
+          vars_id = vars_id + 1
+
+        else
+          v.variablesReference = 0
+        end
+
         sendProxyDAP(make_response(request, {
-          body = {
-            result = vim.inspect(result_repl),
-            variablesReference = 0,
-          }
+          body = v
         }))
 
       else
@@ -909,6 +929,7 @@ function M.wait_attach()
         						__index = getfenv(info.func)
         					})
         				end
+
         				local succ, f = pcall(loadstring, "return " .. expr)
         				if succ and f then
         				  setfenv(f, first)
@@ -989,6 +1010,7 @@ function M.wait_attach()
         						__index = getfenv(info.func)
         					})
         				end
+
         				local succ, f = pcall(loadstring, "return " .. expr)
         				if succ and f then
         				  setfenv(f, first)

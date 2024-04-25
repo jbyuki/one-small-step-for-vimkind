@@ -10,6 +10,7 @@ function handlers.evaluate(request)
 		local expr = args.expression
     @set_frame_environment_for_execution
     @evaluate_expression
+    @make_evaluate_reponse
     @send_repl_evaluate_response
 	elseif args.context == "hover" then
 		local frame = frames[args.frameId]
@@ -19,6 +20,7 @@ function handlers.evaluate(request)
 		local expr = args.expression
     @set_frame_environment_for_execution
     @evaluate_expression
+    @make_evaluate_reponse
     @send_hover_evaluate_response
   else
     log("evaluate context " .. args.context .. " not supported!")
@@ -70,18 +72,12 @@ end
 
 @send_repl_evaluate_response+=
 sendProxyDAP(make_response(request, {
-  body = {
-    result = vim.inspect(result_repl),
-    variablesReference = 0,
-  }
+  body = v
 }))
 
 @send_hover_evaluate_response+=
 sendProxyDAP(make_response(request, {
-  body = {
-    result = vim.inspect(result_repl),
-    variablesReference = 0,
-  }
+  body = v
 }))
 
 @retrieve_upvalues_in_frame+=
@@ -121,3 +117,14 @@ if succ and info and info.func then
 		__index = getfenv(info.func)
 	})
 end
+
+@make_evaluate_reponse+=
+local v = {}
+v.result = tostring(result_repl)
+if type(result_repl) == "table" then
+  local lv = result_repl
+  @make_variable_reference_for_table
+else
+  v.variablesReference = 0
+end
+
