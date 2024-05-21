@@ -26,7 +26,6 @@ local sendProxyDAP
 
 @implement+=
 function sendProxyDAP(data)
-  log(vim.inspect(data))
   vim.fn.rpcnotify(nvim_server, 'nvim_exec_lua', [[require"osv".sendDAP(...)]], {data})
 end
 

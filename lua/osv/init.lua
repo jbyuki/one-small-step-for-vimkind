@@ -59,7 +59,6 @@ function M.unfreeze()
 end
 
 function sendProxyDAP(data)
-  log(vim.inspect(data))
   vim.fn.rpcnotify(nvim_server, 'nvim_exec_lua', [[require"osv".sendDAP(...)]], {data})
 end
 
@@ -1328,10 +1327,12 @@ end
 function M.sendDAP(msg)
   local succ, encoded = pcall(vim.fn.json_encode, msg)
 
+  log(vim.inspect(msg))
   if succ then
     local bin_msg = "Content-Length: " .. string.len(encoded) .. "\r\n\r\n" .. encoded
 
     client:write(bin_msg)
+
   else
     log(encoded)
   end
