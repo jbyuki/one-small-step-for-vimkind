@@ -72,6 +72,10 @@ See [osv.txt](https://github.com/jbyuki/lua-debug.nvim/blob/main/doc/osv.txt) fo
 
 Set `nest_if_no_args` to true. See [this issue](https://github.com/willothy/flatten.nvim/issues/41) for more informations.
 
+### `fzf-lua`
+
+Under special circumstances, the headless instance can fail. See [this issue](https://github.com/jbyuki/one-small-step-for-vimkind/issues/45#issuecomment-2125749906) for more details.
+
 ### Debugging plugins
 
 Breakpoints are path-sensitive so they should always be set in the executed file
