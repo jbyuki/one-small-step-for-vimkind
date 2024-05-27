@@ -1,7 +1,7 @@
 # one-small-step-for-vimkind
 
 
-`one-small-step-for-vimkind` is an **adapter** for the Neovim lua language. See the [DAP protocol](https://microsoft.github.io/debug-adapter-protocol/overview) to know more about adapters. It allows you to debug any lua code running in a Neovim instance.
+`one-small-step-for-vimkind` .a.k.a `osv` is an **adapter** for the Neovim lua language. See the [DAP protocol](https://microsoft.github.io/debug-adapter-protocol/overview) to know more about adapters. It allows you to debug any lua code running in a Neovim instance.
 
 ## Install
 
