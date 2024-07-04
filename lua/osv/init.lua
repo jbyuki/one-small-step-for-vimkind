@@ -636,36 +636,55 @@ function M.wait_attach()
 
       local stack_frames = {}
       local levels = 1
+      local skip_firsts = true
       while levels <= max_levels or max_levels == -1 do
-        local info = debug.getinfo(2+levels+start_frame)
+        local info = debug.getinfo(levels+start_frame)
         if not info then
           break
         end
 
-        local stack_frame = {}
-        stack_frame.id = frame_id
-        stack_frame.name = info.name or info.what
-        if info.source:sub(1, 1) == '@' then
-        	local source = info.source:sub(2)
-        	if #info.source >= 4 and info.source:sub(1,4) == "@vim" then
-        		source = os.getenv("VIMRUNTIME") .. "/lua/" .. info.source:sub(2) 
-        	end
-
-          stack_frame.source = {
-            name = info.source,
-        		path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p")),
-          }
-          stack_frame.line = info.currentline 
-          stack_frame.column = 0
-        else
-        	-- Should be ignored by the client
-          stack_frame.line = 0
-          stack_frame.column = 0
+        local inside_osv = false
+        if skip_firsts then
+          if info.source:sub(1, 1) == '@' then
+            local source = info.source:sub(2)
+            local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
+            if vim.fs.basename(path) == 'init.lua' then
+              local parent = vim.fs.dirname(path)
+              if parent and vim.fs.basename(parent) == "osv" then
+                inside_osv = true
+              end
+            end
+          end
         end
 
-        table.insert(stack_frames, stack_frame)
-        frames[frame_id] = 2+levels+start_frame
-        frame_id = frame_id + 1
+        if not skip_firsts or not inside_osv then
+          local stack_frame = {}
+          stack_frame.id = frame_id
+          stack_frame.name = info.name or info.what
+          if info.source:sub(1, 1) == '@' then
+          	local source = info.source:sub(2)
+          	if #info.source >= 4 and info.source:sub(1,4) == "@vim" then
+          		source = os.getenv("VIMRUNTIME") .. "/lua/" .. info.source:sub(2) 
+          	end
+
+
+            stack_frame.source = {
+              name = info.source,
+          		path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p")),
+            }
+            stack_frame.line = info.currentline 
+            stack_frame.column = 0
+          else
+          	-- Should be ignored by the client
+            stack_frame.line = 0
+            stack_frame.column = 0
+          end
+
+          table.insert(stack_frames, stack_frame)
+          frames[frame_id] = levels+start_frame
+          frame_id = frame_id + 1
+          skip_firsts = false 
+        end
 
         levels = levels + 1
       end
