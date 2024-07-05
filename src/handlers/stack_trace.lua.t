@@ -39,7 +39,6 @@ while levels <= max_levels or max_levels == -1 do
   table.insert(stack_frames, stack_frame)
   frames[frame_id] = skip+levels+start_frame
   frame_id = frame_id + 1
-  skip_firsts = false 
 
   levels = levels + 1
 end
@@ -70,22 +69,21 @@ end
 
 
 @skip_internal_frames+=
-local inside_osv = false
+local off = 0
 while true do
-  local info = debug.getinfo(skip+levels+start_frame)
+  local info = debug.getinfo(off+levels+start_frame)
   if not info then
     break
   end
 
-  local current_inside_osv = false
+  local inside_osv = false
   @check_if_inside_osv
 
-  if inside_osv and not current_inside_osv then
-    break
+  if inside_osv then
+    skip = off + 1
   end
 
-  inside_osv = current_inside_osv
-  skip = skip + 1
+  off = off + 1
 end
 
 @check_if_inside_osv+=
@@ -95,7 +93,7 @@ if info.source:sub(1, 1) == '@' then
   if vim.fs.basename(path) == 'init.lua' then
     local parent = vim.fs.dirname(path)
     if parent and vim.fs.basename(parent) == "osv" then
-      current_inside_osv = true
+      inside_osv = true
     end
   end
 end
