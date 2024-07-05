@@ -25,25 +25,21 @@ local frames = {}
 
 @parse_debug_traces+=
 local levels = 1
-local skip_firsts = true
+local skip = 0
+
+@skip_internal_frames
+
 while levels <= max_levels or max_levels == -1 do
-  local info = debug.getinfo(levels+start_frame)
+  local info = debug.getinfo(skip+levels+start_frame)
   if not info then
     break
   end
 
-  local inside_osv = false
-  if skip_firsts then
-    @check_if_stack_frame_is_inside_osv
-  end
-
-  if not skip_firsts or not inside_osv then
-    @fill_stack_frame_with_info
-    table.insert(stack_frames, stack_frame)
-    frames[frame_id] = levels+start_frame
-    frame_id = frame_id + 1
-    skip_firsts = false 
-  end
+  @fill_stack_frame_with_info
+  table.insert(stack_frames, stack_frame)
+  frames[frame_id] = skip+levels+start_frame
+  frame_id = frame_id + 1
+  skip_firsts = false 
 
   levels = levels + 1
 end
@@ -73,14 +69,33 @@ if #info.source >= 4 and info.source:sub(1,4) == "@vim" then
 end
 
 
-@check_if_stack_frame_is_inside_osv+=
+@skip_internal_frames+=
+local inside_osv = false
+while true do
+  local info = debug.getinfo(skip+levels+start_frame)
+  if not info then
+    break
+  end
+
+  local current_inside_osv = false
+  @check_if_inside_osv
+
+  if inside_osv and not current_inside_osv then
+    break
+  end
+
+  inside_osv = current_inside_osv
+  skip = skip + 1
+end
+
+@check_if_inside_osv+=
 if info.source:sub(1, 1) == '@' then
   local source = info.source:sub(2)
   local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
   if vim.fs.basename(path) == 'init.lua' then
     local parent = vim.fs.dirname(path)
     if parent and vim.fs.basename(parent) == "osv" then
-      inside_osv = true
+      current_inside_osv = true
     end
   end
 end
