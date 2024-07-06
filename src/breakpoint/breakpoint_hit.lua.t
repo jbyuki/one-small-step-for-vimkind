@@ -6,7 +6,10 @@ if event == "line" and bps then
   @if_source_path_match_break
 
 @get_source_path+=
-local info = debug.getinfo(2, "S")
+local surface = 0
+@get_surface_stack_frame
+
+local info = debug.getinfo(surface, "S")
 local source_path = info.source
 
 @script_variables+=
@@ -95,3 +98,20 @@ end
 
 @resolve_vim_runtime_directory+=
 path = os.getenv("VIMRUNTIME") .. "/lua/" .. source_path:sub(2) 
+
+@get_surface_stack_frame+=
+local off = 0
+while true do
+  local info = debug.getinfo(off, "S")
+  if not info then
+    break
+  end
+
+  local inside_osv = false
+  @check_if_inside_osv
+
+  if not inside_osv then
+    surface = off
+  end
+  off = off + 1
+end
