@@ -42,7 +42,11 @@ msg.body = {
 sendProxyDAP(msg)
 
 @make_sure_location_is_valid+=
-local info = debug.getinfo(2)
+local surface = 0
+@get_surface_stack_frame
+
+local info = debug.getinfo(surface)
+
 if info and info.currentline and info.currentline ~= 0 then
 	valid = true
 end

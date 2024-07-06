@@ -14,7 +14,10 @@ end
 
 @line_hook+=
 function line_hook(event, line)
-	local info = debug.getinfo(2, "S")
+	local surface = 0
+	@get_surface_stack_frame
+
+	local info = debug.getinfo(surface, "S")
 	local source_path = info.source
 	@add_to_cache
 end

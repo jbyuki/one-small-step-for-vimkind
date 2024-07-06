@@ -1186,7 +1186,34 @@ function M.wait_attach()
 
       elseif event == "line" and step_in then
       	local valid = false
-      	local info = debug.getinfo(2)
+      	local surface = 0
+      	local off = 0
+      	while true do
+      	  local info = debug.getinfo(off, "S")
+      	  if not info then
+      	    break
+      	  end
+
+      	  local inside_osv = false
+      	  if info.source:sub(1, 1) == '@' then
+      	    local source = info.source:sub(2)
+      	    local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
+      	    if vim.fs.basename(path) == 'init.lua' then
+      	      local parent = vim.fs.dirname(path)
+      	      if parent and vim.fs.basename(parent) == "osv" then
+      	        inside_osv = true
+      	      end
+      	    end
+      	  end
+
+      	  if not inside_osv then
+      	    surface = off
+      	  end
+      	  off = off + 1
+      	end
+
+      	local info = debug.getinfo(surface)
+
       	if info and info.currentline and info.currentline ~= 0 then
       		valid = true
       	end
@@ -1619,7 +1646,33 @@ end
 
 function M.start_trace()
 	function line_hook(event, line)
-		local info = debug.getinfo(2, "S")
+		local surface = 0
+		local off = 0
+		while true do
+		  local info = debug.getinfo(off, "S")
+		  if not info then
+		    break
+		  end
+
+		  local inside_osv = false
+		  if info.source:sub(1, 1) == '@' then
+		    local source = info.source:sub(2)
+		    local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
+		    if vim.fs.basename(path) == 'init.lua' then
+		      local parent = vim.fs.dirname(path)
+		      if parent and vim.fs.basename(parent) == "osv" then
+		        inside_osv = true
+		      end
+		    end
+		  end
+
+		  if not inside_osv then
+		    surface = off
+		  end
+		  off = off + 1
+		end
+
+		local info = debug.getinfo(surface, "S")
 		local source_path = info.source
 		cache[source_path] = cache[source_path] or {}
 		table.insert(cache[source_path], line)
