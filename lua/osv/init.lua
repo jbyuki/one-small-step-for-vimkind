@@ -458,15 +458,33 @@ function M.wait_attach()
 
     function handlers.next(request)
       local depth = 0
+      local surface = 0
+      local off = 0
       while true do
-        local info = debug.getinfo(depth+3, "S")
+        local info = debug.getinfo(off, "S")
         if not info then
           break
         end
-        depth = depth + 1
+
+        local inside_osv = false
+        if info.source:sub(1, 1) == '@' then
+          local source = info.source:sub(2)
+          local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
+          if vim.fs.basename(path) == 'init.lua' then
+            local parent = vim.fs.dirname(path)
+            if parent and vim.fs.basename(parent) == "osv" then
+              inside_osv = true
+            end
+          end
+        end
+        if inside_osv then
+          surface = off
+        end
+        off = off + 1
       end
 
-      stack_level = depth-1
+      depth = (off - 1) - surface
+      stack_level = depth
 
       next = true
       monitor_stack = true
@@ -724,15 +742,33 @@ function M.wait_attach()
       monitor_stack = true
 
       local depth = 0
+      local surface = 0
+      local off = 0
       while true do
-        local info = debug.getinfo(depth+3, "S")
+        local info = debug.getinfo(off, "S")
         if not info then
           break
         end
-        depth = depth + 1
+
+        local inside_osv = false
+        if info.source:sub(1, 1) == '@' then
+          local source = info.source:sub(2)
+          local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
+          if vim.fs.basename(path) == 'init.lua' then
+            local parent = vim.fs.dirname(path)
+            if parent and vim.fs.basename(parent) == "osv" then
+              inside_osv = true
+            end
+          end
+        end
+        if inside_osv then
+          surface = off
+        end
+        off = off + 1
       end
 
-      stack_level = depth-1
+      depth = (off - 1) - surface
+      stack_level = depth
 
       running = true
 
@@ -856,14 +892,32 @@ function M.wait_attach()
 
       local depth = 0
       if monitor_stack then
+        local surface = 0
+        local off = 0
         while true do
-          local info = debug.getinfo(depth+3, "S")
+          local info = debug.getinfo(off, "S")
           if not info then
             break
           end
-          depth = depth + 1
+
+          local inside_osv = false
+          if info.source:sub(1, 1) == '@' then
+            local source = info.source:sub(2)
+            local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
+            if vim.fs.basename(path) == 'init.lua' then
+              local parent = vim.fs.dirname(path)
+              if parent and vim.fs.basename(parent) == "osv" then
+                inside_osv = true
+              end
+            end
+          end
+          if inside_osv then
+            surface = off
+          end
+          off = off + 1
         end
 
+        depth = (off - 1) - surface
       end
 
       local bps = breakpoints[line]

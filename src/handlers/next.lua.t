@@ -15,7 +15,7 @@ local next = false
 local monitor_stack = false
 
 @set_stack_level_to_current+=
-stack_level = depth-1
+stack_level = depth
 
 @set_next_variable+=
 next = true
@@ -33,11 +33,20 @@ elseif event == "line" and next and depth <= stack_level then
   @freeze_neovim_instance
 
 @get_stack_depth_with_debug_getinfo+=
+local surface = 0
+local off = 0
 while true do
-  local info = debug.getinfo(depth+3, "S")
+  local info = debug.getinfo(off, "S")
   if not info then
     break
   end
-  depth = depth + 1
+
+  local inside_osv = false
+  @check_if_inside_osv
+  if inside_osv then
+    surface = off
+  end
+  off = off + 1
 end
 
+depth = (off - 1) - surface
