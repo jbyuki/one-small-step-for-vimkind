@@ -110,8 +110,8 @@ while true do
   local inside_osv = false
   @check_if_inside_osv
 
-  if not inside_osv then
-    surface = off
+  if inside_osv then
+    surface = off + 1
   end
   off = off + 1
 end

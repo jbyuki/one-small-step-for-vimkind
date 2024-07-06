@@ -942,8 +942,8 @@ function M.wait_attach()
             end
           end
 
-          if not inside_osv then
-            surface = off
+          if inside_osv then
+            surface = off + 1
           end
           off = off + 1
         end
@@ -1206,8 +1206,8 @@ function M.wait_attach()
       	    end
       	  end
 
-      	  if not inside_osv then
-      	    surface = off
+      	  if inside_osv then
+      	    surface = off + 1
       	  end
       	  off = off + 1
       	end
@@ -1666,8 +1666,8 @@ function M.start_trace()
 		    end
 		  end
 
-		  if not inside_osv then
-		    surface = off
+		  if inside_osv then
+		    surface = off + 1
 		  end
 		  off = off + 1
 		end
