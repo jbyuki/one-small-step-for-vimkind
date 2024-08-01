@@ -66,6 +66,11 @@ Alternaltively you can:
 
 See [osv.txt](https://github.com/jbyuki/lua-debug.nvim/blob/main/doc/osv.txt) for more detailed instructions.
 
+## Debug configuration files
+
+It is possible to debug configuration files that are usually run when neovim launches.
+See the corresponding section in [osv.txt](https://github.com/jbyuki/lua-debug.nvim/blob/main/doc/osv.txt).
+
 ## Troubleshoot
 
 ### `flatten.nvim`
