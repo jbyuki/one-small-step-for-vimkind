@@ -1,8 +1,9 @@
 ##lua-debug
 @implement+=
 function M.launch(opts)
-  @abort_early_if_already_running
   @verify_launch_arguments
+  @check_recursive_if_not_disabled
+  @abort_early_if_already_running
 
   @init_logger
   @spawn_nvim_instance_for_server
@@ -13,7 +14,11 @@ function M.launch(opts)
   print("Server started on port " .. server.port)
   M.stop_freeze = false
 	@create_autocommand_when_exit
-  vim.schedule(M.wait_attach)
+  if not opts or not opts.blocking then
+    vim.schedule(M.wait_attach)
+  else
+    @wait_attach_blocking
+  end
 
   return server
 end
@@ -26,6 +31,7 @@ local nvim_server
 @copy_env
 @fill_env_with_custom
 @fill_args_with_custom
+@set_env_for_headless_instance
 @if_exists_use_custom_for_launching_server
 else
   nvim_server = vim.fn.jobstart(args, {rpc = true, env = env})
@@ -58,12 +64,16 @@ function M.wait_attach()
     @wait_for_attach_message
     if not has_attach then return end
     timer:close()
-
-    local handlers = {}
-    @attach_variables
-    @implement_handlers
-    @attach_to_current_instance
+    M.attach()
   end))
+end
+
+@implement+=
+function M.attach()
+  local handlers = {}
+  @attach_variables
+  @implement_handlers
+  @attach_to_current_instance
 end
 
 @verify_launch_arguments+=
@@ -150,3 +160,23 @@ if M.on["start_server"] then
   nvim_server = M.callback["start_server"](args, env)
   assert(nvim_server)
 
+
+@check_recursive_if_not_disabled+=
+if not opts or not opts.recursive then
+  @copy_env
+  if env["HEADLESS_OSV"] then
+    return
+  end
+end
+
+@set_env_for_headless_instance+=
+env["HEADLESS_OSV"] = true
+
+@wait_attach_blocking+=
+while true do
+  @wait_for_attach_message
+  if has_attach then break end
+  vim.wait(50)
+end
+
+M.attach()

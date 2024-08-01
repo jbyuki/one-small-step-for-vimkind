@@ -127,9 +127,13 @@ run_this({opts})                                        *osv.run_this()*
 
     Parameters:
         {opts} Optional parameters.
-               • `config_file`: See |osv.launch()|
-               • `lvim`: See |osv.launch()|
-               • `log`: boolean to enable logging
+               • `config_file`: (string) See |osv.launch()|
+               • `log`: (bool) boolean to enable logging
+               • `recursive`: (bool) if true, will not check for recursive launch
+               calls (default is false)
+               • `blocking`: (bool) if true, will freeze the instance until a
+               client is connected (default is false)
+
 
 This command will automatically start the DAP server and connect
 nvim-dap to it. You still need to set the `dap.adapters.nlua` as 
@@ -189,7 +193,36 @@ Logging can be enabled by passing the corresponding parameter in
 |osv.launch|. The log will be written in:
 >
   vim.fn.stdpath('data') .. '/osv.log'
+
+=========================================================================
+init.lua debugging                                        *osv-init-debug*
+
+It is possible to debug the `init.lua` configuration file but it requires a
+few additionnal configuration steps. 
+
+1. Put the following in your init.lua file. 
+
+>
+  if init_debug then
+    require"osv".launch({port=8086, blocking=true})
+  end
 <
+
+When the global variable `init_debug` is true, this will launch a debugging
+server directly from the `init.lua` file. The `blocking` flag will freeze the
+instance and wait for any client connection.
+
+2. Launch the debuggee instance with:
+>
+  nvim --cmd "lua init_debug=true"
+
+The instance should freeze immediately.
+
+3. Open another neovim instance as you would normally. Put a breakpoint in
+`init.lua` and connect to the debuggee using the DAP client. Execution should
+resume and stop on the breakpoint. It should now be possible to step directly
+in the `init.lua`.
+
 =========================================================================
 osv plugins debugging                             *osv-plugins-debugging
 
