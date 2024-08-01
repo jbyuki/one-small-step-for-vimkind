@@ -68,7 +68,7 @@ See [osv.txt](https://github.com/jbyuki/lua-debug.nvim/blob/main/doc/osv.txt) fo
 
 ## Debug configuration files
 
-It is possible to debug configuration files that are usually run when neovim launches.
+It is now possible to debug configuration files (ex. `init.lua`).
 See the corresponding section in [osv.txt](https://github.com/jbyuki/lua-debug.nvim/blob/main/doc/osv.txt).
 
 ## Troubleshoot
