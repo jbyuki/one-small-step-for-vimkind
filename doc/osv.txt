@@ -163,6 +163,26 @@ Checks whether |osv| is currently running.
 
 
 =========================================================================
+osv callbacks                                             *osv-callbacks*
+
+Certain default bevahviours can be overriden using callbacks.  All callbacks
+are stored in the `on` table. If no function is assigned, the default
+bevahiour is executed, otherwise the callback will be called instead. Only one
+callback can be assigned to an action.
+
+For example:
+>
+  require"osv".on["action"] = function(...)
+  end
+<
+The `start_server` event is called when osv starts the headless instance for
+the DAP server. The default behaviour is:
+>
+  require"osv".on["start_server"] = function(args, env)
+    return vim.fn.jobstart(args, {rpc = true, env = env})
+  end
+
+=========================================================================
 osv logging                                                 *osv-logging*
 
 Logging can be enabled by passing the corresponding parameter in

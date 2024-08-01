@@ -26,7 +26,10 @@ local nvim_server
 @copy_env
 @fill_env_with_custom
 @fill_args_with_custom
-nvim_server = vim.fn.jobstart(args, {rpc = true, env = env})
+@if_exists_use_custom_for_launching_server
+else
+  nvim_server = vim.fn.jobstart(args, {rpc = true, env = env})
+end
 
 @script_variables+=
 local hook_address
@@ -137,3 +140,13 @@ if M.is_running() then
 	vim.api.nvim_echo({{"Server is already running.", "ErrorMsg"}}, true, {})
   return
 end
+
+
+@implement+=
+M.on = {}
+
+@if_exists_use_custom_for_launching_server+=
+if M.on["start_server"] then
+  nvim_server = M.callback["start_server"](args, env)
+  assert(nvim_server)
+

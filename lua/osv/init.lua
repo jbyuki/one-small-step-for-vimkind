@@ -89,6 +89,8 @@ function M.launch(opts)
   	vim.api.nvim_echo({{"Server is already running.", "ErrorMsg"}}, true, {})
     return
   end
+
+
   vim.validate {
     opts = {opts, 't', true}
   }
@@ -149,7 +151,13 @@ function M.launch(opts)
   	end
   end
 
-  nvim_server = vim.fn.jobstart(args, {rpc = true, env = env})
+  if M.on["start_server"] then
+    nvim_server = M.callback["start_server"](args, env)
+    assert(nvim_server)
+
+  else
+    nvim_server = vim.fn.jobstart(args, {rpc = true, env = env})
+  end
 
   local mode = vim.fn.rpcrequest(nvim_server, "nvim_get_mode")
   if mode.blocking then
@@ -1362,6 +1370,8 @@ function M.wait_attach()
 
   end))
 end
+
+M.on = {}
 
 function log(str)
   if log_filename then
