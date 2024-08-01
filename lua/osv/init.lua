@@ -467,16 +467,15 @@ function M.wait_attach()
         end
 
         local inside_osv = false
-        if info.source:sub(1, 1) == '@' then
+        if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
           local source = info.source:sub(2)
           local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
-          if vim.fs.basename(path) == 'init.lua' then
-            local parent = vim.fs.dirname(path)
-            if parent and vim.fs.basename(parent) == "osv" then
-              inside_osv = true
-            end
+          local parent = vim.fs.dirname(path)
+          if parent and vim.fs.basename(parent) == "osv" then
+            inside_osv = true
           end
         end
+
         if inside_osv then
           surface = off
         end
@@ -664,16 +663,15 @@ function M.wait_attach()
         end
 
         local inside_osv = false
-        if info.source:sub(1, 1) == '@' then
+        if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
           local source = info.source:sub(2)
           local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
-          if vim.fs.basename(path) == 'init.lua' then
-            local parent = vim.fs.dirname(path)
-            if parent and vim.fs.basename(parent) == "osv" then
-              inside_osv = true
-            end
+          local parent = vim.fs.dirname(path)
+          if parent and vim.fs.basename(parent) == "osv" then
+            inside_osv = true
           end
         end
+
 
         if inside_osv then
           skip = off + 1
@@ -682,6 +680,8 @@ function M.wait_attach()
         off = off + 1
       end
 
+
+      -- @log_whole_stack_trace
 
       while levels <= max_levels or max_levels == -1 do
         local info = debug.getinfo(skip+levels+start_frame)
@@ -751,16 +751,15 @@ function M.wait_attach()
         end
 
         local inside_osv = false
-        if info.source:sub(1, 1) == '@' then
+        if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
           local source = info.source:sub(2)
           local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
-          if vim.fs.basename(path) == 'init.lua' then
-            local parent = vim.fs.dirname(path)
-            if parent and vim.fs.basename(parent) == "osv" then
-              inside_osv = true
-            end
+          local parent = vim.fs.dirname(path)
+          if parent and vim.fs.basename(parent) == "osv" then
+            inside_osv = true
           end
         end
+
         if inside_osv then
           surface = off
         end
@@ -901,16 +900,15 @@ function M.wait_attach()
           end
 
           local inside_osv = false
-          if info.source:sub(1, 1) == '@' then
+          if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
             local source = info.source:sub(2)
             local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
-            if vim.fs.basename(path) == 'init.lua' then
-              local parent = vim.fs.dirname(path)
-              if parent and vim.fs.basename(parent) == "osv" then
-                inside_osv = true
-              end
+            local parent = vim.fs.dirname(path)
+            if parent and vim.fs.basename(parent) == "osv" then
+              inside_osv = true
             end
           end
+
           if inside_osv then
             surface = off
           end
@@ -931,16 +929,15 @@ function M.wait_attach()
           end
 
           local inside_osv = false
-          if info.source:sub(1, 1) == '@' then
+          if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
             local source = info.source:sub(2)
             local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
-            if vim.fs.basename(path) == 'init.lua' then
-              local parent = vim.fs.dirname(path)
-              if parent and vim.fs.basename(parent) == "osv" then
-                inside_osv = true
-              end
+            local parent = vim.fs.dirname(path)
+            if parent and vim.fs.basename(parent) == "osv" then
+              inside_osv = true
             end
           end
+
 
           if inside_osv then
             surface = off + 1
@@ -1195,16 +1192,15 @@ function M.wait_attach()
       	  end
 
       	  local inside_osv = false
-      	  if info.source:sub(1, 1) == '@' then
+      	  if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
       	    local source = info.source:sub(2)
       	    local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
-      	    if vim.fs.basename(path) == 'init.lua' then
-      	      local parent = vim.fs.dirname(path)
-      	      if parent and vim.fs.basename(parent) == "osv" then
-      	        inside_osv = true
-      	      end
+      	    local parent = vim.fs.dirname(path)
+      	    if parent and vim.fs.basename(parent) == "osv" then
+      	      inside_osv = true
       	    end
       	  end
+
 
       	  if inside_osv then
       	    surface = off + 1
@@ -1655,16 +1651,15 @@ function M.start_trace()
 		  end
 
 		  local inside_osv = false
-		  if info.source:sub(1, 1) == '@' then
+		  if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
 		    local source = info.source:sub(2)
 		    local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
-		    if vim.fs.basename(path) == 'init.lua' then
-		      local parent = vim.fs.dirname(path)
-		      if parent and vim.fs.basename(parent) == "osv" then
-		        inside_osv = true
-		      end
+		    local parent = vim.fs.dirname(path)
+		    if parent and vim.fs.basename(parent) == "osv" then
+		      inside_osv = true
 		    end
 		  end
+
 
 		  if inside_osv then
 		    surface = off + 1

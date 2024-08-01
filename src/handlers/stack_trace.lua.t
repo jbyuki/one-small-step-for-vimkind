@@ -29,6 +29,8 @@ local skip = 0
 
 @skip_internal_frames
 
+-- @log_whole_stack_trace
+
 while levels <= max_levels or max_levels == -1 do
   local info = debug.getinfo(skip+levels+start_frame)
   if not info then
@@ -87,13 +89,22 @@ while true do
 end
 
 @check_if_inside_osv+=
-if info.source:sub(1, 1) == '@' then
+if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
   local source = info.source:sub(2)
   local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
-  if vim.fs.basename(path) == 'init.lua' then
-    local parent = vim.fs.dirname(path)
-    if parent and vim.fs.basename(parent) == "osv" then
-      inside_osv = true
-    end
+  local parent = vim.fs.dirname(path)
+  if parent and vim.fs.basename(parent) == "osv" then
+    inside_osv = true
   end
+end
+
+@log_whole_stack_trace+=
+local off = 0
+while true do
+  local info = debug.getinfo(off+levels+start_frame)
+  if not info then
+    break
+  end
+  log("STACK " .. (info.name or "[NO NAME]") .. " " .. (info.source or "[NO SOURCE]") .. " " .. info.currentline)
+  off = off + 1
 end
