@@ -69,7 +69,7 @@ See [osv.txt](https://github.com/jbyuki/lua-debug.nvim/blob/main/doc/osv.txt) fo
 ## Debug configuration files
 
 It is now possible to debug configuration files (ex. `init.lua`).
-See the corresponding section in [osv.txt](https://github.com/jbyuki/lua-debug.nvim/blob/main/doc/osv.txt).
+See the corresponding section in [osv.txt](https://github.com/jbyuki/lua-debug.nvim/blob/main/doc/osv.txt#L198).
 
 ## Troubleshoot
 
