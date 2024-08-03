@@ -109,9 +109,11 @@ execution, a prompt message will display the port it's running on.
 		       choose it.
                • `config_file`: Specify a configuration file used when
                               spawning nvim
-               • `lvim`: Set this to true if you're using LunarVim.
-               choose an available port.
                • `log`: boolean to enable logging
+               • `recursive`: (bool) if true, will not check for recursive launch
+               calls (default is false)
+               • `blocking`: (bool) if true, will freeze the instance until a
+               client is connected (default is false)
 
     Return:
         An server info object which contains 
@@ -129,10 +131,6 @@ run_this({opts})                                        *osv.run_this()*
         {opts} Optional parameters.
                • `config_file`: (string) See |osv.launch()|
                • `log`: (bool) boolean to enable logging
-               • `recursive`: (bool) if true, will not check for recursive launch
-               calls (default is false)
-               • `blocking`: (bool) if true, will freeze the instance until a
-               client is connected (default is false)
 
 
 This command will automatically start the DAP server and connect
