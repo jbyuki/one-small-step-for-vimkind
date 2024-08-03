@@ -197,20 +197,18 @@ Logging can be enabled by passing the corresponding parameter in
 =========================================================================
 init.lua debugging                                        *osv-init-debug*
 
-It is possible to debug the `init.lua` configuration file but it requires a
-few additionnal configuration steps. 
+To debug the `init.lua` configuration file, you'll need to take a few
+additional steps to start the debugger at launch.
 
-1. Put the following in your init.lua file. 
-
+1. Add the following code near the top of your `init.lua`:
 >
   if init_debug then
     require"osv".launch({port=8086, blocking=true})
   end
 <
-
-When the global variable `init_debug` is true, this will launch a debugging
-server directly from the `init.lua` file. The `blocking` flag will freeze the
-instance and wait for any client connection.
+When the global variable init_debug is set to true, this will launch a
+debugging server from the `init.lua` file. The blocking flag will pause the
+instance, waiting for a client connection.
 
 2. Launch the debuggee instance with:
 >
@@ -218,10 +216,10 @@ instance and wait for any client connection.
 
 The instance should freeze immediately.
 
-3. Open another neovim instance as you would normally. Put a breakpoint in
-`init.lua` and connect to the debuggee using the DAP client. Execution should
-resume and stop on the breakpoint. It should now be possible to step directly
-in the `init.lua`.
+3. Open another Neovim instance as you normally would. Set a breakpoint in
+`init.lua` and connect to the debugged instance using the DAP client.
+Execution should resume until it reaches the breakpoint, allowing you to
+step through the `init.lua` code.
 
 =========================================================================
 osv plugins debugging                             *osv-plugins-debugging
