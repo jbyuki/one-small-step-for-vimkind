@@ -29,6 +29,11 @@ local log_filename
 
 local lock_debug_loop = false
 
+local skip_monitor = false
+local skip_monitor_same_depth = false
+
+local head_start_depth = -1
+
 local exit_autocmd
 
 local auto_nvim
@@ -278,6 +283,9 @@ function M.attach()
   		M.stop()
   	end
 
+    skip_monitor = false
+    skip_monitor_same_depth = false
+
     running = true
 
     limit = 0
@@ -523,12 +531,16 @@ function M.attach()
       end
       off = off + 1
     end
+    head_start_depth = off - 1
 
     depth = (off - 1) - surface
     stack_level = depth
 
     next = true
     monitor_stack = true
+
+    skip_monitor = false
+    skip_monitor_same_depth = false
 
     running = true
 
@@ -783,6 +795,9 @@ function M.attach()
     step_out = true
     monitor_stack = true
 
+    skip_monitor = false
+    skip_monitor_same_depth = false
+
     local depth = 0
     local surface = 0
     local off = 0
@@ -807,6 +822,7 @@ function M.attach()
       end
       off = off + 1
     end
+    head_start_depth = off - 1
 
     depth = (off - 1) - surface
     stack_level = depth
@@ -931,8 +947,13 @@ function M.attach()
     M.server_messages = {}
 
 
-    local depth = 0
-    if monitor_stack then
+    local depth = -1
+    if (event == "call" or event == "return") and monitor_stack and next then
+    	skip_monitor_same_depth = true
+    	skip_monitor = false
+    end
+
+    if monitor_stack and not skip_monitor then
       local surface = 0
       local off = 0
       while true do
@@ -956,8 +977,13 @@ function M.attach()
         end
         off = off + 1
       end
+      head_start_depth = off - 1
 
       depth = (off - 1) - surface
+      if next and event == "line" and skip_monitor_same_depth then
+      	skip_monitor = true
+      end
+
     end
 
     local bps = breakpoints[line]
@@ -1292,7 +1318,7 @@ function M.attach()
 
     	end
 
-    elseif event == "line" and next and depth <= stack_level then
+    elseif event == "line" and next and depth >= 0 and depth <= stack_level then
       local msg = make_event("stopped")
       msg.body = {
         reason = "step",
@@ -1329,7 +1355,7 @@ function M.attach()
       end
 
 
-    elseif event == "line" and step_out and stack_level-1 == depth then
+    elseif event == "line" and step_out and depth >= 0 and stack_level-1 == depth then
       local msg = make_event("stopped")
       msg.body = {
         reason = "step",
@@ -1649,6 +1675,9 @@ function M.stop()
   	log("SERVER TERMINATED")
     nvim_server = nil
   end
+
+  skip_monitor = false
+  skip_monitor_same_depth = false
 
   running = true
 

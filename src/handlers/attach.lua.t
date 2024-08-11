@@ -9,9 +9,11 @@ debug.sethook(function(event, line)
   @handle_new_messages
   @clear_messages
 
-  local depth = 0
-  if monitor_stack then
+  local depth = -1
+  @speedup_stack_monitor
+  if monitor_stack and not skip_monitor then
     @get_stack_depth_with_debug_getinfo
+    @disable_monitor_for_speedup
   end
 
   @check_if_breakpoint_hit
