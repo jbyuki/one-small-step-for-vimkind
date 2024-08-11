@@ -91,8 +91,8 @@ end
 @check_if_inside_osv+=
 if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
   local source = info.source:sub(2)
-  local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
-  local parent = vim.fs.dirname(path)
+  -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
+  local parent = vim.fs.dirname(source)
   if parent and vim.fs.basename(parent) == "osv" then
     inside_osv = true
   end
