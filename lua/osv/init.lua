@@ -190,7 +190,7 @@ function M.launch(opts)
   	return
   end
 
-  if not hook_addres then
+  if not hook_address then
     hook_address = vim.fn.serverstart()
   end
 

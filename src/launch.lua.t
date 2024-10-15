@@ -41,7 +41,7 @@ end
 local hook_address
 
 @set_hook_instance_address+=
-if not hook_addres then
+if not hook_address then
   hook_address = vim.fn.serverstart()
 end
 
