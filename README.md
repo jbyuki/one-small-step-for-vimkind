@@ -42,20 +42,32 @@ end
 Set keybindings to interact with the nvim-dap client.
 
 ```lua
-vim.api.nvim_set_keymap('n', '<F8>', [[:lua require"dap".toggle_breakpoint()<CR>]], { noremap = true })
-vim.api.nvim_set_keymap('n', '<F9>', [[:lua require"dap".continue()<CR>]], { noremap = true })
-vim.api.nvim_set_keymap('n', '<F10>', [[:lua require"dap".step_over()<CR>]], { noremap = true })
-vim.api.nvim_set_keymap('n', '<S-F10>', [[:lua require"dap".step_into()<CR>]], { noremap = true })
-vim.api.nvim_set_keymap('n', '<F12>', [[:lua require"dap.ui.widgets".hover()<CR>]], { noremap = true })
-vim.api.nvim_set_keymap('n', '<F5>', [[:lua require"osv".launch({port = 8086})<CR>]], { noremap = true })
+vim.keymap.set('n', '<leader>db', require"dap".toggle_breakpoint(), { noremap = true })
+vim.keymap.set('n', '<leader>dc', require"dap".continue(), { noremap = true })
+vim.keymap.set('n', '<leader>do', require"dap".step_over(), { noremap = true })
+vim.keymap.set('n', '<leader>di', require"dap".step_into(), { noremap = true })
+
+vim.keymap.set('n', '<leader>dl', function() 
+  require"osv".launch({port = 8086}) 
+end, { noremap = true })
+
+vim.keymap.set('n', '<leader>dw', function()
+  local widgets = require"dap.ui.widgets"
+  widgets.hover()
+end)
+
+vim.keymap.set('n', '<leader>df', function()
+  local widgets = require"dap.ui.widgets"
+  widgets.centered_float(widgets.frames)
+end)
 ```
 
 ## Quickstart
 
-* Launch the server in the debuggee using `F5`
+* Launch the server in the debuggee using `<leader>dl`
 * Open another Neovim instance with the source file
-* Place breakpoint with `F8`
-* Connect using the DAP client with `F9`
+* Place breakpoint with `<leader>db`
+* Connect using the DAP client with `<leader>dc`
 * Run your script/plugin in the debuggee
 
 Alternaltively you can:
