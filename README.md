@@ -42,10 +42,10 @@ end
 Set keybindings to interact with the nvim-dap client.
 
 ```lua
-vim.keymap.set('n', '<leader>db', require"dap".toggle_breakpoint(), { noremap = true })
-vim.keymap.set('n', '<leader>dc', require"dap".continue(), { noremap = true })
-vim.keymap.set('n', '<leader>do', require"dap".step_over(), { noremap = true })
-vim.keymap.set('n', '<leader>di', require"dap".step_into(), { noremap = true })
+vim.keymap.set('n', '<leader>db', require"dap".toggle_breakpoint, { noremap = true })
+vim.keymap.set('n', '<leader>dc', require"dap".continue, { noremap = true })
+vim.keymap.set('n', '<leader>do', require"dap".step_over, { noremap = true })
+vim.keymap.set('n', '<leader>di', require"dap".step_into, { noremap = true })
 
 vim.keymap.set('n', '<leader>dl', function() 
   require"osv".launch({port = 8086}) 
