@@ -173,6 +173,10 @@ Please refer to [ARCHITECTURE.md](ARCHITECTURE.md).
 ## Credits
 
 * [mfussenegger/nvim-lua-debugger](https://github.com/mfussenegger/nvim-lua-debugger)
+
+## Alternatives
+
+* For a repl only adapter see [https://github.com/mfussenegger/nluarepl](https://github.com/mfussenegger/nluarepl).
  
 ## Contribute
 
