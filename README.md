@@ -176,7 +176,7 @@ Please refer to [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Alternatives
 
-* For a repl only adapter see [https://github.com/mfussenegger/nluarepl](https://github.com/mfussenegger/nluarepl).
+* For an adapter limited to expression evaluation, see [mfussenegger/nluarepl](https://github.com/mfussenegger/nluarepl).
  
 ## Contribute
 

@@ -64,7 +64,9 @@ function M.unfreeze()
 end
 
 function sendProxyDAP(data)
-  vim.fn.rpcnotify(nvim_server, 'nvim_exec_lua', [[require"osv".sendDAP(...)]], {data})
+  vim.schedule(function()
+    vim.fn.rpcnotify(nvim_server, 'nvim_exec_lua', [[require"osv".sendDAP(...)]], {data})
+  end)
 end
 
 function make_response(request, response)
