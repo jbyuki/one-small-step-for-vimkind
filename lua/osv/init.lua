@@ -132,13 +132,22 @@ function M.launch(opts)
   local has_embed = false
   local has_headless = false
   local args = {}
-  for _, arg in ipairs(vim.v.argv) do
+  local i = 1
+  while i <= #vim.v.argv do 
+    local skiparg = false
+    local arg = vim.v.argv[i]
   	if arg == '--embed' then
   		has_embed = true
   	elseif arg == '--headless' then
   		has_headless = true
+    elseif arg == '--listen' then
+      skiparg = true
+      i = i + 1
   	end
-  	table.insert(args, arg)
+    if not skiparg then
+      table.insert(args, arg)
+    end
+    i = i + 1
   end
 
   if not has_embed then
@@ -236,6 +245,7 @@ function M.launch(opts)
     end
 
     M.attach()
+
   end
 
   return server
@@ -1468,13 +1478,22 @@ function M.run_this(opts)
   local has_embed = false
   local has_headless = false
   local args = {}
-  for _, arg in ipairs(vim.v.argv) do
+  local i = 1
+  while i <= #vim.v.argv do 
+    local skiparg = false
+    local arg = vim.v.argv[i]
   	if arg == '--embed' then
   		has_embed = true
   	elseif arg == '--headless' then
   		has_headless = true
+    elseif arg == '--listen' then
+      skiparg = true
+      i = i + 1
   	end
-  	table.insert(args, arg)
+    if not skiparg then
+      table.insert(args, arg)
+    end
+    i = i + 1
   end
 
   if not has_embed then

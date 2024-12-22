@@ -122,13 +122,20 @@ end
 local has_embed = false
 local has_headless = false
 local args = {}
-for _, arg in ipairs(vim.v.argv) do
+local i = 1
+while i <= #vim.v.argv do 
+  local skiparg = false
+  local arg = vim.v.argv[i]
 	if arg == '--embed' then
 		has_embed = true
 	elseif arg == '--headless' then
 		has_headless = true
+  @skip_listen_arg
 	end
-	table.insert(args, arg)
+  if not skiparg then
+    table.insert(args, arg)
+  end
+  i = i + 1
 end
 
 if not has_embed then
@@ -180,3 +187,8 @@ while true do
 end
 
 M.attach()
+
+@skip_listen_arg+=
+elseif arg == '--listen' then
+  skiparg = true
+  i = i + 1
