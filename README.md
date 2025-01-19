@@ -70,12 +70,6 @@ end)
 * Connect using the DAP client with `<leader>dc`
 * Run your script/plugin in the debuggee
 
-Alternaltively you can:
-
-* Open a lua file
-* Place breakpoint
-* Invoke `require"osv".run_this()`
-
 See [osv.txt](https://github.com/jbyuki/lua-debug.nvim/blob/main/doc/osv.txt) for more detailed instructions.
 
 ## Debug configuration files
