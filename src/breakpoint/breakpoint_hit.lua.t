@@ -57,6 +57,7 @@ while not running do
   @check_disconnected
   @handle_new_messages
   @clear_messages
+  @handle_nvim_output
   vim.wait(50)
 end
 

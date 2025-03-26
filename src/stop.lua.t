@@ -8,6 +8,7 @@ function M.stop()
 		return 
 	end
 
+  @handle_nvim_output
   @send_terminated_event
   @send_exited_event
   @terminate_adapter_server_process

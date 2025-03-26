@@ -1,6 +1,6 @@
 one-small-step-for-vimkind             *one-small-step-for-vimkind* *osv*
 
-|one-small-step-for-vimkind| (osv) is an adapter for Lua running inside Neovim. 
+|one-small-step-for-vimkind| (osv) is an adapter for Lua running inside Neovim.
 It will allow you to:
 
   * Debug Lua scripts
@@ -21,57 +21,57 @@ is the one recommended.
 =========================================================================
 nvim-dap                                                        *osv-dap*
 
-Please refer |dap-adapter| and |dap-configuration| to know about about
-nvim-dap configurations.
+Please refer to |dap-adapter| and |dap-configuration| to learn about nvim-dap
+configurations.
 
 The following configuration will allow you to attach a nvim-dap
 client to |osv|.
->
-  local dap = require"dap"
-  dap.configurations.lua = { 
-    { 
-      type = 'nlua', 
-      request = 'attach',
-      name = "Attach to running Neovim instance",
+>lua
+    local dap = require"dap"
+    dap.configurations.lua = {
+      {
+        type = 'nlua',
+        request = 'attach',
+        name = "Attach to running Neovim instance",
+      }
     }
-  }
 
-  dap.adapters.nlua = function(callback, config)
-    callback({ type = 'server', host = config.host or "127.0.0.1", port = config.port or 8086 })
-  end
-
+    dap.adapters.nlua = function(callback, config)
+      callback({ type = 'server', host = config.host or "127.0.0.1", port = config.port or 8086 })
+    end
 <
+
 QUICKSTART
 
-The following steps will guide you through the process to start
-a debugging session using nvim-dap.
+The following steps will guide you through the process of starting a debug
+session using nvim-dap.
 
-Let's say you have a lua script `myscript.lua` in your home directory.
-It has the following content: >
+Let's say you have a lua script `myscript.lua` in your home directory that has
+the following content: >lua
 
-  print("start")
-  for i=1,10 do
-    print(i)
-  end
-  print("end")
+    print("start")
+    for i = 1, 10 do
+      print(i)
+    end
+    print("end")
 <
 1. Open a Neovim instance (instance A)
-2. Launch the DAP server with (A) >
- :lua require"osv".launch({port=8086})
+2. Launch the DAP server with (A) >vim
+    :lua require"osv".launch({port=8086})
 3. Open another Neovim instance (instance B)
 4. Open `myscript.lua` (B)
-5. Place a breakpoint on line 2 using (B) >
-  :lua require"dap".toggle_breakpoint()
-6. Connect the DAP client using (B) >
-  :lua require"dap".continue()
-7. Run `myscript.lua` in the other instance (A) >
-  :luafile myscript.lua
+5. Place a breakpoint on line 2 using (B) >vim
+    :lua require"dap".toggle_breakpoint()
+6. Connect the DAP client using (B) >vim
+    :lua require"dap".continue()
+7. Run `myscript.lua` in the other instance (A) >vim
+    :luafile myscript.lua
 8. The breakpoint should hit and freeze the instance (B)
 
 =========================================================================
 vimspector configuration                           *lua-debug-vimspector*
 
->
+>json
   {
     "$schema": "https://puremourning.github.io/vimspector/schema/vimspector.schema.json#",
     "adapters": {
@@ -95,72 +95,67 @@ vimspector configuration                           *lua-debug-vimspector*
 =========================================================================
 Launch server                                               *osv-server*
 
-To start a debugging session, you will first need to launch the server. 
+To start a debugging session, you will first need to launch the server.
 
 launch({opts})                                           *osv.launch()*
+    This command will launch the DAP server awaiting any connections. Upon
+    execution, a prompt message will display the port it's running on.
 
-This command will launch the DAP server awaiting any connections. On
-execution, a prompt message will display the port it's running on.
+    Parameters: ~
+      • {opts}  Optional parameters.
+                • `host`         Defaults to "127.0.0.1".
+                • `port`         Specify a port number. If nil, the server will choose it.
+                • `config_file`  Specify a configuration file used when spawning nvim.
+                • `log`          (bool) Enable logging.
+                • `recursive`    (bool) If true, will not check for recursive launch
+                               calls (default is false).
+                • `blocking`     (bool) If true, will freeze the instance until a
+                               client is connected (default is false)
+                • `output`       (bool) Capture and report nvim output/messages in
+                               the debuggee (default is true). Note: This is
+                               implemented via |:redir| internally. See
+                               |:redir| for caveats.
 
-    Parameters:
-        {opts} Optional parameters.
-               • `host`: defaults to "127.0.0.1"
-               • `port`: Specify a port number or if nil, lets the server
-		       choose it.
-               • `config_file`: Specify a configuration file used when
-                              spawning nvim
-               • `log`: boolean to enable logging
-               • `recursive`: (bool) if true, will not check for recursive launch
-               calls (default is false)
-               • `blocking`: (bool) if true, will freeze the instance until a
-               client is connected (default is false)
+    Return: ~
+        A server info object which contains `{ host = host, port = port }`, or
+        `nil` on failure
 
-    Return:
-        An server info object which contains 
-          {host = {host}, port = {port}} 
-        or nil on failure
-
-The |osv.launch()| function will actually not 
-run the server in the running process but spawn a child process. 
-This ensures that DAP requests are still processed even in a 
-frozen state.
+The |osv.launch()| function will run the debug adapter server in a child
+process. This ensures that DAP requests are still processed even in a frozen
+state.
 
 run_this({opts})                                        *osv.run_this()*
+    This command will automatically start the DAP server and connect nvim-dap
+    to it. You still need to set the `dap.adapters.nlua` as explained in the
+    configuration section.
 
-    Parameters:
-        {opts} Optional parameters.
-               • `config_file`: (string) See |osv.launch()|
-               • `log`: (bool) boolean to enable logging
+    Parameters: ~
+      • {opts} Optional parameters.
+               • `config_file`  (string) See |osv.launch()|.
+               • `log`          (bool) Enable logging.
+               • `output`       (bool) See |osv.launch()|.
 
-
-This command will automatically start the DAP server and connect
-nvim-dap to it. You still need to set the `dap.adapters.nlua` as 
-explained in the configuration section.
 
 stop()                                                     *osv.stop()*
-
-This command will stop the running dap server. Following the DAP
-standard, an "exited" event + an "terminated" will be sent to the client
-so that it knows the server has exited.
+    This command will stop the running dap server. Following the DAP standard,
+    an "exited" event + a "terminated" event will be sent to the client so
+    that it knows the server has exited.
 
 start_trace()						*osv.start_trace()*
-
-Start a tracing session which records every line that gets executed
-in the current Neovim instance. Stop it with |osv.stop_trace()|.
+    Start a tracing session which records every line that gets executed in the
+    current Neovim instance. Stop it with |osv.stop_trace()|.
 
 stop_trace()						*osv.stop_trace()*
+    Stop the tracing session.
 
-Stop the tracing session.
-
-    Return:~
+    Return: ~
 	A dictionary with the source path as key and a table
 	for each key with the executed line numbers.
 
 is_running()						*osv.is_running()*
+    Checks whether |osv| is currently running.
 
-Checks whether |osv| is currently running.
-
-    Return:~
+    Return: ~
 	True if osv is running.
 
 
@@ -173,24 +168,26 @@ bevahiour is executed, otherwise the callback will be called instead. Only one
 callback can be assigned to an action.
 
 For example:
->
-  require"osv".on["action"] = function(...)
-  end
-<
+>lua
+    require"osv".on["action"] = function(...)
+    end
+
 The `start_server` event is called when osv starts the headless instance for
 the DAP server. The default behaviour is:
->
-  require"osv".on["start_server"] = function(args, env)
-    return vim.fn.jobstart(args, {rpc = true, env = env})
-  end
+>lua
+    require"osv".on["start_server"] = function(args, env)
+      return vim.fn.jobstart(args, {rpc = true, env = env})
+    end
+<
 
 =========================================================================
 osv logging                                                 *osv-logging*
 
 Logging can be enabled by passing the corresponding parameter in
 |osv.launch|. The log will be written in:
->
-  vim.fn.stdpath('data') .. '/osv.log'
+>lua
+    vim.fn.stdpath('data') .. '/osv.log'
+<
 
 =========================================================================
 init.lua debugging                                        *osv-init-debug*
@@ -199,18 +196,18 @@ To debug the `init.lua` configuration file, you'll need to take a few
 additional steps to start the debugger at launch.
 
 1. Add the following code near the top of your `init.lua`:
->
-  if init_debug then
-    require"osv".launch({port=8086, blocking=true})
-  end
+>lua
+    if init_debug then
+      require"osv".launch({port=8086, blocking=true})
+    end
 <
 When the global variable init_debug is set to true, this will launch a
 debugging server from the `init.lua` file. The blocking flag will pause the
 instance, waiting for a client connection.
 
 2. Launch the debuggee instance with:
->
-  nvim --cmd "lua init_debug=true"
+>sh
+    nvim --cmd "lua init_debug=true"
 
 The instance should freeze immediately.
 
@@ -219,17 +216,18 @@ The instance should freeze immediately.
 Execution should resume until it reaches the breakpoint, allowing you to
 step through the `init.lua` code.
 
+
 =========================================================================
 osv plugins debugging                             *osv-plugins-debugging
 
-Note: These explanations only are valid if you're using packer.nvim for
-other plugin managers such as vim-plug you don't need to take special
-precautions to debug plugins
+Note: These explanations only are valid if you're using packer.nvim. For
+other plugin managers such as vim-plug, you don't need to take any special
+precautions to debug plugins.
 
 As an example, let's say you're developing a plugin which is located
 in a directory on your system. You would install it using:
->
-  use '...path to your plugin.../my-plugin.nvim'
+>lua
+    use '...path to your plugin.../my-plugin.nvim'
 <
 After installing `my-plugin.nvim` using packer.nvim, a symlink will be created
 inside the `nvim-data`  which points to your local plugin directory.
@@ -247,11 +245,13 @@ contain breakpoints match and stop on trigger.
 In consequence, reopen the files through the symlink and place the breakpoints
 there to properly trigger them.
 
+
 =========================================================================
 osv repl                                                      *osv-repl*
 
 The REPL supports evaluation of expression. It will prepend a "return "
 statement which will return the value of the expression to the debugger.
 This means expressions such as assignments will not be valid syntax.
+
 
  vim:tw=78:ts=8:ft=help:norl:
