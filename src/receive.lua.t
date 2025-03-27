@@ -27,20 +27,21 @@ local tcp_data = ""
 
 @create_reading_coroutine-=
 local function read_header()
-  while not string.find(tcp_data, "\r\n\r\n") do
+  while true do
+    local content_length, rest = tcp_data:match("^Content%-Length: (%d+).-\r\n\r\n(.*)")
+    if content_length then
+      tcp_data = rest
+      return { content_length = tonumber(content_length) }
+    end
+
     coroutine.yield()
   end
-  @read_content_length
-  @remove_header_from_tcp_data
-
-  return {
-    content_length = tonumber(content_length),
-  }
 end
 
 @create_reading_coroutine-=
+---@param length integer
 local function read_body(length)
-  while string.len(tcp_data) < length do
+  while #tcp_data < length do
     coroutine.yield()
   end
 
@@ -51,18 +52,19 @@ local function read_body(length)
 end
 
 @read_content_length+=
-local content_length = string.match(tcp_data, "^Content%-Length: (%d+)")
+local content_length = tcp_data:match("^Content%-Length: (%d+)")
 
 @remove_header_from_tcp_data+=
-local _, sep = string.find(tcp_data, "\r\n\r\n")
-tcp_data = string.sub(tcp_data, sep+1)
+local _, sep = tcp_data:find("\r\n\r\n")
+tcp_data = tcp_data:sub(sep + 1)
 
 @decode_json_body+=
-local body = string.sub(tcp_data, 1, length)
-local succ, decoded = pcall(vim.fn.json_decode, body)
+local body = tcp_data:sub(1, length)
+-- TODO: Handle error?
+local succ, decoded = pcall(json_decode, body)
 
 @remove_body_from_tcp_data+=
-tcp_data = string.sub(tcp_data, length+1)
+tcp_data = tcp_data:sub(length + 1)
 
 @read_tcp+=
 tcp_data = tcp_data .. chunk

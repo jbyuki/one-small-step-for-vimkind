@@ -1,4 +1,7 @@
 -- Generated using ntangle.nvim
+local uv = vim.uv or vim.loop
+local json_encode, json_decode = vim.json.encode, vim.json.decode
+local rpcrequest, rpcnotify = vim.rpcrequest, vim.rpcnotify
 local running = true
 
 local limit = 0
@@ -64,7 +67,7 @@ function M.unfreeze()
 end
 
 function sendProxyDAP(data)
-  vim.fn.rpcnotify(nvim_server, 'nvim_exec_lua', [[require"osv".sendDAP(...)]], {data})
+  rpcnotify(nvim_server, 'nvim_exec_lua', [[require"osv".sendDAP(...)]], {data})
 end
 
 function make_response(request, response)
@@ -109,8 +112,8 @@ function M.launch(opts)
 
   if not opts or not opts.recursive then
     local env = {}
-    for k,v in pairs(vim.fn.environ()) do
-    	env[k] = v
+    for k, v in pairs(uv.os_environ()) do
+      env[k] = v
     end
 
     if env["HEADLESS_OSV"] then
@@ -119,7 +122,7 @@ function M.launch(opts)
   end
 
   if M.is_running() then
-  	vim.api.nvim_echo({{"Server is already running.", "ErrorMsg"}}, true, {})
+    vim.api.nvim_echo({{"Server is already running.", "ErrorMsg"}}, true, {})
     return
   end
 
@@ -133,7 +136,7 @@ function M.launch(opts)
   local has_headless = false
   local args = {}
   local i = 1
-  while i <= #vim.v.argv do 
+  while i <= #vim.v.argv do
     local skiparg = false
     local arg = vim.v.argv[i]
   	if arg == '--embed' then
@@ -159,8 +162,8 @@ function M.launch(opts)
   end
 
   local env = {}
-  for k,v in pairs(vim.fn.environ()) do
-  	env[k] = v
+  for k, v in pairs(uv.os_environ()) do
+    env[k] = v
   end
 
   if opts and opts.env then
@@ -187,7 +190,7 @@ function M.launch(opts)
     nvim_server = vim.fn.jobstart(args, {rpc = true, env = env})
   end
 
-  local mode = vim.fn.rpcrequest(nvim_server, "nvim_get_mode")
+  local mode = rpcrequest(nvim_server, "nvim_get_mode")
   if mode.blocking then
   	vim.api.nvim_echo({{"Neovim is waiting for input at startup. Aborting.", "ErrorMsg"}}, true, {})
   	if nvim_server then
@@ -203,13 +206,13 @@ function M.launch(opts)
     hook_address = vim.fn.serverstart()
   end
 
-  vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[debug_hook_conn_address = ...]], {hook_address})
+  rpcrequest(nvim_server, 'nvim_exec_lua', [[debug_hook_conn_address = ...]], {hook_address})
 
   M.server_messages = {}
 
   local host = (opts and opts.host) or "127.0.0.1"
   local port = (opts and opts.port) or 0
-  local server = vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"osv".start_server(...)]], {host, port, opts and opts.log})
+  local server = rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"osv".start_server(...)]], {host, port, opts and opts.log})
   if server == vim.NIL then
   	vim.api.nvim_echo({{("Server failed to launch on port %d"):format(port), "ErrorMsg"}}, true, {})
   	if nvim_server then
@@ -252,7 +255,7 @@ function M.launch(opts)
 end
 
 function M.wait_attach()
-  local timer = vim.loop.new_timer()
+  local timer = uv.new_timer()
   timer:start(0, 100, vim.schedule_wrap(function()
     local has_attach = false
     for _,msg in ipairs(M.server_messages) do
@@ -527,14 +530,7 @@ function M.attach()
       end
 
       local inside_osv = false
-      if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
-        local source = info.source:sub(2)
-        -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
-        local parent = vim.fs.dirname(source)
-        if parent and vim.fs.basename(parent) == "osv" then
-          inside_osv = true
-        end
-      end
+      inside_osv = info.source:find [[^@.*[\/]osv[\/]init%.lua$]] ~= nil
 
       if inside_osv then
         surface = off
@@ -719,36 +715,26 @@ function M.attach()
     local levels = 1
     local skip = 0
 
-    local off = 0
-    while true do
-      local info = debug.getinfo(off+levels+start_frame)
+    for off = 0, math.huge do
+      local info = debug.getinfo(off + levels + start_frame)
       if not info then
         break
       end
 
       local inside_osv = false
-      if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
-        local source = info.source:sub(2)
-        -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
-        local parent = vim.fs.dirname(source)
-        if parent and vim.fs.basename(parent) == "osv" then
-          inside_osv = true
-        end
-      end
+      inside_osv = info.source:find [[^@.*[\/]osv[\/]init%.lua$]] ~= nil
 
 
       if inside_osv then
         skip = off + 1
       end
-
-      off = off + 1
     end
 
 
     -- @log_whole_stack_trace
 
     while levels <= max_levels or max_levels == -1 do
-      local info = debug.getinfo(skip+levels+start_frame)
+      local info = debug.getinfo(skip + levels + start_frame)
       if not info then
         break
       end
@@ -756,27 +742,27 @@ function M.attach()
       local stack_frame = {}
       stack_frame.id = frame_id
       stack_frame.name = info.name or info.what
-      if info.source:sub(1, 1) == '@' then
-      	local source = info.source:sub(2)
-      	if #info.source >= 4 and info.source:sub(1,4) == "@vim" then
-      		source = os.getenv("VIMRUNTIME") .. "/lua/" .. info.source:sub(2) 
-      	end
+      if info.source:find "^@" then
+        local source = info.source:sub(2)
+        if info.source:find "^@vim" then
+          source = os.getenv("VIMRUNTIME") .. "/lua/" .. info.source:sub(2)
+        end
 
 
         stack_frame.source = {
           name = info.source,
-      		path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p")),
+          path = uv.fs_realpath(source),
         }
-        stack_frame.line = info.currentline 
+        stack_frame.line = info.currentline
         stack_frame.column = 0
       else
-      	-- Should be ignored by the client
+        -- Should be ignored by the client
         stack_frame.line = 0
         stack_frame.column = 0
       end
 
       table.insert(stack_frames, stack_frame)
-      frames[frame_id] = skip+levels+start_frame
+      frames[frame_id] = skip + levels + start_frame
       frame_id = frame_id + 1
 
       levels = levels + 1
@@ -818,14 +804,7 @@ function M.attach()
       end
 
       local inside_osv = false
-      if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
-        local source = info.source:sub(2)
-        -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
-        local parent = vim.fs.dirname(source)
-        if parent and vim.fs.basename(parent) == "osv" then
-          inside_osv = true
-        end
-      end
+      inside_osv = info.source:find [[^@.*[\/]osv[\/]init%.lua$]] ~= nil
 
       if inside_osv then
         surface = off
@@ -973,14 +952,7 @@ function M.attach()
         end
 
         local inside_osv = false
-        if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
-          local source = info.source:sub(2)
-          -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
-          local parent = vim.fs.dirname(source)
-          if parent and vim.fs.basename(parent) == "osv" then
-            inside_osv = true
-          end
-        end
+        inside_osv = info.source:find [[^@.*[\/]osv[\/]init%.lua$]] ~= nil
 
         if inside_osv then
           surface = off
@@ -1007,14 +979,7 @@ function M.attach()
         end
 
         local inside_osv = false
-        if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
-          local source = info.source:sub(2)
-          -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
-          local parent = vim.fs.dirname(source)
-          if parent and vim.fs.basename(parent) == "osv" then
-            inside_osv = true
-          end
-        end
+        inside_osv = info.source:find [[^@.*[\/]osv[\/]init%.lua$]] ~= nil
 
 
         if inside_osv then
@@ -1028,17 +993,18 @@ function M.attach()
 
       if source_path:sub(1, 1) == "@" then
       	local path
-      	if #source_path >= 4 and source_path:sub(1, 4) == "@vim" then
-      		path = os.getenv("VIMRUNTIME") .. "/lua/" .. source_path:sub(2) 
+      	if source_path:find "^@vim" then
+      		path = os.getenv("VIMRUNTIME") .. "/lua/" .. source_path:sub(2)
 
       	else
       		path = source_path:sub(2)
       	end
-        local succ, path = pcall(vim.fn.fnamemodify, path, ":p")
-        if succ then
-      		path = vim.fn.resolve(path)
+        local path = uv.fs_realpath(path)
+        if path then
+          -- TODO: Don't convert case here. Case matters on some systems, and
+          --       `path:lower()` could denote a different file.
           path = vim.uri_from_fname(path:lower())
-      		local bp = bps[path]
+          local bp = bps[path]
           if bp then
       			log(vim.inspect(bp))
       			local hit = false
@@ -1270,14 +1236,7 @@ function M.attach()
     	  end
 
     	  local inside_osv = false
-    	  if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
-    	    local source = info.source:sub(2)
-    	    -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
-    	    local parent = vim.fs.dirname(source)
-    	    if parent and vim.fs.basename(parent) == "osv" then
-    	      inside_osv = true
-    	    end
-    	  end
+    	  inside_osv = info.source:find [[^@.*[\/]osv[\/]init%.lua$]] ~= nil
 
 
     	  if inside_osv then
@@ -1479,7 +1438,7 @@ function M.run_this(opts)
   local has_headless = false
   local args = {}
   local i = 1
-  while i <= #vim.v.argv do 
+  while i <= #vim.v.argv do
     local skiparg = false
     local arg = vim.v.argv[i]
   	if arg == '--embed' then
@@ -1505,19 +1464,18 @@ function M.run_this(opts)
   end
 
   local env = {}
-  for k,v in pairs(vim.fn.environ()) do
-  	env[k] = v
+  for k, v in pairs(uv.os_environ()) do
+    env[k] = v
   end
 
   auto_nvim = vim.fn.jobstart(args, {rpc = true, env = env})
 
   assert(auto_nvim, "Could not create neovim instance with jobstart!")
 
-
-  local mode = vim.fn.rpcrequest(auto_nvim, "nvim_get_mode")
+  local mode = rpcrequest(auto_nvim, "nvim_get_mode")
   assert(not mode.blocking, "Neovim is waiting for input at startup. Aborting.")
 
-  local server = vim.fn.rpcrequest(auto_nvim, "nvim_exec_lua", [[return require"osv".launch(...)]], { opts })
+  local server = rpcrequest(auto_nvim, "nvim_exec_lua", [[return require"osv".launch(...)]], { opts })
   vim.wait(100)
 
   assert(dap.adapters.nlua, "nvim-dap adapter configuration for nlua not found. Please refer to the README.md or :help osv.txt")
@@ -1533,7 +1491,8 @@ function M.run_this(opts)
 
   dap.listeners.after['setBreakpoints']['osv'] = function(session, body)
     vim.schedule(function()
-      vim.fn.rpcnotify(auto_nvim, "nvim_command", "luafile " .. vim.fn.expand("%:p"))
+      local file = vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf())
+      rpcnotify(auto_nvim, "nvim_command", "luafile " .. file)
 
     end)
   end
@@ -1541,11 +1500,11 @@ function M.run_this(opts)
 end
 
 function M.sendDAP(msg)
-  local succ, encoded = pcall(vim.fn.json_encode, msg)
+  local succ, encoded = pcall(json_encode, msg)
 
   log(vim.inspect(msg))
   if succ then
-    local bin_msg = "Content-Length: " .. string.len(encoded) .. "\r\n\r\n" .. encoded
+    local bin_msg = "Content-Length: " .. #encoded .. "\r\n\r\n" .. encoded
 
     client:write(bin_msg)
 
@@ -1559,14 +1518,14 @@ function M.start_server(host, port, do_log)
     log_filename = vim.fn.stdpath("data") .. "/osv.log"
   end
 
-  local server = vim.loop.new_tcp()
+  local server = uv.new_tcp()
 
   server:bind(host, port)
 
   server:listen(128, function(err)
     M.stop_freeze = false
 
-    local sock = vim.loop.new_tcp()
+    local sock = uv.new_tcp()
     server:accept(sock)
 
     local tcp_data = ""
@@ -1574,33 +1533,32 @@ function M.start_server(host, port, do_log)
 
     client = sock
 
+    ---@param length integer
     local function read_body(length)
-      while string.len(tcp_data) < length do
+      while #tcp_data < length do
         coroutine.yield()
       end
 
-      local body = string.sub(tcp_data, 1, length)
-      local succ, decoded = pcall(vim.fn.json_decode, body)
+      local body = tcp_data:sub(1, length)
+      -- TODO: Handle error?
+      local succ, decoded = pcall(json_decode, body)
 
-      tcp_data = string.sub(tcp_data, length+1)
+      tcp_data = tcp_data:sub(length + 1)
 
 
       return decoded
     end
 
     local function read_header()
-      while not string.find(tcp_data, "\r\n\r\n") do
+      while true do
+        local content_length, rest = tcp_data:match("^Content%-Length: (%d+).-\r\n\r\n(.*)")
+        if content_length then
+          tcp_data = rest
+          return { content_length = tonumber(content_length) }
+        end
+
         coroutine.yield()
       end
-      local content_length = string.match(tcp_data, "^Content%-Length: (%d+)")
-
-      local _, sep = string.find(tcp_data, "\r\n\r\n")
-      tcp_data = string.sub(tcp_data, sep+1)
-
-
-      return {
-        content_length = tonumber(content_length),
-      }
     end
 
     local dap_read = coroutine.create(function()
@@ -1634,7 +1592,7 @@ function M.start_server(host, port, do_log)
         end
 
         if debug_hook_conn then
-          vim.fn.rpcnotify(debug_hook_conn, "nvim_exec_lua", [[require"osv".add_message(...)]], {msg})
+          rpcnotify(debug_hook_conn, "nvim_exec_lua", [[require"osv".add_message(...)]], {msg})
         end
 
       end
@@ -1646,7 +1604,7 @@ function M.start_server(host, port, do_log)
         coroutine.resume(dap_read)
 
       else
-        vim.fn.rpcrequest(debug_hook_conn, "nvim_exec_lua", [[require"osv".unfreeze()]], {})
+        rpcrequest(debug_hook_conn, "nvim_exec_lua", [[require"osv".unfreeze()]], {})
 
         sock:shutdown()
         sock:close()
@@ -1742,14 +1700,7 @@ function M.start_trace()
 		  end
 
 		  local inside_osv = false
-		  if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
-		    local source = info.source:sub(2)
-		    -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
-		    local parent = vim.fs.dirname(source)
-		    if parent and vim.fs.basename(parent) == "osv" then
-		      inside_osv = true
-		    end
-		  end
+		  inside_osv = info.source:find [[^@.*[\/]osv[\/]init%.lua$]] ~= nil
 
 
 		  if inside_osv then

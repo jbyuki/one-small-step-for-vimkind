@@ -20,7 +20,7 @@ if do_log then
 end
 
 @create_server+=
-local server = vim.loop.new_tcp()
+local server = uv.new_tcp()
 
 @bind_server+=
 server:bind(host, port)
@@ -48,7 +48,7 @@ end
 print("Server started on " .. server:getsockname().port)
 
 @accept_server+=
-local sock = vim.loop.new_tcp()
+local sock = uv.new_tcp()
 server:accept(sock)
 
 @script_variables+=

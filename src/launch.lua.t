@@ -45,12 +45,12 @@ if not hook_address then
   hook_address = vim.fn.serverstart()
 end
 
-vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[debug_hook_conn_address = ...]], {hook_address})
+rpcrequest(nvim_server, 'nvim_exec_lua', [[debug_hook_conn_address = ...]], {hook_address})
 
 @launch_server+=
 local host = (opts and opts.host) or "127.0.0.1"
 local port = (opts and opts.port) or 0
-local server = vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"osv".start_server(...)]], {host, port, opts and opts.log})
+local server = rpcrequest(nvim_server, 'nvim_exec_lua', [[return require"osv".start_server(...)]], {host, port, opts and opts.log})
 if server == vim.NIL then
 	vim.api.nvim_echo({{("Server failed to launch on port %d"):format(port), "ErrorMsg"}}, true, {})
 	@terminate_adapter_server_process
@@ -59,7 +59,7 @@ end
 
 @implement+=
 function M.wait_attach()
-  local timer = vim.loop.new_timer()
+  local timer = uv.new_timer()
   timer:start(0, 100, vim.schedule_wrap(function()
     @wait_for_attach_message
     if not has_attach then return end
@@ -89,7 +89,7 @@ if opts then
 end
 
 @detect_if_nvim_is_blocking+=
-local mode = vim.fn.rpcrequest(nvim_server, "nvim_get_mode")
+local mode = rpcrequest(nvim_server, "nvim_get_mode")
 if mode.blocking then
 	vim.api.nvim_echo({{"Neovim is waiting for input at startup. Aborting.", "ErrorMsg"}}, true, {})
 	@terminate_adapter_server_process
@@ -123,7 +123,7 @@ local has_embed = false
 local has_headless = false
 local args = {}
 local i = 1
-while i <= #vim.v.argv do 
+while i <= #vim.v.argv do
   local skiparg = false
   local arg = vim.v.argv[i]
 	if arg == '--embed' then
@@ -148,13 +148,13 @@ end
 
 @copy_env+=
 local env = {}
-for k,v in pairs(vim.fn.environ()) do
-	env[k] = v
+for k, v in pairs(uv.os_environ()) do
+  env[k] = v
 end
 
 @abort_early_if_already_running+=
 if M.is_running() then
-	vim.api.nvim_echo({{"Server is already running.", "ErrorMsg"}}, true, {})
+  vim.api.nvim_echo({{"Server is already running.", "ErrorMsg"}}, true, {})
   return
 end
 

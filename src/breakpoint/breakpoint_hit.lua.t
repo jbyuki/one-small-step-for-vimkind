@@ -18,16 +18,17 @@ local running = true
 @if_source_path_match_break+=
 if source_path:sub(1, 1) == "@" then
 	local path
-	if #source_path >= 4 and source_path:sub(1, 4) == "@vim" then
+	if source_path:find "^@vim" then
 		@resolve_vim_runtime_directory
 	else
 		path = source_path:sub(2)
 	end
-  local succ, path = pcall(vim.fn.fnamemodify, path, ":p")
-  if succ then
-		path = vim.fn.resolve(path)
+  local path = uv.fs_realpath(path)
+  if path then
+    -- TODO: Don't convert case here. Case matters on some systems, and
+    --       `path:lower()` could denote a different file.
     path = vim.uri_from_fname(path:lower())
-		local bp = bps[path]
+    local bp = bps[path]
     if bp then
 			log(vim.inspect(bp))
 			local hit = false
@@ -97,7 +98,7 @@ else
 end
 
 @resolve_vim_runtime_directory+=
-path = os.getenv("VIMRUNTIME") .. "/lua/" .. source_path:sub(2) 
+path = os.getenv("VIMRUNTIME") .. "/lua/" .. source_path:sub(2)
 
 @get_surface_stack_frame+=
 local off = 0
