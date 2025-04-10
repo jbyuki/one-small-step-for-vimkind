@@ -56,6 +56,8 @@ local log
 
 local M = {}
 M.stop_freeze = false
+---@type function
+M.on_attach = nil
 
 function M.unfreeze()
   if not running then
@@ -936,6 +938,10 @@ function M.attach()
         variables = variables,
       }
     }))
+  end
+
+  if M.on_attach then
+    M.on_attach()
   end
 
   debug.sethook(function(event, line)

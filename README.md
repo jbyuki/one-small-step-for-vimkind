@@ -77,6 +77,21 @@ See [osv.txt](https://github.com/jbyuki/lua-debug.nvim/blob/main/doc/osv.txt) fo
 It is now possible to debug configuration files (ex. `init.lua`).
 See the corresponding section in [osv.txt](https://github.com/jbyuki/lua-debug.nvim/blob/main/doc/osv.txt#L198).
 
+## on_attach() event
+
+The `on_attach` event is called when the adapter is attached to the debuggee.
+It can be used for various purposes, such as resuming the debuggee's execution once a DAP client is attached (great to use alongside automated test plugins like `mini.test`)
+Example:
+
+```lua
+local osv = require"osv"
+local debugger_attached = false
+osv.on_attach = function() debugger_attached = true end
+osv.launch({ port = 8086 })
+-- wait until a debuggee is attached, or 30 seconds
+vim.wait(30000, function() return debugger_attached end, 10)
+```
+
 ## Troubleshoot
 
 ### `flatten.nvim`
