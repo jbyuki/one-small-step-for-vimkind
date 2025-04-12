@@ -87,10 +87,14 @@ Set `nest_if_no_args` to true. See [this issue](https://github.com/willothy/flat
 
 Under special circumstances, the headless instance can fail. See [this issue](https://github.com/jbyuki/one-small-step-for-vimkind/issues/45#issuecomment-2125749906) for more details.
 
+### Neovim messages and output
+
+Currently, `:redir` is used in the debuggee to capture and report debuggee output. This was chosen because it is rarely used in neovim and has relatively few side-effects. However, vim/nvim only allows 1 redirection to be active at a time. If your program relies on this command working correctly, you may need to set `output` to `false`, otherwise your redirections will be overridden.
+
 ### Debugging plugins
 
 Breakpoints are path-sensitive so they should always be set in the executed file
-even though they might be multiple copies on the system.
+even though there might be multiple copies on the system.
 
 This is the case for [packer.nvim](https://github.com/wbthomason/packer.nvim) when developing
 local plugins. packer.nvim will create a symlink to the plugins files in the `nvim-data` directory (
@@ -147,7 +151,7 @@ Events:
 * [x] stopped
 * [x] terminated
 * [x] exited
-* [ ] output
+* [x] output (but see [the caveat](#neovim-messages-and-output))
 
 Capabilities:
 

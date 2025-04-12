@@ -8,6 +8,7 @@ debug.sethook(function(event, line)
 
   @handle_new_messages
   @clear_messages
+  @handle_nvim_output
 
   local depth = -1
   @speedup_stack_monitor
