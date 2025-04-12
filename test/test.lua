@@ -3,11 +3,11 @@
 -- local host_neovim_conn = vim.fn.sockconnect('pipe', host_neovim_conn_add, {rpc = true})
 local host_neovim_conn = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
 
-vim.fn.rpcrequest(host_neovim_conn, "nvim_exec_lua", [[debug_output = {}]], {})
+vim.rpcrequest(host_neovim_conn, "nvim_exec_lua", [[debug_output = {}]], {})
 
 
-local server = vim.fn.rpcrequest(host_neovim_conn, "nvim_exec_lua", "return require'osv'.launch()", {})
--- vim.fn.rpcnotify(host_neovim_conn, "nvim_exec_lua", "require'osv'.wait_attach()", {})
+local server = vim.rpcrequest(host_neovim_conn, "nvim_exec_lua", "return require'osv'.launch()", {})
+-- vim.rpcnotify(host_neovim_conn, "nvim_exec_lua", "require'osv'.wait_attach()", {})
 
 
 -- local debug_neovim_conn_add = [[\\.\pipe\nvim-9368-0]]
@@ -15,29 +15,29 @@ local server = vim.fn.rpcrequest(host_neovim_conn, "nvim_exec_lua", "return requ
 local debug_neovim_conn = vim.fn.jobstart({vim.v.progpath, '--embed', '--headless'}, {rpc = true})
 
 
-vim.fn.rpcrequest(debug_neovim_conn, "nvim_exec_lua", [[require"dap".configurations.lua = {...  }]], { { type = 'nlua', request = 'attach', name = "Attach to running Neovim instance", host = server.host, port = server.port } })
-vim.fn.rpcrequest(debug_neovim_conn, "nvim_exec_lua", [[require"dap".adapters.nlua = function(callback, config) callback({ type = 'server', host = config.host, port = config.port }) end]], {})
+vim.rpcrequest(debug_neovim_conn, "nvim_exec_lua", [[require"dap".configurations.lua = {...  }]], { { type = 'nlua', request = 'attach', name = "Attach to running Neovim instance", host = server.host, port = server.port } })
+vim.rpcrequest(debug_neovim_conn, "nvim_exec_lua", [[require"dap".adapters.nlua = function(callback, config) callback({ type = 'server', host = config.host, port = config.port }) end]], {})
 
 
 
-vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':edit input.lua\n', "n", false)
+vim.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':edit input.lua\n', "n", false)
 
 -- for some reason I can't nvim_exec_lua here
--- vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", 'jjjj', "n", false) -- go down one line
-vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", '3gg', "n", false) -- go down one line
+-- vim.rpcnotify(debug_neovim_conn, "nvim_feedkeys", 'jjjj', "n", false) -- go down one line
+vim.rpcnotify(debug_neovim_conn, "nvim_feedkeys", '3gg', "n", false) -- go down one line
 vim.wait(200)
-vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".toggle_breakpoint()\n', "n", false)
+vim.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".toggle_breakpoint()\n', "n", false)
 vim.wait(200)
--- vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", 'jj', "n", false) -- go down one line
+-- vim.rpcnotify(debug_neovim_conn, "nvim_feedkeys", 'jj', "n", false) -- go down one line
 -- vim.wait(200)
--- vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".toggle_breakpoint()\n', "n", false)
+-- vim.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".toggle_breakpoint()\n', "n", false)
 -- vim.wait(200)
-vim.fn.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".continue()\n', "n", false)
+vim.rpcnotify(debug_neovim_conn, "nvim_feedkeys", ':lua require"dap".continue()\n', "n", false)
 vim.wait(200)
 print("Done!")
 
 
-local result = vim.fn.rpcnotify(host_neovim_conn, "nvim_exec", [[luafile input.lua]], true)
+local result = vim.rpcnotify(host_neovim_conn, "nvim_exec", [[luafile input.lua]], true)
 print(vim.inspect(result))
 
 
@@ -54,7 +54,7 @@ vim.wait(500)
 -- @test_next_over
 
 vim.wait(500)
-local output = vim.fn.rpcrequest(host_neovim_conn, "nvim_exec_lua", [[return debug_output]], {})
+local output = vim.rpcrequest(host_neovim_conn, "nvim_exec_lua", [[return debug_output]], {})
 
 for _, line in ipairs(output) do
   print(line)
@@ -70,7 +70,7 @@ end
 assert(found, "breakpoint not hit")
 
 
-vim.fn.rpcrequest(debug_neovim_conn, "nvim_exec_lua", "vim.api.nvim_buf_delete(...)", {0, {force = true}})
+vim.rpcrequest(debug_neovim_conn, "nvim_exec_lua", "vim.api.nvim_buf_delete(...)", {0, {force = true}})
 
 
 if host_neovim_conn then
