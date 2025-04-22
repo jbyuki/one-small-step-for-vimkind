@@ -9,11 +9,11 @@ Install using your prefered method.
 
 <details>
   <summary>Using <a href="https://github.com/junegunn/vim-plug">vim-plug</a></summary>
+
   ```vim
   Plug 'jbyuki/one-small-step-for-vimkind'
 
   " You will also need a comptabile DAP client
-
   Plug 'mfussenegger/nvim-dap'
   ```
 </details>
