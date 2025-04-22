@@ -5,20 +5,18 @@
 
 ## Install
 
-Install using your prefered method for example using [vim-plug](https://github.com/junegunn/vim-plug)
+Install using your prefered method.
 
-```vim
-Plug 'jbyuki/one-small-step-for-vimkind'
+<details>
+  <summary>Using <a href="https://github.com/junegunn/vim-plug">vim-plug</a></summary>
+  ```vim
+  Plug 'jbyuki/one-small-step-for-vimkind'
 
-" You will also need a comptabile DAP client
+  " You will also need a comptabile DAP client
 
-Plug 'mfussenegger/nvim-dap'
-```
-
-After installing `one-small-step-for-vimkind`, you will also need a DAP plugin which will allow you to interact with the adapter. There are mainly two available:
-
-  * [nvim-dap](https://github.com/mfussenegger/nvim-dap)
-  * [vimspector](https://github.com/puremourning/vimspector) 
+  Plug 'mfussenegger/nvim-dap'
+  ```
+</details>
 
 ## Configuration
 
