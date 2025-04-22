@@ -2,7 +2,6 @@
 @implement+=
 function M.launch(opts)
   @verify_launch_arguments
-  @check_recursive_if_not_disabled
   @abort_early_if_already_running
 
   @init_logger
@@ -27,14 +26,9 @@ end
 local nvim_server
 
 @spawn_nvim_instance_for_server+=
-@copy_args
-@copy_env
-@fill_env_with_custom
-@fill_args_with_custom
-@set_env_for_headless_instance
 @if_exists_use_custom_for_launching_server
 else
-  nvim_server = vim.fn.jobstart(args, {rpc = true, env = env})
+  @launch_headless_instance_with_clean_environment
 end
 
 @script_variables+=
@@ -99,55 +93,6 @@ if mode.blocking then
 	return
 end
 
-@fill_env_with_custom+=
-if opts and opts.env then
-	env = env or {}
-	for k,v in pairs(opts.env) do
-		env[k] = v
-	end
-end
-
-@fill_args_with_custom+=
-if opts and opts.args then
-	for _, arg in ipairs(opts.args) do
-		table.insert(args, arg)
-	end
-end
-
-@copy_args+=
-local has_embed = false
-local has_headless = false
-local args = {}
-local i = 1
-while i <= #vim.v.argv do 
-  local skiparg = false
-  local arg = vim.v.argv[i]
-	if arg == '--embed' then
-		has_embed = true
-	elseif arg == '--headless' then
-		has_headless = true
-  @skip_listen_arg
-	end
-  if not skiparg then
-    table.insert(args, arg)
-  end
-  i = i + 1
-end
-
-if not has_embed then
-	table.insert(args, "--embed")
-end
-
-if not has_headless then
-	table.insert(args, "--headless")
-end
-
-@copy_env+=
-local env = {}
-for k,v in pairs(vim.fn.environ()) do
-	env[k] = v
-end
-
 @abort_early_if_already_running+=
 if M.is_running() then
 	vim.api.nvim_echo({{"Server is already running.", "ErrorMsg"}}, true, {})
@@ -164,17 +109,6 @@ if M.on["start_server"] then
   assert(nvim_server)
 
 
-@check_recursive_if_not_disabled+=
-if not opts or not opts.recursive then
-  @copy_env
-  if env["HEADLESS_OSV"] then
-    return
-  end
-end
-
-@set_env_for_headless_instance+=
-env["HEADLESS_OSV"] = true
-
 @wait_attach_blocking+=
 while true do
   @wait_for_attach_message
@@ -184,7 +118,3 @@ end
 
 M.attach()
 
-@skip_listen_arg+=
-elseif arg == '--listen' then
-  skiparg = true
-  i = i + 1
