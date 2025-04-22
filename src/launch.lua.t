@@ -160,7 +160,7 @@ M.on = {}
 
 @if_exists_use_custom_for_launching_server+=
 if M.on["start_server"] then
-  nvim_server = M.callback["start_server"](args, env)
+  nvim_server = M.on["start_server"](args, env)
   assert(nvim_server)
 
 
