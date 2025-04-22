@@ -13,9 +13,8 @@ function M.run_this(opts)
 end
 
 @create_neovim_instance+=
-@copy_args
-@copy_env
-auto_nvim = vim.fn.jobstart(args, {rpc = true, env = env})
+@launch_headless_instance_with_clean_environment+=
+auto_nvim = nvim_server
 
 @launch_osv_server+=
 local server = vim.fn.rpcrequest(auto_nvim, "nvim_exec_lua", [[return require"osv".launch(...)]], { opts })

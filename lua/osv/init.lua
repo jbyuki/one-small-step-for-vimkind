@@ -107,17 +107,6 @@ function M.launch(opts)
     if opts.output ~= nil then redir_nvim_output = opts.output end
   end
 
-  if not opts or not opts.recursive then
-    local env = {}
-    for k,v in pairs(vim.fn.environ()) do
-    	env[k] = v
-    end
-
-    if env["HEADLESS_OSV"] then
-      return
-    end
-  end
-
   if M.is_running() then
   	vim.api.nvim_echo({{"Server is already running.", "ErrorMsg"}}, true, {})
     return
@@ -129,62 +118,17 @@ function M.launch(opts)
     log_filename = vim.fn.stdpath("data") .. "/osv.log"
   end
 
-  local has_embed = false
-  local has_headless = false
-  local args = {}
-  local i = 1
-  while i <= #vim.v.argv do 
-    local skiparg = false
-    local arg = vim.v.argv[i]
-  	if arg == '--embed' then
-  		has_embed = true
-  	elseif arg == '--headless' then
-  		has_headless = true
-    elseif arg == '--listen' then
-      skiparg = true
-      i = i + 1
-  	end
-    if not skiparg then
-      table.insert(args, arg)
-    end
-    i = i + 1
-  end
-
-  if not has_embed then
-  	table.insert(args, "--embed")
-  end
-
-  if not has_headless then
-  	table.insert(args, "--headless")
-  end
-
-  local env = {}
-  for k,v in pairs(vim.fn.environ()) do
-  	env[k] = v
-  end
-
-  if opts and opts.env then
-  	env = env or {}
-  	for k,v in pairs(opts.env) do
-  		env[k] = v
-  	end
-  end
-
-  if opts and opts.args then
-  	for _, arg in ipairs(opts.args) do
-  		table.insert(args, arg)
-  	end
-  end
-
-  env["HEADLESS_OSV"] = true
-
   if M.on["start_server"] then
     nvim_server = M.on["start_server"](args, env)
     assert(nvim_server)
 
 
   else
-    nvim_server = vim.fn.jobstart(args, {rpc = true, env = env})
+    local clean_args = { vim.v.progpath, '-u', 'NONE', '-i', 'NONE', '-n', '--embed', '--headless' }
+    nvim_server = vim.fn.jobstart(clean_args, {rpc = true})
+    vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', 'vim.o.runtimepath = ...', { vim.o.runtimepath })
+    auto_nvim = nvim_server
+
   end
 
   local mode = vim.fn.rpcrequest(nvim_server, "nvim_get_mode")
@@ -1600,42 +1544,6 @@ function M.run_this(opts)
     vim.fn.jobstop(auto_nvim)
     auto_nvim = nil
   end
-
-  local has_embed = false
-  local has_headless = false
-  local args = {}
-  local i = 1
-  while i <= #vim.v.argv do 
-    local skiparg = false
-    local arg = vim.v.argv[i]
-  	if arg == '--embed' then
-  		has_embed = true
-  	elseif arg == '--headless' then
-  		has_headless = true
-    elseif arg == '--listen' then
-      skiparg = true
-      i = i + 1
-  	end
-    if not skiparg then
-      table.insert(args, arg)
-    end
-    i = i + 1
-  end
-
-  if not has_embed then
-  	table.insert(args, "--embed")
-  end
-
-  if not has_headless then
-  	table.insert(args, "--headless")
-  end
-
-  local env = {}
-  for k,v in pairs(vim.fn.environ()) do
-  	env[k] = v
-  end
-
-  auto_nvim = vim.fn.jobstart(args, {rpc = true, env = env})
 
   assert(auto_nvim, "Could not create neovim instance with jobstart!")
 
