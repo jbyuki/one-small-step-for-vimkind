@@ -126,7 +126,7 @@ function M.launch(opts)
   else
     local clean_args = { vim.v.progpath, '-u', 'NONE', '-i', 'NONE', '-n', '--embed', '--headless' }
     nvim_server = vim.fn.jobstart(clean_args, {rpc = true})
-    vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', 'vim.o.runtimepath = (...)', { vim.o.runtimepath })
+    vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', 'vim.o.runtimepath = ...', { vim.o.runtimepath })
     auto_nvim = nvim_server
 
   end
