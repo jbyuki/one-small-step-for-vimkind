@@ -12,10 +12,10 @@ function M.sendDAP(msg)
 end
 
 @encode_json+=
-local succ, encoded = pcall(vim.fn.json_encode, msg)
+local succ, encoded = pcall(json_encode, msg)
 
 @append_content_length+=
-local bin_msg = "Content-Length: " .. string.len(encoded) .. "\r\n\r\n" .. encoded
+local bin_msg = "Content-Length: " .. #encoded .. "\r\n\r\n" .. encoded
 
 @send_dap_to_client+=
 client:write(bin_msg)

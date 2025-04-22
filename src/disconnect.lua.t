@@ -6,7 +6,7 @@ M.stop_freeze = false
 M.stop_freeze = false
 
 @send_disconnect+=
-vim.fn.rpcrequest(debug_hook_conn, "nvim_exec_lua", [[require"osv".unfreeze()]], {})
+rpcrequest(debug_hook_conn, "nvim_exec_lua", [[require"osv".unfreeze()]], {})
 
 @implement+=
 function M.unfreeze()

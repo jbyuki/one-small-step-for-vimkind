@@ -26,7 +26,7 @@ M.server_messages = {}
 
 @add_message_to_hook_instance+=
 if debug_hook_conn then
-  vim.fn.rpcnotify(debug_hook_conn, "nvim_exec_lua", [[require"osv".add_message(...)]], {msg})
+  rpcnotify(debug_hook_conn, "nvim_exec_lua", [[require"osv".add_message(...)]], {msg})
 end
 
 @script_variables+=

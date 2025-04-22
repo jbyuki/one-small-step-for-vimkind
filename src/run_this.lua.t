@@ -18,7 +18,7 @@ end
 auto_nvim = vim.fn.jobstart(args, {rpc = true, env = env})
 
 @launch_osv_server+=
-local server = vim.fn.rpcrequest(auto_nvim, "nvim_exec_lua", [[return require"osv".launch(...)]], { opts })
+local server = rpcrequest(auto_nvim, "nvim_exec_lua", [[return require"osv".launch(...)]], { opts })
 vim.wait(100)
 
 @check_has_adapter_config+=
@@ -41,7 +41,8 @@ dap.listeners.after['setBreakpoints']['osv'] = function(session, body)
 end
 
 @run_current_script+=
-vim.fn.rpcnotify(auto_nvim, "nvim_command", "luafile " .. vim.fn.expand("%:p"))
+local file = vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf())
+rpcnotify(auto_nvim, "nvim_command", "luafile " .. file)
 
 @script_variables+=
 local auto_nvim
@@ -53,10 +54,9 @@ if auto_nvim then
 end
 
 @check_neovim_is_not_blocking+=
-local mode = vim.fn.rpcrequest(auto_nvim, "nvim_get_mode")
+local mode = rpcrequest(auto_nvim, "nvim_get_mode")
 assert(not mode.blocking, "Neovim is waiting for input at startup. Aborting.")
 
 @create_neovim_instance+=
 assert(auto_nvim, "Could not create neovim instance with jobstart!")
-
 
