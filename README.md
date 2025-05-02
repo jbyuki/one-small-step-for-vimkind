@@ -18,6 +18,23 @@ Install using your prefered method.
   ```
 </details>
 
+<details>
+  <summary>Using <a href="https://github.com/folke/lazy.nvim">lazy.nvim</a></summary>
+
+  ```lua
+  {
+    "mfussenegger/nvim-dap",
+    dependencies = {
+      "jbyuki/one-small-step-for-vimkind",
+    },
+    lazy = false,
+    config = function()
+      -- Put the suggested configuration here
+    end,
+  }
+  ```
+</details>
+
 ## Configuration
 
 Add these lines to work with [nvim-dap](https://github.com/mfussenegger/nvim-dap).
