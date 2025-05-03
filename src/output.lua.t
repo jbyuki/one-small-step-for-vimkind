@@ -1,6 +1,6 @@
 ##lua-debug
 @script_variables+=
-local redir_nvim_output = true
+local redir_nvim_output = false
 local nvim_exec2_opts = {}
 
 @handle_nvim_output+=

@@ -34,7 +34,7 @@ local skip_monitor_same_depth = false
 
 local head_start_depth = -1
 
-local redir_nvim_output = true
+local redir_nvim_output = false
 local nvim_exec2_opts = {}
 
 local exit_autocmd
