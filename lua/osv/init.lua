@@ -102,7 +102,7 @@ function M.launch(opts)
       ["opts.host"] = {opts.host, "s", true},
       ["opts.port"] = {opts.port, "n", true},
       ["opts.config_file"] = {opts.config_file, "s", true},
-      ["opts.output"] = {opts.output, "b", false},
+      ["opts.output"] = {opts.output, "b", true},
     }
     if opts.output ~= nil then redir_nvim_output = opts.output end
   end
