@@ -13,7 +13,7 @@ function M.run_this(opts)
 end
 
 @create_neovim_instance+=
-@launch_headless_instance_with_clean_environment+=
+@launch_headless_instance_with_clean_environment
 auto_nvim = nvim_server
 
 @launch_osv_server+=
