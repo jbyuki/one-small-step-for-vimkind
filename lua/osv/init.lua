@@ -127,8 +127,6 @@ function M.launch(opts)
     local clean_args = { vim.v.progpath, '-u', 'NONE', '-i', 'NONE', '-n', '--embed', '--headless' }
     nvim_server = vim.fn.jobstart(clean_args, {rpc = true})
     vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', 'vim.o.runtimepath = ...', { vim.o.runtimepath })
-    auto_nvim = nvim_server
-
   end
 
   local mode = vim.fn.rpcrequest(nvim_server, "nvim_get_mode")
@@ -1547,9 +1545,11 @@ function M.run_this(opts)
 
   local clean_args = { vim.v.progpath, '-u', 'NONE', '-i', 'NONE', '-n', '--embed', '--headless' }
   nvim_server = vim.fn.jobstart(clean_args, {rpc = true})
-  auto_nvim = nvim_server
-  assert(auto_nvim, "Could not create neovim instance with jobstart!")
   vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', 'vim.o.runtimepath = ...', { vim.o.runtimepath })
+  auto_nvim = nvim_server
+
+  assert(auto_nvim, "Could not create neovim instance with jobstart!")
+
 
   local mode = vim.fn.rpcrequest(auto_nvim, "nvim_get_mode")
   assert(not mode.blocking, "Neovim is waiting for input at startup. Aborting.")
