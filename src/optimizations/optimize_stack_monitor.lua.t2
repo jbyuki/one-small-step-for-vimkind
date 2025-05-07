@@ -1,0 +1,45 @@
+;;; ../lua-debug
+;; script variables
+local skip_monitor = false
+local skip_monitor_same_depth = false
+
+;; reset internal states
+skip_monitor = false
+skip_monitor_same_depth = false
+
+;; set next variable
+skip_monitor = false
+skip_monitor_same_depth = false
+
+;; set step out
+skip_monitor = false
+skip_monitor_same_depth = false
+
+;; speedup stack monitor
+if (event == "call" or event == "return") and monitor_stack and next then
+	skip_monitor_same_depth = true
+	skip_monitor = false
+end
+
+;; disable monitor for speedup
+if next and event == "line" and skip_monitor_same_depth then
+	skip_monitor = true
+end
+
+;; script variables
+local head_start_depth = -1
+
+;; save for next head start
+head_start_depth = off - 1
+
+;; head start for monitoring
+if head_start_depth >= 0 then
+  local info = debug.getinfo(head_start_depth, "S")
+  if info then
+		local inside_osv = false
+		; check if inside osv
+		if inside_osv then
+			off = head_start_depth+1
+		end
+  end
+end

@@ -1,0 +1,35 @@
+;;; ../lua-debug
+;; implement handlers
+function handlers.disconnect(request)
+  ; disable hooks
+  ; send disconnect aknowledge
+	; exit debuggee if requested
+  ; reset internal states
+	; if still running wait for next connection
+end
+
+;; disable hooks
+debug.sethook()
+
+;; send disconnect aknowledge
+sendProxyDAP(make_response(request, {}))
+
+;; support capabilities
+supportTerminateDebuggee = true,
+
+;; exit debuggee if requested
+if request.terminateDebuggee == true then
+	M.stop()
+end
+
+;; terminate adapter server process
+if nvim_server then
+	vim.fn.jobstop(nvim_server)
+	log("SERVER TERMINATED")
+  nvim_server = nil
+end
+
+;; if still running wait for next connection
+if not request.terminateDebuggee then
+	vim.schedule(M.wait_attach)
+end

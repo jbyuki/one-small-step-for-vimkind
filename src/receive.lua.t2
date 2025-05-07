@@ -1,0 +1,77 @@
+;;; lua-debug
+;; start reading
+sock:read_start(vim.schedule_wrap(function(err, chunk)
+  if chunk then
+    ; read tcp
+  else
+    ; send disconnect
+    sock:shutdown()
+    sock:close()
+  end
+end))
+
+;; create reading coroutine
+local dap_read = coroutine.create(function()
+  ; read dap protocol message
+  ; send back initialize response
+  ; send back initialized event
+
+  while true do
+    ; read dap protocol message
+    ; add message to hook instance
+  end
+end)
+
+;; socket variables
+local tcp_data = ""
+
+;;- create reading coroutine
+local function read_header()
+  while not string.find(tcp_data, "\r\n\r\n") do
+    coroutine.yield()
+  end
+  ; read content length
+  ; remove header from tcp data
+
+  return {
+    content_length = tonumber(content_length),
+  }
+end
+
+;;- create reading coroutine
+local function read_body(length)
+  while string.len(tcp_data) < length do
+    coroutine.yield()
+  end
+
+  ; decode json body
+  ; remove body from tcp data
+
+  return decoded
+end
+
+;; read content length
+local content_length = string.match(tcp_data, "^Content%-Length: (%d+)")
+
+;; remove header from tcp data
+local _, sep = string.find(tcp_data, "\r\n\r\n")
+tcp_data = string.sub(tcp_data, sep+1)
+
+;; decode json body
+local body = string.sub(tcp_data, 1, length)
+local succ, decoded = pcall(vim.fn.json_decode, body)
+
+;; remove body from tcp data
+tcp_data = string.sub(tcp_data, length+1)
+
+;; read tcp
+tcp_data = tcp_data .. chunk
+coroutine.resume(dap_read)
+
+;; read dap protocol message
+local msg
+do
+  local len = read_header()
+  msg = read_body(len.content_length)
+end
+

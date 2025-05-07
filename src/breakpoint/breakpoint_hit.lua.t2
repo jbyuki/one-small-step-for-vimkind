@@ -1,0 +1,118 @@
+;;; ../lua-debug
+;; check if breakpoint hit
+local bps = breakpoints[line]
+if event == "line" and bps then
+  ; get source path
+  ; if source path match break
+
+;; get source path
+local surface = 0
+; get surface stack frame
+
+local info = debug.getinfo(surface, "S")
+local source_path = info.source
+
+;; script variables
+local running = true
+
+;; if source path match break
+if source_path:sub(1, 1) == "@" then
+	local path
+	if #source_path >= 4 and source_path:sub(1, 4) == "@vim" then
+		; resolve vim runtime directory
+	else
+		path = source_path:sub(2)
+	end
+  local succ, path = pcall(vim.fn.fnamemodify, path, ":p")
+  if succ then
+		path = vim.fn.resolve(path)
+    path = vim.uri_from_fname(path:lower())
+		local bp = bps[path]
+    if bp then
+			log(vim.inspect(bp))
+			local hit = false
+			if type(bp) == "boolean" then
+				hit = true
+			elseif type(bp) == "number" then
+				; check breakpoint hit condition
+			elseif type(bp) == "string" then
+				local expr = bp
+				; check breakpoint condition
+			elseif type(bp) == "table" then
+				; check breakpoint both
+			end
+
+			if hit then
+				log("breakpoint hit")
+				; send stopped event breakpoint
+				; freeze neovim instance
+			end
+    end
+  end
+end
+
+;; freeze neovim instance
+running = false
+while not running do
+  ; check disconnected
+  ; handle new messages
+  ; clear messages
+  ; handle nvim output
+  vim.wait(50)
+end
+
+;; send stopped event breakpoint
+local msg = make_event("stopped")
+msg.body = {
+  reason = "breakpoint",
+  threadId = 1
+}
+sendProxyDAP(msg)
+
+;; check breakpoint hit condition
+if bp == 0 then
+	hit = true
+	bps[path] = breakpoints_count[line][path]
+else
+	bps[path] = bps[path] - 1
+end
+
+;; check breakpoint condition
+local frame = 2
+; retrieve locals in frame
+; retrieve upvalues in frame
+; retrieve globals
+; set frame environment for execution
+; evaluate expression
+hit = result_repl == true
+
+;; check breakpoint both
+local expr = bp[1]
+; check breakpoint condition
+if bp[2] == 0 then
+	hit = hit and true
+	bp[2] = breakpoints_count[line][path]
+else
+	bp[2] = bp[2] - 1
+	hit = false
+end
+
+;; resolve vim runtime directory
+path = os.getenv("VIMRUNTIME") .. "/lua/" .. source_path:sub(2) 
+
+;; get surface stack frame
+local off = 0
+while true do
+  local info = debug.getinfo(off, "S")
+  if not info then
+    break
+  end
+
+  local inside_osv = false
+  ; check if inside osv
+
+  if inside_osv then
+    surface = off + 1
+  end
+  off = off + 1
+end

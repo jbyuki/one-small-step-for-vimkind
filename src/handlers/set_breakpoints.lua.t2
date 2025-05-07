@@ -1,0 +1,74 @@
+;;; ../lua-debug
+;; attach variables
+local breakpoints = {}
+
+;; implement handlers
+function handlers.setBreakpoints(request)
+  local args = request.arguments
+  ; clear breakpoints in source
+  ; save breakpoints informations
+  ; send back breakpoint verification
+end
+
+;; save breakpoints informations
+local results_bps = {}
+
+for _, bp in ipairs(args.breakpoints) do
+  breakpoints[bp.line] = breakpoints[bp.line] or {}
+  local line_bps = breakpoints[bp.line]
+	; save breakpoint
+  table.insert(results_bps, { verified = true })
+  -- log("Set breakpoint at line " .. bp.line .. " in " .. args.source.path)
+end
+
+;; declare
+local sendProxyDAP
+
+;; implement
+function sendProxyDAP(data)
+  vim.fn.rpcnotify(nvim_server, 'nvim_exec_lua', [[require"osv".sendDAP(...)]], {data})
+end
+
+;; send back breakpoint verification
+sendProxyDAP(make_response(request, {
+  body = {
+    breakpoints = results_bps
+  }
+}))
+
+
+;; clear breakpoints in source
+for line, line_bps in pairs(breakpoints) do
+  line_bps[vim.uri_from_fname(args.source.path:lower())] = nil
+end
+
+;; support capabilities
+supportsHitConditionalBreakpoints = true,
+supportsConditionalBreakpoints = true,
+
+
+;; save breakpoint
+if bp.condition and bp.hitCondition then
+	; set breakpoint hit condition in table
+	line_bps[vim.uri_from_fname(args.source.path:lower())] = {bp.condition, tonumber(bp.hitCondition)}
+elseif bp.condition then
+	line_bps[vim.uri_from_fname(args.source.path:lower())] = bp.condition
+elseif bp.hitCondition then
+	; set breakpoint hit condition in table
+	line_bps[vim.uri_from_fname(args.source.path:lower())] = tonumber(bp.hitCondition)
+else
+	line_bps[vim.uri_from_fname(args.source.path:lower())] = true
+end
+
+;; attach variables
+local breakpoints_count = {}
+
+;; set breakpoint hit condition in table
+breakpoints_count[bp.line] = breakpoints_count[bp.line] or {}
+local line_bps_count = breakpoints_count[bp.line]
+line_bps_count[vim.uri_from_fname(args.source.path:lower())] = tonumber(bp.hitCondition)
+
+;; clear breakpoints in source
+for line, line_bps_count in pairs(breakpoints_count) do
+	line_bps_count[vim.uri_from_fname(args.source.path:lower())] = nil
+end

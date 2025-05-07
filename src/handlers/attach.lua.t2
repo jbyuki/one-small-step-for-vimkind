@@ -1,0 +1,35 @@
+;;; ../lua-debug
+;; script variables
+local limit = 0
+
+;; attach to current instance
+debug.sethook(function(event, line)
+  if lock_debug_loop then return end
+
+  ; handle new messages
+  ; clear messages
+  ; handle nvim output
+
+  local depth = -1
+  ; speedup stack monitor
+  if monitor_stack and not skip_monitor then
+    ; get stack depth with debug getinfo
+    ; disable monitor for speedup
+  end
+
+  ; check if breakpoint hit
+  ; check if step into
+  ; check if next
+  ; check if step out
+  ; check if pause
+  end
+end, "clr")
+
+;; implement handlers
+function handlers.attach(request)
+  ; acknowledge attach
+end
+
+
+;; acknowledge attach
+sendProxyDAP(make_response(request, {}))

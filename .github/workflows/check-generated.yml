@@ -20,5 +20,5 @@ jobs:
           ls ${{ github.workspace }}
       - name: Generate and diff
         run: |
-          nvim --headless -c "lua require'ntangle'.tangle_all()" -c "exit"
+          nvim --headless -c "lua require'ntangle'.tangle_all_v2()" -c "exit"
           git diff --exit-code -- lua

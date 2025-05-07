@@ -1,0 +1,52 @@
+;;; ../lua-debug
+;; implement handlers
+function handlers.stepIn(request)
+  ; set step in
+  ; continue running
+
+  ; acknowledge step in
+end
+
+;; continue running
+running = true
+
+;; script variables
+local step_in
+
+;; set step in
+step_in = true
+
+;; disable step in
+step_in = false
+
+;; acknowledge step in
+sendProxyDAP(make_response(request,{}))
+
+;; check if step into
+elseif event == "line" and step_in then
+	local valid = false
+	; make sure location is valid
+	if valid then
+		; send stopped event step
+		; disable step in
+
+		; freeze neovim instance
+	end
+
+;; send stopped event step
+local msg = make_event("stopped")
+msg.body = {
+  reason = "step",
+  threadId = 1
+}
+sendProxyDAP(msg)
+
+;; make sure location is valid
+local surface = 0
+; get surface stack frame
+
+local info = debug.getinfo(surface)
+
+if info and info.currentline and info.currentline ~= 0 then
+	valid = true
+end

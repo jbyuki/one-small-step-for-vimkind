@@ -1,0 +1,77 @@
+;;; ../lua-debug
+;; implement handlers
+function handlers.variables(request)
+  local args = request.arguments
+
+  local ref = vars_ref[args.variablesReference]
+  local variables = {}
+  if type(ref) == "number" then
+    ; inspect local variables
+    ; inspect up values
+  elseif type(ref) == "table" then
+    ; inspect table elements
+  end
+
+  sendProxyDAP(make_response(request, {
+    body = {
+      variables = variables,
+    }
+  }))
+end
+
+;; inspect local variables
+local a = 1
+local frame = ref
+while true do
+  local ln, lv = debug.getlocal(frame, a)
+  if not ln then
+    break
+  end
+
+  ; omit temporary values
+  else
+    local v = {}
+    ; fill variable struct
+    table.insert(variables, v)
+  end
+  a = a + 1
+end
+
+;; omit temporary values
+if vim.startswith(ln, "(") then
+
+;; fill variable struct
+v.name = tostring(ln)
+v.variablesReference = 0
+if type(lv) == "table" then
+  ; make variable reference for table
+end
+v.value = tostring(lv) 
+
+;; make variable reference for table
+vars_ref[vars_id] = lv
+v.variablesReference = vars_id
+vars_id = vars_id + 1
+
+;; inspect table elements
+for ln, lv in pairs(ref) do
+    local v = {}
+    ; fill variable struct
+    table.insert(variables, v)
+end
+
+;; inspect up values
+local func = debug.getinfo(frame).func
+local a = 1
+while true do
+  local ln,lv = debug.getupvalue(func, a)
+  if not ln then break end
+
+  ; omit temporary values
+  else
+    local v = {}
+    ; fill variable struct
+    table.insert(variables, v)
+  end
+  a = a + 1
+end

@@ -1,0 +1,28 @@
+;;; ../lua-debug
+;; implement handlers
+function handlers.pause(request)
+  ; set pause
+end
+
+;; script variables
+local pause = false
+
+;; set pause
+pause = true
+
+;; disable pause
+pause = false
+
+;; check if pause
+elseif event == "line" and pause then
+  ; disable pause
+  ; send stopped event pause
+  ; freeze neovim instance
+
+;; send stopped event pause
+local msg = make_event("stopped")
+msg.body = {
+  reason = "pause",
+  threadId = 1
+}
+sendProxyDAP(msg)

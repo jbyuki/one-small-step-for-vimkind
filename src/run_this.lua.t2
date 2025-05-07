@@ -1,0 +1,61 @@
+;;; lua-debug
+;; implement
+function M.run_this(opts)
+  local dap = require"dap"
+  assert(dap, "nvim-dap not found. Please make sure it's installed.")
+
+  ; close previous neovim instance
+  ; create neovim instance
+  ; check neovim is not blocking
+  ; launch osv server
+  ; check has adapter config
+  ; run nvim dap
+end
+
+;; create neovim instance
+; launch headless instance with clean environment
+auto_nvim = nvim_server
+
+;; launch osv server
+local server = vim.fn.rpcrequest(auto_nvim, "nvim_exec_lua", [[return require"osv".launch(...)]], { opts })
+vim.wait(100)
+
+;; check has adapter config
+assert(dap.adapters.nlua, "nvim-dap adapter configuration for nlua not found. Please refer to the README.md or :help osv.txt")
+
+;; run nvim dap
+local osv_config = {
+  type = "nlua",
+  request = "attach",
+  name = "Debug current file",
+  host = server.host,
+  port = server.port,
+}
+dap.run(osv_config)
+
+dap.listeners.after['setBreakpoints']['osv'] = function(session, body)
+  vim.schedule(function()
+    ; run current script
+  end)
+end
+
+;; run current script
+vim.fn.rpcnotify(auto_nvim, "nvim_command", "luafile " .. vim.fn.expand("%:p"))
+
+;; script variables
+local auto_nvim
+
+;; close previous neovim instance
+if auto_nvim then
+  vim.fn.jobstop(auto_nvim)
+  auto_nvim = nil
+end
+
+;; check neovim is not blocking
+local mode = vim.fn.rpcrequest(auto_nvim, "nvim_get_mode")
+assert(not mode.blocking, "Neovim is waiting for input at startup. Aborting.")
+
+;; create neovim instance
+assert(auto_nvim, "Could not create neovim instance with jobstart!")
+
+
