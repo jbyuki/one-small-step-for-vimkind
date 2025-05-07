@@ -1,0 +1,24 @@
+;;; lua-debug
+;; implement
+function M.sendDAP(msg)
+  ; encode json
+  ; log send dap
+  if succ then
+    ; append content length
+    ; send dap to client
+  else
+    log(encoded)
+  end
+end
+
+;; encode json
+local succ, encoded = pcall(vim.fn.json_encode, msg)
+
+;; append content length
+local bin_msg = "Content-Length: " .. string.len(encoded) .. "\r\n\r\n" .. encoded
+
+;; send dap to client
+client:write(bin_msg)
+
+;; log send dap
+log(vim.inspect(msg))

@@ -1,0 +1,7 @@
+;;; lua-debug
+:: ../lua/osv/init.lua
+; script variables
+; declare
+local M = {}
+; implement
+return M

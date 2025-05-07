@@ -1,0 +1,9 @@
+;;; ../lua-debug
+;; implement handlers
+function handlers.continue(request)
+  ; continue running
+  ; acknowledge continue
+end
+
+;; acknowledge continue
+sendProxyDAP(make_response(request,{}))

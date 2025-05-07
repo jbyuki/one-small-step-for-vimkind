@@ -1,0 +1,56 @@
+;;; lua-debug
+;; implement
+function M.stop()
+  ; disable hooks
+
+	if not nvim_server then
+		log("Tried stopping osv when it is already.")
+		return 
+	end
+
+  ; handle nvim output
+  ; send terminated event
+  ; send exited event
+  ; terminate adapter server process
+  ; reset internal states
+	; unregister exit autocmd
+end
+
+;; send terminated event
+sendProxyDAP(make_event("terminated"))
+
+;; send exited event
+local msg = make_event("exited")
+msg.body = {
+  exitCode = 0,
+}
+sendProxyDAP(msg)
+
+;; reset internal states
+running = true
+
+limit = 0
+
+stack_level = 0
+next = false
+monitor_stack = false
+
+pause = false
+
+vars_id = 1
+vars_ref = {}
+
+frame_id = 1
+frames = {}
+
+step_out = false
+
+seq_id = 1
+
+M.stop_freeze = false
+
+;; implement
+function M.is_running()
+	return nvim_server ~= nil
+end
+
