@@ -1,0 +1,57 @@
+;;; ../lua-debug
+;; implement
+function M.start_trace()
+	; line hook
+	; clear cache
+	; attach line hook
+end
+
+;; implement
+function M.stop_trace()
+	; deattach line hook
+	; list executed modules
+end
+
+;; line hook
+function line_hook(event, line)
+	local surface = 0
+	; get surface stack frame
+
+	local info = debug.getinfo(surface, "S")
+	local source_path = info.source
+	; add to cache
+end
+
+;; script variables
+local cache = {}
+
+;; clear cache
+cache = {}
+
+;; add to cache
+cache[source_path] = cache[source_path] or {}
+table.insert(cache[source_path], line)
+
+;; attach line hook
+debug.sethook(line_hook, "l")
+
+;; deattach line hook
+debug.sethook()
+
+;; list executed modules
+; uniquify lines number
+return cache
+
+;; uniquify lines number
+local sources = vim.tbl_keys(cache)
+for _, source in ipairs(sources) do
+	local line_set = {}
+
+	for _, linenr in ipairs(cache[source]) do
+		line_set[linenr] = true
+	end
+
+	line_set = vim.tbl_keys(line_set)
+	table.sort(line_set)
+	cache[source] = line_set
+end

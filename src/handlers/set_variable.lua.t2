@@ -1,0 +1,67 @@
+;;; ../lua-debug
+;; support capabilities
+supportsSetVariable = true,
+
+;; implement handlers
+function handlers.setVariable(request)
+	local args = request.arguments
+  local ref = vars_ref[args.variablesReference]
+
+	; set variable variables
+
+  if type(ref) == "number" then
+		; set variable in frame
+	elseif type(ref) == "table" then
+		; set variable in table
+	end
+	
+	sendProxyDAP(make_response(request, {
+		body = body
+	}))
+end
+
+;; set variable in frame
+local a = 1
+local frame = ref
+while true do
+  local ln, lv = debug.getlocal(frame, a)
+  if not ln then
+    break
+  end
+
+	if ln == args.name then
+		local succ, f = pcall(loadstring, "return " .. args.value)
+		if succ and f then
+			local val = f()
+			; fill set variable response body
+			; set local variable value
+		end
+  end
+  a = a + 1
+end
+
+;; set variable variables
+local body = {}
+
+;; fill set variable response body
+body.value = tostring(val)
+body.type = type(val)
+if type(val) == "table" then
+	vars_ref[vars_id] = val
+	body.variablesReference = vars_id
+	vars_id = vars_id + 1
+else
+	body.variablesReference = 0
+end
+
+;; set local variable value
+debug.setlocal(frame, a, val)
+
+;; set variable in table
+local succ, val = pcall(loadstring, "return " .. args.value)
+if succ and f then
+	local val = f()
+	; fill set variable response body
+	ref[args.name] = f
+end
+

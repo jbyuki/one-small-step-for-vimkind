@@ -1,0 +1,17 @@
+;;; lua-debug
+;; script variables
+local exit_autocmd
+
+;; unregister exit autocmd
+if exit_autocmd then
+	vim.api.nvim_del_autocmd(exit_autocmd)
+	exit_autocmd = nil
+end
+
+;; create autocommand when exit
+exit_autocmd = vim.api.nvim_create_autocmd({"VimLeavePre"}, {
+	callback = function(...)
+		M.stop()
+	end
+})
+

@@ -1,0 +1,32 @@
+;;; ../lua-debug
+;; implement handlers
+function handlers.stepOut(request)
+  ; set step out
+  local depth = 0
+  ; get stack depth with debug getinfo
+  ; set stack level to current
+  ; continue running
+
+  ; acknowledge step out
+end
+
+;; acknowledge step out
+sendProxyDAP(make_response(request, {}))
+
+;; script variables
+local step_out = false
+
+;; set step out
+step_out = true
+monitor_stack = true
+
+;; disable step out
+step_out = false
+monitor_stack = false
+
+;; check if step out
+elseif event == "line" and step_out and depth >= 0 and stack_level-1 == depth then
+  ; send stopped event step
+  ; disable step out
+
+  ; freeze neovim instance
