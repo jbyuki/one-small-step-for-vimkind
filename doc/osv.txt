@@ -161,8 +161,8 @@ is_running()						*osv.is_running()*
 	True if osv is running.
 
 print_profiler()					*osv.print_profiler()*
-    Print out the current profiler results. See |osv.launch()| to enable the
-    profiler.
+    Prints the last 1000 elapsed times in milliseconds for each profiled sections.
+    See |osv.launch()| to enable the profiler.
 
 =========================================================================
 osv callbacks                                             *osv-callbacks*
