@@ -115,6 +115,8 @@ launch({opts})                                           *osv.launch()*
                                the debuggee (default is true). Note: This is
                                implemented via |:redir| internally. See
                                |:redir| for caveats.
+                • `profiler`     (bool) Enable the internal profiler. Use 
+                               |osv.print_profiler()| to see the results.
 
     Return: ~
         A server info object which contains `{ host = host, port = port }`, or
@@ -158,6 +160,9 @@ is_running()						*osv.is_running()*
     Return: ~
 	True if osv is running.
 
+print_profiler()					*osv.print_profiler()*
+    Print out the current profiler results. See |osv.launch()| to enable the
+    profiler.
 
 =========================================================================
 osv callbacks                                             *osv-callbacks*

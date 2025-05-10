@@ -5,6 +5,7 @@ local nvim_exec2_opts = {}
 
 ;; handle nvim output
 if redir_nvim_output and not vim.in_fast_event() then
+  ; start timing output
   -- Sets `g:_osv_nvim_output` with messages observed since last `:redir`.
   pcall(vim.api.nvim_exec2, 'silent redir END', nvim_exec2_opts)
 
@@ -24,4 +25,11 @@ if redir_nvim_output and not vim.in_fast_event() then
   -- displayed on-screen in debuggee as usual. This should also work when nvim
   -- is headless.
   pcall(vim.api.nvim_exec2, 'silent redir => g:_osv_nvim_output', nvim_exec2_opts)
+  ; stop timing output
 end
+
+;; start timing output
+start_profiler("output")
+
+;; stop timing output
+stop_profiler("output")

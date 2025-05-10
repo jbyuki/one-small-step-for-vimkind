@@ -1,0 +1,70 @@
+;;; lua-debug
+;; implement
+function M.print_profiler()
+  if not disable_profiler then
+    disable_profiler = true
+    ; print profiler
+    disable_profiler = false
+  else
+    vim.api.nvim_echo({{"Profiler was not enabled.", "WarningMsg"}}, false, {})
+  end
+end
+
+;; validate launch options
+["opts.profiler"] = {opts.profiler, "b", true},
+
+;; use launch options
+if opts and opts.profiler then
+  disable_profiler = false
+else
+  disable_profiler = true
+end
+
+;; declare
+local start_profiler
+local stop_profiler
+local get_profiler_result
+local start_time = {}
+local profiler_result = {}
+local profiler_max = {}
+local disable_profiler = false
+
+;; implement
+function start_profiler(section)
+  if not disable_profiler  then
+    start_time[section] = vim.uv.hrtime()
+  end
+end
+
+;; implement
+function stop_profiler(section)
+  if not disable_profiler and start_time[section] then 
+    local elapsed = vim.uv.hrtime() - start_time[section] 
+    profiler_result[section] = profiler_result[section] or {}
+    local results = profiler_result[section]
+    table.insert(results, elapsed/1e6)
+    while #results > 200 do
+      table.remove(results, 1)
+    end
+  end
+end
+
+;; print profiler
+for section, results in pairs(profiler_result) do
+  local msg_chunks = {}
+  local sorted = vim.deepcopy(results, true)
+  table.sort(sorted)
+  local top = math.min(5, #sorted)
+  local threshold = sorted[#sorted-(top-1)]
+
+  table.insert(msg_chunks, {("[%s]: "):format(section), "Normal"})
+
+  for _, result in ipairs(results) do
+    if result >= threshold then
+      table.insert(msg_chunks, {("%.2f "):format(result), "WarningMsg"})
+    else
+      table.insert(msg_chunks, {("%.2f "):format(result), "Normal"})
+    end
+  end
+  vim.api.nvim_echo(msg_chunks, false, {})
+end

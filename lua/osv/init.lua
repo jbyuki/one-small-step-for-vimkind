@@ -49,6 +49,14 @@ local debug_hook_conn
 
 local cache = {}
 
+local start_profiler
+local stop_profiler
+local get_profiler_result
+local start_time = {}
+local profiler_result = {}
+local profiler_max = {}
+local disable_profiler = false
+
 local sendProxyDAP
 
 local make_response
@@ -58,6 +66,51 @@ local make_event
 local log
 
 local M = {}
+function M.print_profiler()
+  if not disable_profiler then
+    disable_profiler = true
+    for section, results in pairs(profiler_result) do
+      local msg_chunks = {}
+      local sorted = vim.deepcopy(results, true)
+      table.sort(sorted)
+      local top = math.min(5, #sorted)
+      local threshold = sorted[#sorted-(top-1)]
+
+      table.insert(msg_chunks, {("[%s]: "):format(section), "Normal"})
+
+      for _, result in ipairs(results) do
+        if result >= threshold then
+          table.insert(msg_chunks, {("%.2f "):format(result), "WarningMsg"})
+        else
+          table.insert(msg_chunks, {("%.2f "):format(result), "Normal"})
+        end
+      end
+      vim.api.nvim_echo(msg_chunks, false, {})
+    end
+    disable_profiler = false
+  else
+    vim.api.nvim_echo({{"Profiler was not enabled.", "WarningMsg"}}, false, {})
+  end
+end
+
+function start_profiler(section)
+  if not disable_profiler  then
+    start_time[section] = vim.uv.hrtime()
+  end
+end
+
+function stop_profiler(section)
+  if not disable_profiler and start_time[section] then 
+    local elapsed = vim.uv.hrtime() - start_time[section] 
+    profiler_result[section] = profiler_result[section] or {}
+    local results = profiler_result[section]
+    table.insert(results, elapsed/1e6)
+    while #results > 200 do
+      table.remove(results, 1)
+    end
+  end
+end
+
 M.stop_freeze = false
 
 function M.unfreeze()
@@ -103,9 +156,17 @@ function M.launch(opts)
       ["opts.port"] = {opts.port, "n", true},
       ["opts.config_file"] = {opts.config_file, "s", true},
       ["opts.output"] = {opts.output, "b", true},
+      ["opts.profiler"] = {opts.profiler, "b", true},
+
     }
     if opts.output ~= nil then redir_nvim_output = opts.output end
   end
+  if opts and opts.profiler then
+    disable_profiler = false
+  else
+    disable_profiler = true
+  end
+
 
   if M.is_running() then
   	vim.api.nvim_echo({{"Server is already running.", "ErrorMsg"}}, true, {})
@@ -899,6 +960,8 @@ function M.attach()
     M.server_messages = {}
 
     if redir_nvim_output and not vim.in_fast_event() then
+      start_profiler("output")
+
       -- Sets `g:_osv_nvim_output` with messages observed since last `:redir`.
       pcall(vim.api.nvim_exec2, 'silent redir END', nvim_exec2_opts)
 
@@ -918,7 +981,9 @@ function M.attach()
       -- displayed on-screen in debuggee as usual. This should also work when nvim
       -- is headless.
       pcall(vim.api.nvim_exec2, 'silent redir => g:_osv_nvim_output', nvim_exec2_opts)
+      stop_profiler("output")
     end
+
 
     local depth = -1
     if (event == "call" or event == "return") and monitor_stack and next then
@@ -986,6 +1051,7 @@ function M.attach()
         off = off + 1
       end
 
+
       local info = debug.getinfo(surface, "S")
       local source_path = info.source
 
@@ -997,10 +1063,13 @@ function M.attach()
       	else
       		path = source_path:sub(2)
       	end
+      	start_profiler("resolve_path")
+
         local succ, path = pcall(vim.fn.fnamemodify, path, ":p")
         if succ then
       		path = vim.fn.resolve(path)
           path = vim.uri_from_fname(path:lower())
+      		stop_profiler("resolve_path")
       		local bp = bps[path]
           if bp then
       			log(vim.inspect(bp))
@@ -1214,6 +1283,8 @@ function M.attach()
       				  M.server_messages = {}
 
       				  if redir_nvim_output and not vim.in_fast_event() then
+      				    start_profiler("output")
+
       				    -- Sets `g:_osv_nvim_output` with messages observed since last `:redir`.
       				    pcall(vim.api.nvim_exec2, 'silent redir END', nvim_exec2_opts)
 
@@ -1233,7 +1304,9 @@ function M.attach()
       				    -- displayed on-screen in debuggee as usual. This should also work when nvim
       				    -- is headless.
       				    pcall(vim.api.nvim_exec2, 'silent redir => g:_osv_nvim_output', nvim_exec2_opts)
+      				    stop_profiler("output")
       				  end
+
       				  vim.wait(50)
       				end
 
@@ -1269,6 +1342,7 @@ function M.attach()
     	  end
     	  off = off + 1
     	end
+
 
     	local info = debug.getinfo(surface)
 
@@ -1308,6 +1382,8 @@ function M.attach()
     		  M.server_messages = {}
 
     		  if redir_nvim_output and not vim.in_fast_event() then
+    		    start_profiler("output")
+
     		    -- Sets `g:_osv_nvim_output` with messages observed since last `:redir`.
     		    pcall(vim.api.nvim_exec2, 'silent redir END', nvim_exec2_opts)
 
@@ -1327,7 +1403,9 @@ function M.attach()
     		    -- displayed on-screen in debuggee as usual. This should also work when nvim
     		    -- is headless.
     		    pcall(vim.api.nvim_exec2, 'silent redir => g:_osv_nvim_output', nvim_exec2_opts)
+    		    stop_profiler("output")
     		  end
+
     		  vim.wait(50)
     		end
 
@@ -1367,6 +1445,8 @@ function M.attach()
         M.server_messages = {}
 
         if redir_nvim_output and not vim.in_fast_event() then
+          start_profiler("output")
+
           -- Sets `g:_osv_nvim_output` with messages observed since last `:redir`.
           pcall(vim.api.nvim_exec2, 'silent redir END', nvim_exec2_opts)
 
@@ -1386,7 +1466,9 @@ function M.attach()
           -- displayed on-screen in debuggee as usual. This should also work when nvim
           -- is headless.
           pcall(vim.api.nvim_exec2, 'silent redir => g:_osv_nvim_output', nvim_exec2_opts)
+          stop_profiler("output")
         end
+
         vim.wait(50)
       end
 
@@ -1425,6 +1507,8 @@ function M.attach()
         M.server_messages = {}
 
         if redir_nvim_output and not vim.in_fast_event() then
+          start_profiler("output")
+
           -- Sets `g:_osv_nvim_output` with messages observed since last `:redir`.
           pcall(vim.api.nvim_exec2, 'silent redir END', nvim_exec2_opts)
 
@@ -1444,7 +1528,9 @@ function M.attach()
           -- displayed on-screen in debuggee as usual. This should also work when nvim
           -- is headless.
           pcall(vim.api.nvim_exec2, 'silent redir => g:_osv_nvim_output', nvim_exec2_opts)
+          stop_profiler("output")
         end
+
         vim.wait(50)
       end
 
@@ -1479,6 +1565,8 @@ function M.attach()
         M.server_messages = {}
 
         if redir_nvim_output and not vim.in_fast_event() then
+          start_profiler("output")
+
           -- Sets `g:_osv_nvim_output` with messages observed since last `:redir`.
           pcall(vim.api.nvim_exec2, 'silent redir END', nvim_exec2_opts)
 
@@ -1498,7 +1586,9 @@ function M.attach()
           -- displayed on-screen in debuggee as usual. This should also work when nvim
           -- is headless.
           pcall(vim.api.nvim_exec2, 'silent redir => g:_osv_nvim_output', nvim_exec2_opts)
+          stop_profiler("output")
         end
+
         vim.wait(50)
       end
 
@@ -1719,6 +1809,8 @@ function M.stop()
 	end
 
   if redir_nvim_output and not vim.in_fast_event() then
+    start_profiler("output")
+
     -- Sets `g:_osv_nvim_output` with messages observed since last `:redir`.
     pcall(vim.api.nvim_exec2, 'silent redir END', nvim_exec2_opts)
 
@@ -1738,7 +1830,9 @@ function M.stop()
     -- displayed on-screen in debuggee as usual. This should also work when nvim
     -- is headless.
     pcall(vim.api.nvim_exec2, 'silent redir => g:_osv_nvim_output', nvim_exec2_opts)
+    stop_profiler("output")
   end
+
   sendProxyDAP(make_event("terminated"))
 
   local msg = make_event("exited")
@@ -1815,6 +1909,7 @@ function M.start_trace()
 		  end
 		  off = off + 1
 		end
+
 
 		local info = debug.getinfo(surface, "S")
 		local source_path = info.source
