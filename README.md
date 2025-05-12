@@ -166,7 +166,8 @@ Events:
 * [x] stopped
 * [x] terminated
 * [x] exited
-* [x] output (but see [the caveat](#neovim-messages-and-output))
+* [x] output
+* [ ] exception
 
 Capabilities:
 
@@ -174,6 +175,8 @@ Capabilities:
 * [x] supportsHitConditionalBreakpoints
 * [x] supportsSetVariable
 * [x] supportTerminateDebuggee
+* [ ] supportsExceptionInfoRequest 
+* [ ] supportsExceptionOptions
 
 ## Name
 
