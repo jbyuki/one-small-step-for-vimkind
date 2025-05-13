@@ -59,7 +59,6 @@ while not running do
   ; check disconnected
   ; handle new messages
   ; clear messages
-  ; handle nvim output
   vim.wait(50)
 end
 
