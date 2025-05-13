@@ -8,7 +8,6 @@ function M.stop()
 		return 
 	end
 
-  ; handle nvim output
   ; send terminated event
   ; send exited event
   ; terminate adapter server process
