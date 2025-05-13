@@ -1,0 +1,8 @@
+;;; ../lua-debug
+;; implement handlers
+function handlers.configurationDone(request)
+  ; acknowledge configuration done
+end
+
+;; acknowledge configuration done
+sendProxyDAP(make_response(request, {}))

@@ -1,0 +1,50 @@
+;;; lua-debug
+;; support capabilities
+supportsConfigurationDoneRequest = true,
+
+;; non blocking wait for configuration then attach
+local timer = vim.loop.new_timer()
+local has_done_configuration = false
+local has_attach_message = false
+timer:start(0, 50, vim.schedule_wrap(function()
+  ; process configuration messages
+  if not has_done_configuration or not has_attach_message then return end
+  timer:close()
+  attach_now()
+end))
+
+;; wait for configuration
+local has_done_configuration = false
+local has_attach_message = false
+while true do
+  ; process configuration messages
+  if has_done_configuration and has_attach_message then break end
+  vim.wait(50)
+end
+
+;; process configuration messages
+local j = 1
+while j <= #M.server_messages do
+  local msg = M.server_messages[j]
+  local f = handlers[msg.command]
+
+  if f then
+    if msg.command == "setBreakpoints" then
+      log(vim.inspect(msg))
+      f(msg)
+      table.remove(M.server_messages, j)
+    elseif msg.command == "configurationDone" then
+      has_done_configuration = true
+      log(vim.inspect(msg))
+      f(msg)
+      table.remove(M.server_messages, j)
+    elseif msg.command == "attach" then
+      has_attach_message = true
+      j = j + 1
+    else
+      j = j + 1
+    end
+  else
+    j = j + 1
+  end
+end

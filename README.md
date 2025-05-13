@@ -177,6 +177,7 @@ Capabilities:
 * [x] supportTerminateDebuggee
 * [ ] supportsExceptionInfoRequest 
 * [ ] supportsExceptionOptions
+* [x] supportsConfigurationDoneRequest
 
 ## Name
 

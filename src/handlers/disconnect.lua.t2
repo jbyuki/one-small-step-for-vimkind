@@ -31,5 +31,5 @@ end
 
 ;; if still running wait for next connection
 if not request.terminateDebuggee then
-	vim.schedule(M.wait_attach)
+	vim.schedule(function() M.prepare_attach(false) end)
 end

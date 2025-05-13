@@ -14,7 +14,7 @@ function M.launch(opts)
   M.stop_freeze = false
 	; create autocommand when exit
   if not opts or not opts.blocking then
-    vim.schedule(M.wait_attach)
+    vim.schedule(function() M.prepare_attach(false) end)
   else
     ; wait attach blocking
   end
@@ -52,22 +52,19 @@ if server == vim.NIL then
 end
 
 ;; implement
-function M.wait_attach()
-  local timer = vim.loop.new_timer()
-  timer:start(0, 100, vim.schedule_wrap(function()
-    ; wait for attach message
-    if not has_attach then return end
-    timer:close()
-    M.attach()
-  end))
-end
-
-;; implement
-function M.attach()
+function M.prepare_attach(blocking)
   local handlers = {}
   ; attach variables
   ; implement handlers
-  ; attach to current instance
+  local attach_now = function()
+      ; attach to current instance
+  end
+  if blocking then
+    ; wait for configuration
+    attach_now()
+  else
+    ; non blocking wait for configuration then attach
+  end
 end
 
 ;; verify launch arguments
@@ -112,11 +109,4 @@ if M.on["start_server"] then
 
 
 ;; wait attach blocking
-while true do
-  ; wait for attach message
-  if has_attach then break end
-  vim.wait(50)
-end
-
-M.attach()
-
+M.prepare_attach(true)

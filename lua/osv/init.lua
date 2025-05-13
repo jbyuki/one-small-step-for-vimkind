@@ -234,44 +234,15 @@ function M.launch(opts)
 	})
 
   if not opts or not opts.blocking then
-    vim.schedule(M.wait_attach)
+    vim.schedule(function() M.prepare_attach(false) end)
   else
-    while true do
-      local has_attach = false
-      for _,msg in ipairs(M.server_messages) do
-        if msg.command == "attach" then
-          has_attach = true
-        end
-      end
-
-      if has_attach then break end
-      vim.wait(50)
-    end
-
-    M.attach()
-
+    M.prepare_attach(true)
   end
 
   return server
 end
 
-function M.wait_attach()
-  local timer = vim.loop.new_timer()
-  timer:start(0, 100, vim.schedule_wrap(function()
-    local has_attach = false
-    for _,msg in ipairs(M.server_messages) do
-      if msg.command == "attach" then
-        has_attach = true
-      end
-    end
-
-    if not has_attach then return end
-    timer:close()
-    M.attach()
-  end))
-end
-
-function M.attach()
+function M.prepare_attach(blocking)
   local handlers = {}
   local breakpoints = {}
 
@@ -281,6 +252,10 @@ function M.attach()
     sendProxyDAP(make_response(request, {}))
   end
 
+
+  function handlers.configurationDone(request)
+    sendProxyDAP(make_response(request, {}))
+  end
 
   function handlers.continue(request)
     running = true
@@ -323,7 +298,7 @@ function M.attach()
     M.stop_freeze = false
 
   	if not request.terminateDebuggee then
-  		vim.schedule(M.wait_attach)
+  		vim.schedule(function() M.prepare_attach(false) end)
   	end
   end
 
@@ -942,444 +917,10 @@ function M.attach()
     }))
   end
 
-  debug.sethook(function(event, line)
-    if lock_debug_loop then return end
+  local attach_now = function()
+      debug.sethook(function(event, line)
+        if lock_debug_loop then return end
 
-    local i = 1
-    while i <= #M.server_messages do
-      local msg = M.server_messages[i]
-      local f = handlers[msg.command]
-      log(vim.inspect(msg))
-      if f then
-        f(msg)
-      else
-        log("Could not handle " .. msg.command)
-      end
-      i = i + 1
-    end
-
-    M.server_messages = {}
-
-    if redir_nvim_output and not vim.in_fast_event() then
-      start_profiler("output")
-
-      -- Sets `g:_osv_nvim_output` with messages observed since last `:redir`.
-      pcall(vim.api.nvim_exec2, 'silent redir END', nvim_exec2_opts)
-
-      local ok, msgs = pcall(vim.api.nvim_get_var, '_osv_nvim_output')
-      if ok then
-        if type(msgs) ~= 'string' then
-          error('expected g:_osv_nvim_output to be a string but got: ' .. msgs)
-        elseif #msgs > 0 then
-          local event = make_event 'output'
-          event.body = { category = 'stdout', output = msgs }
-          sendProxyDAP(event)
-        end
-      end
-
-      -- Sets `g:_osv_nvim_output` as redir target for nvim messages, creates the
-      -- variable if it doesn't already exist, and clears it. Messages are still
-      -- displayed on-screen in debuggee as usual. This should also work when nvim
-      -- is headless.
-      pcall(vim.api.nvim_exec2, 'silent redir => g:_osv_nvim_output', nvim_exec2_opts)
-      stop_profiler("output")
-    end
-
-
-    local depth = -1
-    if (event == "call" or event == "return") and monitor_stack and next then
-    	skip_monitor_same_depth = true
-    	skip_monitor = false
-    end
-
-    if monitor_stack and not skip_monitor then
-      local surface = 0
-      local off = 0
-      while true do
-        local info = debug.getinfo(off, "S")
-        if not info then
-          break
-        end
-
-        local inside_osv = false
-        if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
-          local source = info.source:sub(2)
-          -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
-          local parent = vim.fs.dirname(source)
-          if parent and vim.fs.basename(parent) == "osv" then
-            inside_osv = true
-          end
-        end
-
-        if inside_osv then
-          surface = off
-        end
-        off = off + 1
-      end
-      head_start_depth = off - 1
-
-      depth = (off - 1) - surface
-      if next and event == "line" and skip_monitor_same_depth then
-      	skip_monitor = true
-      end
-
-    end
-
-    local bps = breakpoints[line]
-    if event == "line" and bps then
-      local surface = 0
-      local off = 0
-      while true do
-        local info = debug.getinfo(off, "S")
-        if not info then
-          break
-        end
-
-        local inside_osv = false
-        if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
-          local source = info.source:sub(2)
-          -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
-          local parent = vim.fs.dirname(source)
-          if parent and vim.fs.basename(parent) == "osv" then
-            inside_osv = true
-          end
-        end
-
-
-        if inside_osv then
-          surface = off + 1
-        end
-        off = off + 1
-      end
-
-
-      local info = debug.getinfo(surface, "S")
-      local source_path = info.source
-
-      if source_path:sub(1, 1) == "@" then
-      	local path
-      	if #source_path >= 4 and source_path:sub(1, 4) == "@vim" then
-      		path = os.getenv("VIMRUNTIME") .. "/lua/" .. source_path:sub(2) 
-
-      	else
-      		path = source_path:sub(2)
-      	end
-      	start_profiler("resolve_path")
-
-        local succ, path = pcall(vim.fn.fnamemodify, path, ":p")
-        if succ then
-      		path = vim.fn.resolve(path)
-          path = vim.uri_from_fname(path:lower())
-      		stop_profiler("resolve_path")
-      		local bp = bps[path]
-          if bp then
-      			log(vim.inspect(bp))
-      			local hit = false
-      			if type(bp) == "boolean" then
-      				hit = true
-      			elseif type(bp) == "number" then
-      				if bp == 0 then
-      					hit = true
-      					bps[path] = breakpoints_count[line][path]
-      				else
-      					bps[path] = bps[path] - 1
-      				end
-
-      			elseif type(bp) == "string" then
-      				local expr = bp
-      				local frame = 2
-      				local a = 1
-      				local prev
-      				local cur = {}
-      				local first = cur
-
-      				while true do
-      				  local succ, ln, lv = pcall(debug.getlocal, frame+1, a)
-      				  if not succ then
-      				    break
-      				  end
-
-      				  if not ln then
-      						break
-      				  else
-      				    -- Avoid shadowing of the globals if a local variable is nil
-      				    cur[ln] = lv or vim.NIL
-      				    a = a + 1
-      				  end
-      				end
-
-
-
-      				prev = cur
-
-      				cur = {}
-      				setmetatable(prev, {
-      					__index = cur
-      				})
-
-      				a = 1
-
-      				local succ, info = pcall(debug.getinfo, frame+1)
-      				if succ and info and info.func then
-      					local func = info.func
-      					local a = 1
-      					while true do
-      						local succ, ln, lv = pcall(debug.getupvalue, func, a)
-      						if not succ then
-      							break
-      						end
-
-      						if not ln then
-      							break
-      						else
-      				      -- Avoid shadowing of the globals if a local variable is nil
-      							cur[ln] = lv or vim.NIL
-      							a = a + 1
-      						end
-      					end
-      				end
-
-      				local succ, info = pcall(debug.getinfo, frame+1)
-      				if succ and info and info.func then
-      					setmetatable(cur, {
-      						__index = getfenv(info.func)
-      					})
-      				end
-
-      				local succ, f = pcall(loadstring, "return " .. expr)
-      				if succ and f then
-      				  setfenv(f, first)
-      				end
-
-      				local result_repl
-      				if succ then
-      				  succ, result_repl = pcall(f)
-      				else
-      				  result_repl = f
-      				end
-
-      				if result_repl == vim.NIL then
-      				  result_repl = nil 
-      				end
-
-      				hit = result_repl == true
-
-      			elseif type(bp) == "table" then
-      				local expr = bp[1]
-      				local frame = 2
-      				local a = 1
-      				local prev
-      				local cur = {}
-      				local first = cur
-
-      				while true do
-      				  local succ, ln, lv = pcall(debug.getlocal, frame+1, a)
-      				  if not succ then
-      				    break
-      				  end
-
-      				  if not ln then
-      						break
-      				  else
-      				    -- Avoid shadowing of the globals if a local variable is nil
-      				    cur[ln] = lv or vim.NIL
-      				    a = a + 1
-      				  end
-      				end
-
-
-
-      				prev = cur
-
-      				cur = {}
-      				setmetatable(prev, {
-      					__index = cur
-      				})
-
-      				a = 1
-
-      				local succ, info = pcall(debug.getinfo, frame+1)
-      				if succ and info and info.func then
-      					local func = info.func
-      					local a = 1
-      					while true do
-      						local succ, ln, lv = pcall(debug.getupvalue, func, a)
-      						if not succ then
-      							break
-      						end
-
-      						if not ln then
-      							break
-      						else
-      				      -- Avoid shadowing of the globals if a local variable is nil
-      							cur[ln] = lv or vim.NIL
-      							a = a + 1
-      						end
-      					end
-      				end
-
-      				local succ, info = pcall(debug.getinfo, frame+1)
-      				if succ and info and info.func then
-      					setmetatable(cur, {
-      						__index = getfenv(info.func)
-      					})
-      				end
-
-      				local succ, f = pcall(loadstring, "return " .. expr)
-      				if succ and f then
-      				  setfenv(f, first)
-      				end
-
-      				local result_repl
-      				if succ then
-      				  succ, result_repl = pcall(f)
-      				else
-      				  result_repl = f
-      				end
-
-      				if result_repl == vim.NIL then
-      				  result_repl = nil 
-      				end
-
-      				hit = result_repl == true
-
-      				if bp[2] == 0 then
-      					hit = hit and true
-      					bp[2] = breakpoints_count[line][path]
-      				else
-      					bp[2] = bp[2] - 1
-      					hit = false
-      				end
-
-      			end
-
-      			if hit then
-      				log("breakpoint hit")
-      				local msg = make_event("stopped")
-      				msg.body = {
-      				  reason = "breakpoint",
-      				  threadId = 1
-      				}
-      				sendProxyDAP(msg)
-
-      				running = false
-      				while not running do
-      				  if M.stop_freeze then
-      				    M.stop_freeze = false
-      				    break
-      				  end
-      				  local i = 1
-      				  while i <= #M.server_messages do
-      				    local msg = M.server_messages[i]
-      				    local f = handlers[msg.command]
-      				    log(vim.inspect(msg))
-      				    if f then
-      				      f(msg)
-      				    else
-      				      log("Could not handle " .. msg.command)
-      				    end
-      				    i = i + 1
-      				  end
-
-      				  M.server_messages = {}
-
-      				  vim.wait(50)
-      				end
-
-      			end
-          end
-        end
-      end
-
-
-    elseif event == "line" and step_in then
-    	local valid = false
-    	local surface = 0
-    	local off = 0
-    	while true do
-    	  local info = debug.getinfo(off, "S")
-    	  if not info then
-    	    break
-    	  end
-
-    	  local inside_osv = false
-    	  if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
-    	    local source = info.source:sub(2)
-    	    -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
-    	    local parent = vim.fs.dirname(source)
-    	    if parent and vim.fs.basename(parent) == "osv" then
-    	      inside_osv = true
-    	    end
-    	  end
-
-
-    	  if inside_osv then
-    	    surface = off + 1
-    	  end
-    	  off = off + 1
-    	end
-
-
-    	local info = debug.getinfo(surface)
-
-    	if info and info.currentline and info.currentline ~= 0 then
-    		valid = true
-    	end
-    	if valid then
-    		local msg = make_event("stopped")
-    		msg.body = {
-    		  reason = "step",
-    		  threadId = 1
-    		}
-    		sendProxyDAP(msg)
-
-    		step_in = false
-
-
-    		running = false
-    		while not running do
-    		  if M.stop_freeze then
-    		    M.stop_freeze = false
-    		    break
-    		  end
-    		  local i = 1
-    		  while i <= #M.server_messages do
-    		    local msg = M.server_messages[i]
-    		    local f = handlers[msg.command]
-    		    log(vim.inspect(msg))
-    		    if f then
-    		      f(msg)
-    		    else
-    		      log("Could not handle " .. msg.command)
-    		    end
-    		    i = i + 1
-    		  end
-
-    		  M.server_messages = {}
-
-    		  vim.wait(50)
-    		end
-
-    	end
-
-    elseif event == "line" and next and depth >= 0 and depth <= stack_level then
-      local msg = make_event("stopped")
-      msg.body = {
-        reason = "step",
-        threadId = 1
-      }
-      sendProxyDAP(msg)
-
-      next = false
-      monitor_stack = false
-
-
-      running = false
-      while not running do
-        if M.stop_freeze then
-          M.stop_freeze = false
-          break
-        end
         local i = 1
         while i <= #M.server_messages do
           local msg = M.server_messages[i]
@@ -1395,83 +936,589 @@ function M.attach()
 
         M.server_messages = {}
 
-        vim.wait(50)
-      end
+        if redir_nvim_output and not vim.in_fast_event() then
+          start_profiler("output")
 
+          -- Sets `g:_osv_nvim_output` with messages observed since last `:redir`.
+          pcall(vim.api.nvim_exec2, 'silent redir END', nvim_exec2_opts)
 
-    elseif event == "line" and step_out and depth >= 0 and stack_level-1 == depth then
-      local msg = make_event("stopped")
-      msg.body = {
-        reason = "step",
-        threadId = 1
-      }
-      sendProxyDAP(msg)
-
-      step_out = false
-      monitor_stack = false
-
-
-      running = false
-      while not running do
-        if M.stop_freeze then
-          M.stop_freeze = false
-          break
-        end
-        local i = 1
-        while i <= #M.server_messages do
-          local msg = M.server_messages[i]
-          local f = handlers[msg.command]
-          log(vim.inspect(msg))
-          if f then
-            f(msg)
-          else
-            log("Could not handle " .. msg.command)
+          local ok, msgs = pcall(vim.api.nvim_get_var, '_osv_nvim_output')
+          if ok then
+            if type(msgs) ~= 'string' then
+              error('expected g:_osv_nvim_output to be a string but got: ' .. msgs)
+            elseif #msgs > 0 then
+              local event = make_event 'output'
+              event.body = { category = 'stdout', output = msgs }
+              sendProxyDAP(event)
+            end
           end
-          i = i + 1
+
+          -- Sets `g:_osv_nvim_output` as redir target for nvim messages, creates the
+          -- variable if it doesn't already exist, and clears it. Messages are still
+          -- displayed on-screen in debuggee as usual. This should also work when nvim
+          -- is headless.
+          pcall(vim.api.nvim_exec2, 'silent redir => g:_osv_nvim_output', nvim_exec2_opts)
+          stop_profiler("output")
         end
 
-        M.server_messages = {}
 
-        vim.wait(50)
-      end
-
-    elseif event == "line" and pause then
-      pause = false
-
-      local msg = make_event("stopped")
-      msg.body = {
-        reason = "pause",
-        threadId = 1
-      }
-      sendProxyDAP(msg)
-      running = false
-      while not running do
-        if M.stop_freeze then
-          M.stop_freeze = false
-          break
+        local depth = -1
+        if (event == "call" or event == "return") and monitor_stack and next then
+        	skip_monitor_same_depth = true
+        	skip_monitor = false
         end
-        local i = 1
-        while i <= #M.server_messages do
-          local msg = M.server_messages[i]
-          local f = handlers[msg.command]
-          log(vim.inspect(msg))
-          if f then
-            f(msg)
-          else
-            log("Could not handle " .. msg.command)
+
+        if monitor_stack and not skip_monitor then
+          local surface = 0
+          local off = 0
+          while true do
+            local info = debug.getinfo(off, "S")
+            if not info then
+              break
+            end
+
+            local inside_osv = false
+            if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
+              local source = info.source:sub(2)
+              -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
+              local parent = vim.fs.dirname(source)
+              if parent and vim.fs.basename(parent) == "osv" then
+                inside_osv = true
+              end
+            end
+
+            if inside_osv then
+              surface = off
+            end
+            off = off + 1
           end
-          i = i + 1
+          head_start_depth = off - 1
+
+          depth = (off - 1) - surface
+          if next and event == "line" and skip_monitor_same_depth then
+          	skip_monitor = true
+          end
+
         end
 
-        M.server_messages = {}
+        local bps = breakpoints[line]
+        if event == "line" and bps then
+          local surface = 0
+          local off = 0
+          while true do
+            local info = debug.getinfo(off, "S")
+            if not info then
+              break
+            end
 
-        vim.wait(50)
+            local inside_osv = false
+            if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
+              local source = info.source:sub(2)
+              -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
+              local parent = vim.fs.dirname(source)
+              if parent and vim.fs.basename(parent) == "osv" then
+                inside_osv = true
+              end
+            end
+
+
+            if inside_osv then
+              surface = off + 1
+            end
+            off = off + 1
+          end
+
+
+          local info = debug.getinfo(surface, "S")
+          local source_path = info.source
+
+          if source_path:sub(1, 1) == "@" then
+          	local path
+          	if #source_path >= 4 and source_path:sub(1, 4) == "@vim" then
+          		path = os.getenv("VIMRUNTIME") .. "/lua/" .. source_path:sub(2) 
+
+          	else
+          		path = source_path:sub(2)
+          	end
+          	start_profiler("resolve_path")
+
+            local succ, path = pcall(vim.fn.fnamemodify, path, ":p")
+            if succ then
+          		path = vim.fn.resolve(path)
+              path = vim.uri_from_fname(path:lower())
+          		stop_profiler("resolve_path")
+          		local bp = bps[path]
+              if bp then
+          			log(vim.inspect(bp))
+          			local hit = false
+          			if type(bp) == "boolean" then
+          				hit = true
+          			elseif type(bp) == "number" then
+          				if bp == 0 then
+          					hit = true
+          					bps[path] = breakpoints_count[line][path]
+          				else
+          					bps[path] = bps[path] - 1
+          				end
+
+          			elseif type(bp) == "string" then
+          				local expr = bp
+          				local frame = 2
+          				local a = 1
+          				local prev
+          				local cur = {}
+          				local first = cur
+
+          				while true do
+          				  local succ, ln, lv = pcall(debug.getlocal, frame+1, a)
+          				  if not succ then
+          				    break
+          				  end
+
+          				  if not ln then
+          						break
+          				  else
+          				    -- Avoid shadowing of the globals if a local variable is nil
+          				    cur[ln] = lv or vim.NIL
+          				    a = a + 1
+          				  end
+          				end
+
+
+
+          				prev = cur
+
+          				cur = {}
+          				setmetatable(prev, {
+          					__index = cur
+          				})
+
+          				a = 1
+
+          				local succ, info = pcall(debug.getinfo, frame+1)
+          				if succ and info and info.func then
+          					local func = info.func
+          					local a = 1
+          					while true do
+          						local succ, ln, lv = pcall(debug.getupvalue, func, a)
+          						if not succ then
+          							break
+          						end
+
+          						if not ln then
+          							break
+          						else
+          				      -- Avoid shadowing of the globals if a local variable is nil
+          							cur[ln] = lv or vim.NIL
+          							a = a + 1
+          						end
+          					end
+          				end
+
+          				local succ, info = pcall(debug.getinfo, frame+1)
+          				if succ and info and info.func then
+          					setmetatable(cur, {
+          						__index = getfenv(info.func)
+          					})
+          				end
+
+          				local succ, f = pcall(loadstring, "return " .. expr)
+          				if succ and f then
+          				  setfenv(f, first)
+          				end
+
+          				local result_repl
+          				if succ then
+          				  succ, result_repl = pcall(f)
+          				else
+          				  result_repl = f
+          				end
+
+          				if result_repl == vim.NIL then
+          				  result_repl = nil 
+          				end
+
+          				hit = result_repl == true
+
+          			elseif type(bp) == "table" then
+          				local expr = bp[1]
+          				local frame = 2
+          				local a = 1
+          				local prev
+          				local cur = {}
+          				local first = cur
+
+          				while true do
+          				  local succ, ln, lv = pcall(debug.getlocal, frame+1, a)
+          				  if not succ then
+          				    break
+          				  end
+
+          				  if not ln then
+          						break
+          				  else
+          				    -- Avoid shadowing of the globals if a local variable is nil
+          				    cur[ln] = lv or vim.NIL
+          				    a = a + 1
+          				  end
+          				end
+
+
+
+          				prev = cur
+
+          				cur = {}
+          				setmetatable(prev, {
+          					__index = cur
+          				})
+
+          				a = 1
+
+          				local succ, info = pcall(debug.getinfo, frame+1)
+          				if succ and info and info.func then
+          					local func = info.func
+          					local a = 1
+          					while true do
+          						local succ, ln, lv = pcall(debug.getupvalue, func, a)
+          						if not succ then
+          							break
+          						end
+
+          						if not ln then
+          							break
+          						else
+          				      -- Avoid shadowing of the globals if a local variable is nil
+          							cur[ln] = lv or vim.NIL
+          							a = a + 1
+          						end
+          					end
+          				end
+
+          				local succ, info = pcall(debug.getinfo, frame+1)
+          				if succ and info and info.func then
+          					setmetatable(cur, {
+          						__index = getfenv(info.func)
+          					})
+          				end
+
+          				local succ, f = pcall(loadstring, "return " .. expr)
+          				if succ and f then
+          				  setfenv(f, first)
+          				end
+
+          				local result_repl
+          				if succ then
+          				  succ, result_repl = pcall(f)
+          				else
+          				  result_repl = f
+          				end
+
+          				if result_repl == vim.NIL then
+          				  result_repl = nil 
+          				end
+
+          				hit = result_repl == true
+
+          				if bp[2] == 0 then
+          					hit = hit and true
+          					bp[2] = breakpoints_count[line][path]
+          				else
+          					bp[2] = bp[2] - 1
+          					hit = false
+          				end
+
+          			end
+
+          			if hit then
+          				log("breakpoint hit")
+          				local msg = make_event("stopped")
+          				msg.body = {
+          				  reason = "breakpoint",
+          				  threadId = 1
+          				}
+          				sendProxyDAP(msg)
+
+          				running = false
+          				while not running do
+          				  if M.stop_freeze then
+          				    M.stop_freeze = false
+          				    break
+          				  end
+          				  local i = 1
+          				  while i <= #M.server_messages do
+          				    local msg = M.server_messages[i]
+          				    local f = handlers[msg.command]
+          				    log(vim.inspect(msg))
+          				    if f then
+          				      f(msg)
+          				    else
+          				      log("Could not handle " .. msg.command)
+          				    end
+          				    i = i + 1
+          				  end
+
+          				  M.server_messages = {}
+
+          				  vim.wait(50)
+          				end
+
+          			end
+              end
+            end
+          end
+
+
+        elseif event == "line" and step_in then
+        	local valid = false
+        	local surface = 0
+        	local off = 0
+        	while true do
+        	  local info = debug.getinfo(off, "S")
+        	  if not info then
+        	    break
+        	  end
+
+        	  local inside_osv = false
+        	  if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
+        	    local source = info.source:sub(2)
+        	    -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
+        	    local parent = vim.fs.dirname(source)
+        	    if parent and vim.fs.basename(parent) == "osv" then
+        	      inside_osv = true
+        	    end
+        	  end
+
+
+        	  if inside_osv then
+        	    surface = off + 1
+        	  end
+        	  off = off + 1
+        	end
+
+
+        	local info = debug.getinfo(surface)
+
+        	if info and info.currentline and info.currentline ~= 0 then
+        		valid = true
+        	end
+        	if valid then
+        		local msg = make_event("stopped")
+        		msg.body = {
+        		  reason = "step",
+        		  threadId = 1
+        		}
+        		sendProxyDAP(msg)
+
+        		step_in = false
+
+
+        		running = false
+        		while not running do
+        		  if M.stop_freeze then
+        		    M.stop_freeze = false
+        		    break
+        		  end
+        		  local i = 1
+        		  while i <= #M.server_messages do
+        		    local msg = M.server_messages[i]
+        		    local f = handlers[msg.command]
+        		    log(vim.inspect(msg))
+        		    if f then
+        		      f(msg)
+        		    else
+        		      log("Could not handle " .. msg.command)
+        		    end
+        		    i = i + 1
+        		  end
+
+        		  M.server_messages = {}
+
+        		  vim.wait(50)
+        		end
+
+        	end
+
+        elseif event == "line" and next and depth >= 0 and depth <= stack_level then
+          local msg = make_event("stopped")
+          msg.body = {
+            reason = "step",
+            threadId = 1
+          }
+          sendProxyDAP(msg)
+
+          next = false
+          monitor_stack = false
+
+
+          running = false
+          while not running do
+            if M.stop_freeze then
+              M.stop_freeze = false
+              break
+            end
+            local i = 1
+            while i <= #M.server_messages do
+              local msg = M.server_messages[i]
+              local f = handlers[msg.command]
+              log(vim.inspect(msg))
+              if f then
+                f(msg)
+              else
+                log("Could not handle " .. msg.command)
+              end
+              i = i + 1
+            end
+
+            M.server_messages = {}
+
+            vim.wait(50)
+          end
+
+
+        elseif event == "line" and step_out and depth >= 0 and stack_level-1 == depth then
+          local msg = make_event("stopped")
+          msg.body = {
+            reason = "step",
+            threadId = 1
+          }
+          sendProxyDAP(msg)
+
+          step_out = false
+          monitor_stack = false
+
+
+          running = false
+          while not running do
+            if M.stop_freeze then
+              M.stop_freeze = false
+              break
+            end
+            local i = 1
+            while i <= #M.server_messages do
+              local msg = M.server_messages[i]
+              local f = handlers[msg.command]
+              log(vim.inspect(msg))
+              if f then
+                f(msg)
+              else
+                log("Could not handle " .. msg.command)
+              end
+              i = i + 1
+            end
+
+            M.server_messages = {}
+
+            vim.wait(50)
+          end
+
+        elseif event == "line" and pause then
+          pause = false
+
+          local msg = make_event("stopped")
+          msg.body = {
+            reason = "pause",
+            threadId = 1
+          }
+          sendProxyDAP(msg)
+          running = false
+          while not running do
+            if M.stop_freeze then
+              M.stop_freeze = false
+              break
+            end
+            local i = 1
+            while i <= #M.server_messages do
+              local msg = M.server_messages[i]
+              local f = handlers[msg.command]
+              log(vim.inspect(msg))
+              if f then
+                f(msg)
+              else
+                log("Could not handle " .. msg.command)
+              end
+              i = i + 1
+            end
+
+            M.server_messages = {}
+
+            vim.wait(50)
+          end
+
+
+        end
+      end, "clr")
+
+  end
+  if blocking then
+    local has_done_configuration = false
+    local has_attach_message = false
+    while true do
+      local j = 1
+      while j <= #M.server_messages do
+        local msg = M.server_messages[j]
+        local f = handlers[msg.command]
+
+        if f then
+          if msg.command == "setBreakpoints" then
+            log(vim.inspect(msg))
+            f(msg)
+            table.remove(M.server_messages, j)
+          elseif msg.command == "configurationDone" then
+            has_done_configuration = true
+            log(vim.inspect(msg))
+            f(msg)
+            table.remove(M.server_messages, j)
+          elseif msg.command == "attach" then
+            has_attach_message = true
+            j = j + 1
+          else
+            j = j + 1
+          end
+        else
+          j = j + 1
+        end
       end
-
-
+      if has_done_configuration and has_attach_message then break end
+      vim.wait(50)
     end
-  end, "clr")
 
+    attach_now()
+  else
+    local timer = vim.loop.new_timer()
+    local has_done_configuration = false
+    local has_attach_message = false
+    timer:start(0, 50, vim.schedule_wrap(function()
+      local j = 1
+      while j <= #M.server_messages do
+        local msg = M.server_messages[j]
+        local f = handlers[msg.command]
+
+        if f then
+          if msg.command == "setBreakpoints" then
+            log(vim.inspect(msg))
+            f(msg)
+            table.remove(M.server_messages, j)
+          elseif msg.command == "configurationDone" then
+            has_done_configuration = true
+            log(vim.inspect(msg))
+            f(msg)
+            table.remove(M.server_messages, j)
+          elseif msg.command == "attach" then
+            has_attach_message = true
+            j = j + 1
+          else
+            j = j + 1
+          end
+        else
+          j = j + 1
+        end
+      end
+      if not has_done_configuration or not has_attach_message then return end
+      timer:close()
+      attach_now()
+    end))
+
+  end
 end
 
 M.on = {}
@@ -1512,6 +1559,7 @@ function M.run_this(opts)
   local clean_args = { vim.v.progpath, '-u', 'NONE', '-i', 'NONE', '-n', '--embed', '--headless' }
   nvim_server = vim.fn.jobstart(clean_args, {rpc = true})
   vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', 'vim.o.runtimepath = ...', { vim.o.runtimepath })
+  vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', 'vim.o.packpath = ...', { vim.o.packpath })
   auto_nvim = nvim_server
 
   assert(auto_nvim, "Could not create neovim instance with jobstart!")
@@ -1616,6 +1664,8 @@ function M.start_server(host, port, do_log)
       log(vim.inspect(msg))
       M.sendDAP(make_response(msg, {
         body = {
+      		supportsConfigurationDoneRequest = true,
+
       		supportTerminateDebuggee = true,
 
       		supportsHitConditionalBreakpoints = true,
