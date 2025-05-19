@@ -843,6 +843,11 @@ function M.prepare_attach(blocking)
     if type(ref) == "number" then
       local a = 1
       local frame = ref
+      local info = debug.getinfo(frame)
+      if not info then
+        -- Handle invalid level
+        return
+      end
       while true do
         local ln, lv = debug.getlocal(frame, a)
         if not ln then
