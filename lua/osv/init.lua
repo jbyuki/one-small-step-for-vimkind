@@ -844,8 +844,8 @@ function M.prepare_attach(blocking)
       local a = 1
       local frame = ref
       while true do
-        local ln, lv = debug.getlocal(frame, a)
-        if not ln then
+        local succ, ln, lv = pcall(debug.getlocal, frame, a)
+        if not succ or not ln then
           break
         end
 
