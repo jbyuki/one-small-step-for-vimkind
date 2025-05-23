@@ -45,8 +45,8 @@ sendProxyDAP(msg)
 local surface = 0
 ; get surface stack frame
 
-local info = debug.getinfo(surface)
+local succ, info = pcall(debug.getinfo, surface)
 
-if info and info.currentline and info.currentline ~= 0 then
+if succ and info and info.currentline and info.currentline ~= 0 then
 	valid = true
 end

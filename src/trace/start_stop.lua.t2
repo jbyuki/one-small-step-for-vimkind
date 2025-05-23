@@ -17,7 +17,7 @@ function line_hook(event, line)
 	local surface = 0
 	; get surface stack frame
 
-	local info = debug.getinfo(surface, "S")
+	local _, info = pcall(debug.getinfo, surface, "S")
 	local source_path = info.source
 	; add to cache
 end

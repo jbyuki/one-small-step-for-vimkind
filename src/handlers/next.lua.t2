@@ -36,8 +36,8 @@ elseif event == "line" and next and depth >= 0 and depth <= stack_level then
 local surface = 0
 local off = 0
 while true do
-  local info = debug.getinfo(off, "S")
-  if not info then
+  local succ, info = pcall(debug.getinfo, off, "S")
+  if not succ or not info then
     break
   end
 

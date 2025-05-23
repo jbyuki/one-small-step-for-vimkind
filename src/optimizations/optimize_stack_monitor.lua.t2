@@ -34,7 +34,7 @@ head_start_depth = off - 1
 
 ;; head start for monitoring
 if head_start_depth >= 0 then
-  local info = debug.getinfo(head_start_depth, "S")
+  local _, info = pcall(debug.getinfo, head_start_depth, "S")
   if info then
 		local inside_osv = false
 		; check if inside osv

@@ -4,6 +4,7 @@ function handlers.variables(request)
   local args = request.arguments
 
   local ref = vars_ref[args.variablesReference]
+  log("VAR REF " .. vim.inspect(ref))
   local variables = {}
   if type(ref) == "number" then
     ; inspect local variables
@@ -61,17 +62,19 @@ for ln, lv in pairs(ref) do
 end
 
 ;; inspect up values
-local func = debug.getinfo(frame).func
-local a = 1
-while true do
-  local ln,lv = debug.getupvalue(func, a)
-  if not ln then break end
+local succ, info = pcall(debug.getinfo, fname)
+if succ and info and info.func then
+  local a = 1
+  while true do
+    local ln,lv = debug.getupvalue(info.func, a)
+    if not ln then break end
 
-  ; omit temporary values
-  else
-    local v = {}
-    ; fill variable struct
-    table.insert(variables, v)
+    ; omit temporary values
+    else
+      local v = {}
+      ; fill variable struct
+      table.insert(variables, v)
+    end
+    a = a + 1
   end
-  a = a + 1
 end

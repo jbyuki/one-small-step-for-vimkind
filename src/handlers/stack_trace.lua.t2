@@ -29,11 +29,11 @@ local skip = 0
 
 ; skip internal frames
 
--- @log_whole_stack_trace
+-- ; log whole stack trace
 
 while levels <= max_levels or max_levels == -1 do
-  local info = debug.getinfo(skip+levels+start_frame)
-  if not info then
+  local succ, info = pcall(debug.getinfo,skip+levels+start_frame)
+  if not succ or not info then
     break
   end
 
@@ -73,8 +73,8 @@ end
 ;; skip internal frames
 local off = 0
 while true do
-  local info = debug.getinfo(off+levels+start_frame)
-  if not info then
+  local succ, info = pcall(debug.getinfo, off+levels+start_frame)
+  if not succ or not info then
     break
   end
 
@@ -101,8 +101,8 @@ end
 ;; log whole stack trace
 local off = 0
 while true do
-  local info = debug.getinfo(off+levels+start_frame)
-  if not info then
+  local succ, info = pcall(debug.getinfo, off+levels+start_frame)
+  if not succ or not info then
     break
   end
   log("STACK " .. (info.name or "[NO NAME]") .. " " .. (info.source or "[NO SOURCE]") .. " " .. info.currentline)

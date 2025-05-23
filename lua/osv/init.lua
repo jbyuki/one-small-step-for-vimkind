@@ -500,8 +500,8 @@ function M.prepare_attach(blocking)
     local surface = 0
     local off = 0
     while true do
-      local info = debug.getinfo(off, "S")
-      if not info then
+      local succ, info = pcall(debug.getinfo, off, "S")
+      if not succ or not info then
         break
       end
 
@@ -700,8 +700,8 @@ function M.prepare_attach(blocking)
 
     local off = 0
     while true do
-      local info = debug.getinfo(off+levels+start_frame)
-      if not info then
+      local succ, info = pcall(debug.getinfo, off+levels+start_frame)
+      if not succ or not info then
         break
       end
 
@@ -724,11 +724,11 @@ function M.prepare_attach(blocking)
     end
 
 
-    -- @log_whole_stack_trace
+    -- ; log whole stack trace
 
     while levels <= max_levels or max_levels == -1 do
-      local info = debug.getinfo(skip+levels+start_frame)
-      if not info then
+      local succ, info = pcall(debug.getinfo,skip+levels+start_frame)
+      if not succ or not info then
         break
       end
 
@@ -791,8 +791,8 @@ function M.prepare_attach(blocking)
     local surface = 0
     local off = 0
     while true do
-      local info = debug.getinfo(off, "S")
-      if not info then
+      local succ, info = pcall(debug.getinfo, off, "S")
+      if not succ or not info then
         break
       end
 
@@ -839,6 +839,7 @@ function M.prepare_attach(blocking)
     local args = request.arguments
 
     local ref = vars_ref[args.variablesReference]
+    log("VAR REF " .. vim.inspect(ref))
     local variables = {}
     if type(ref) == "number" then
       local a = 1
@@ -868,29 +869,31 @@ function M.prepare_attach(blocking)
         a = a + 1
       end
 
-      local func = debug.getinfo(frame).func
-      local a = 1
-      while true do
-        local ln,lv = debug.getupvalue(func, a)
-        if not ln then break end
+      local succ, info = pcall(debug.getinfo, fname)
+      if succ and info and info.func then
+        local a = 1
+        while true do
+          local ln,lv = debug.getupvalue(info.func, a)
+          if not ln then break end
 
-        if vim.startswith(ln, "(") then
+          if vim.startswith(ln, "(") then
 
-        else
-          local v = {}
-          v.name = tostring(ln)
-          v.variablesReference = 0
-          if type(lv) == "table" then
-            vars_ref[vars_id] = lv
-            v.variablesReference = vars_id
-            vars_id = vars_id + 1
+          else
+            local v = {}
+            v.name = tostring(ln)
+            v.variablesReference = 0
+            if type(lv) == "table" then
+              vars_ref[vars_id] = lv
+              v.variablesReference = vars_id
+              vars_id = vars_id + 1
 
+            end
+            v.value = tostring(lv) 
+
+            table.insert(variables, v)
           end
-          v.value = tostring(lv) 
-
-          table.insert(variables, v)
+          a = a + 1
         end
-        a = a + 1
       end
     elseif type(ref) == "table" then
       for ln, lv in pairs(ref) do
@@ -972,8 +975,8 @@ function M.prepare_attach(blocking)
           local surface = 0
           local off = 0
           while true do
-            local info = debug.getinfo(off, "S")
-            if not info then
+            local succ, info = pcall(debug.getinfo, off, "S")
+            if not succ or not info then
               break
             end
 
@@ -1006,8 +1009,8 @@ function M.prepare_attach(blocking)
           local surface = 0
           local off = 0
           while true do
-            local info = debug.getinfo(off, "S")
-            if not info then
+            local succ, info = pcall(debug.getinfo, off, "S")
+            if not succ or not info then
               break
             end
 
@@ -1029,7 +1032,7 @@ function M.prepare_attach(blocking)
           end
 
 
-          local info = debug.getinfo(surface, "S")
+          local _, info = pcall(debug.getinfo, surface, "S")
           local source_path = info.source
 
           if source_path:sub(1, 1) == "@" then
@@ -1273,8 +1276,8 @@ function M.prepare_attach(blocking)
         	local surface = 0
         	local off = 0
         	while true do
-        	  local info = debug.getinfo(off, "S")
-        	  if not info then
+        	  local succ, info = pcall(debug.getinfo, off, "S")
+        	  if not succ or not info then
         	    break
         	  end
 
@@ -1296,9 +1299,9 @@ function M.prepare_attach(blocking)
         	end
 
 
-        	local info = debug.getinfo(surface)
+        	local succ, info = pcall(debug.getinfo, surface)
 
-        	if info and info.currentline and info.currentline ~= 0 then
+        	if succ and info and info.currentline and info.currentline ~= 0 then
         		valid = true
         	end
         	if valid then
@@ -1789,8 +1792,8 @@ function M.start_trace()
 		local surface = 0
 		local off = 0
 		while true do
-		  local info = debug.getinfo(off, "S")
-		  if not info then
+		  local succ, info = pcall(debug.getinfo, off, "S")
+		  if not succ or not info then
 		    break
 		  end
 
@@ -1812,7 +1815,7 @@ function M.start_trace()
 		end
 
 
-		local info = debug.getinfo(surface, "S")
+		local _, info = pcall(debug.getinfo, surface, "S")
 		local source_path = info.source
 		cache[source_path] = cache[source_path] or {}
 		table.insert(cache[source_path], line)

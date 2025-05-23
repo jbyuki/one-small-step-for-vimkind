@@ -9,7 +9,7 @@ if event == "line" and bps then
 local surface = 0
 ; get surface stack frame
 
-local info = debug.getinfo(surface, "S")
+local _, info = pcall(debug.getinfo, surface, "S")
 local source_path = info.source
 
 ;; script variables
@@ -104,8 +104,8 @@ path = os.getenv("VIMRUNTIME") .. "/lua/" .. source_path:sub(2)
 ;; get surface stack frame
 local off = 0
 while true do
-  local info = debug.getinfo(off, "S")
-  if not info then
+  local succ, info = pcall(debug.getinfo, off, "S")
+  if not succ or not info then
     break
   end
 
