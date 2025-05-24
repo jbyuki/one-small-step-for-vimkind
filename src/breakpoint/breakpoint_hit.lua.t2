@@ -59,7 +59,7 @@ while not running do
   ; check disconnected
   ; handle new messages
   ; clear messages
-  vim.wait(50)
+  vim.wait(0)
 end
 
 ;; send stopped event breakpoint

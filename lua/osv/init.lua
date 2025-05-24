@@ -1262,7 +1262,7 @@ function M.prepare_attach(blocking)
 
           				  M.server_messages = {}
 
-          				  vim.wait(50)
+          				  vim.wait(0)
           				end
 
           			end
@@ -1336,7 +1336,7 @@ function M.prepare_attach(blocking)
 
         		  M.server_messages = {}
 
-        		  vim.wait(50)
+        		  vim.wait(0)
         		end
 
         	end
@@ -1374,7 +1374,7 @@ function M.prepare_attach(blocking)
 
             M.server_messages = {}
 
-            vim.wait(50)
+            vim.wait(0)
           end
 
 
@@ -1411,7 +1411,7 @@ function M.prepare_attach(blocking)
 
             M.server_messages = {}
 
-            vim.wait(50)
+            vim.wait(0)
           end
 
         elseif event == "line" and pause then
@@ -1444,7 +1444,7 @@ function M.prepare_attach(blocking)
 
             M.server_messages = {}
 
-            vim.wait(50)
+            vim.wait(0)
           end
 
 
