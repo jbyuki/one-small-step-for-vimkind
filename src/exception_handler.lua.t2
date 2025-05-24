@@ -43,15 +43,17 @@ while true do
     break
   end
 
-  log("STACK " .. (info.name or "[NO NAME]") .. " " .. (info.source or "[NO SOURCE]") .. " " .. info.currentline)
+  log("STACK " .. (info.name or "[NO NAME]") .. " " .. (info.source or "[NO SOURCE]") .. " " .. info.currentline .. " " .. tostring(info.func == debug.traceback))
   sources[off] = info.source
-  if info.func == debug.traceback then
+
+  if info.func == debug.traceback and info.name == "traceback" then
     called_explicit = true
     called_explicit_level = off
   end
   off = off + 1
 end
 
+log("called explicit " .. vim.inspect(called_explicit))
 if called_explicit and sources[called_explicit_level+1] ~= "=[C]" then
   log("called explicit source " .. vim.inspect(sources[called_explicit_level+1]))
   return builtin_debug_traceback(...)
