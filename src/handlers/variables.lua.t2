@@ -61,19 +61,17 @@ for ln, lv in pairs(ref) do
 end
 
 ;; inspect up values
-local succ, info = pcall(debug.getinfo, fname)
-if succ and info and info.func then
-  local a = 1
-  while true do
-    local ln,lv = debug.getupvalue(info.func, a)
-    if not ln then break end
+local func = debug.getinfo(frame).func
+local a = 1
+while true do
+  local ln,lv = debug.getupvalue(func, a)
+  if not ln then break end
 
-    ; omit temporary values
-    else
-      local v = {}
-      ; fill variable struct
-      table.insert(variables, v)
-    end
-    a = a + 1
+  ; omit temporary values
+  else
+    local v = {}
+    ; fill variable struct
+    table.insert(variables, v)
   end
+  a = a + 1
 end
