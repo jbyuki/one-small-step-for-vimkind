@@ -1,6 +1,7 @@
 ;;; lua-debug
 ;; implement
 function M.stop()
+	; restore debug traceback
   ; disable hooks
 
 	if not nvim_server then

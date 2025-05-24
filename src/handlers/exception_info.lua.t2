@@ -1,0 +1,14 @@
+;;; ../lua-debug
+;; support capabilities
+supportsExceptionInfoRequest = true,
+
+;; implement handlers
+function handlers.exceptionInfo(request)
+  sendProxyDAP(make_response(request,{
+    body = {
+      exceptionId = "",
+      description = exception_error_msg,
+      breakMode = "always",
+    }
+  }))
+end

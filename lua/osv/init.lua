@@ -1,6 +1,10 @@
 -- Generated using ntangle.nvim
 local running = true
 
+local builtin_debug_traceback
+
+local exception_error_msg = nil
+
 local limit = 0
 
 local stack_level = 0
@@ -495,6 +499,15 @@ function M.prepare_attach(blocking)
     end
   end
 
+  function handlers.exceptionInfo(request)
+    sendProxyDAP(make_response(request,{
+      body = {
+        exceptionId = "",
+        description = exception_error_msg,
+        breakMode = "always",
+      }
+    }))
+  end
   function handlers.next(request)
     local depth = 0
     local surface = 0
@@ -839,7 +852,6 @@ function M.prepare_attach(blocking)
     local args = request.arguments
 
     local ref = vars_ref[args.variablesReference]
-    log("VAR REF " .. vim.inspect(ref))
     local variables = {}
     if type(ref) == "number" then
       local a = 1
@@ -921,6 +933,84 @@ function M.prepare_attach(blocking)
   end
 
   local attach_now = function()
+      if not builtin_debug_traceback then
+        builtin_debug_traceback = debug.traceback
+      end
+
+      debug.traceback = function(...)
+        log("debug.traceback " .. vim.inspect({...}))
+        if not M.is_running() then
+          if builtin_debug_traceback then
+            debug.traceback = builtin_debug_traceback
+            return debug.traceback()
+          end
+          log("debug.traceback handle lost")
+          return "one-small-step-for-vimkind lost the debug.traceback handle :("
+        end
+
+        local off = 0
+        local called_explicit = false
+        local called_explicit_level = nil
+        local sources = {}
+        while true do
+          local succ, info = pcall(debug.getinfo, off)
+          if not succ or not info then
+            break
+          end
+
+          log("STACK " .. (info.name or "[NO NAME]") .. " " .. (info.source or "[NO SOURCE]") .. " " .. info.currentline)
+          sources[off] = info.source
+          if info.func == debug.traceback then
+            called_explicit = true
+            called_explicit_level = off
+          end
+          off = off + 1
+        end
+
+        if called_explicit and sources[called_explicit_level+1] ~= "=[C]" then
+          log("called explicit source " .. vim.inspect(sources[called_explicit_level+1]))
+          return builtin_debug_traceback(...)
+        end
+
+        local traceback_args = { ... }
+        exception_error_msg = nil
+        if #traceback_args > 0 then
+          exception_error_msg = traceback_args[1]
+        end
+
+        local msg = make_event("stopped")
+        msg.body = {
+          reason = "exception",
+          threadId = 1
+        }
+        sendProxyDAP(msg)
+        running = false
+        while not running do
+          if M.stop_freeze then
+            M.stop_freeze = false
+            break
+          end
+          local i = 1
+          while i <= #M.server_messages do
+            local msg = M.server_messages[i]
+            local f = handlers[msg.command]
+            log(vim.inspect(msg))
+            if f then
+              f(msg)
+            else
+              log("Could not handle " .. msg.command)
+            end
+            i = i + 1
+          end
+
+          M.server_messages = {}
+
+          vim.wait(0)
+        end
+
+        return builtin_debug_traceback(...)
+      end
+
       debug.sethook(function(event, line)
         if lock_debug_loop then return end
 
@@ -1671,6 +1761,8 @@ function M.start_server(host, port, do_log)
 
       		supportTerminateDebuggee = true,
 
+      		supportsExceptionInfoRequest = true,
+
       		supportsHitConditionalBreakpoints = true,
       		supportsConditionalBreakpoints = true,
 
@@ -1729,6 +1821,10 @@ function M.start_server(host, port, do_log)
 end
 
 function M.stop()
+	if builtin_debug_traceback then
+	  debug.traceback = builtin_debug_traceback
+	end
+
   debug.sethook()
 
 

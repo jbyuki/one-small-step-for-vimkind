@@ -4,7 +4,6 @@ function handlers.variables(request)
   local args = request.arguments
 
   local ref = vars_ref[args.variablesReference]
-  log("VAR REF " .. vim.inspect(ref))
   local variables = {}
   if type(ref) == "number" then
     ; inspect local variables

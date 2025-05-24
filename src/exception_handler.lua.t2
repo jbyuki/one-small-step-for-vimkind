@@ -1,0 +1,76 @@
+;;; lua-debug
+;; script variables
+local builtin_debug_traceback
+
+;; redefine debug traceback
+if not builtin_debug_traceback then
+  builtin_debug_traceback = debug.traceback
+end
+
+debug.traceback = function(...)
+  log("debug.traceback " .. vim.inspect({...}))
+  ; if osv is not running bail out
+  ; if traceback was called explicitly return builtin
+  ; save error message
+  ; send exception stopped event
+  ; freeze neovim instance
+  return builtin_debug_traceback(...)
+end
+
+;; restore debug traceback
+if builtin_debug_traceback then
+  debug.traceback = builtin_debug_traceback
+end
+
+;; if osv is not running bail out
+if not M.is_running() then
+  if builtin_debug_traceback then
+    debug.traceback = builtin_debug_traceback
+    return debug.traceback()
+  end
+  log("debug.traceback handle lost")
+  return "one-small-step-for-vimkind lost the debug.traceback handle :("
+end
+
+;; if traceback was called explicitly return builtin
+local off = 0
+local called_explicit = false
+local called_explicit_level = nil
+local sources = {}
+while true do
+  local succ, info = pcall(debug.getinfo, off)
+  if not succ or not info then
+    break
+  end
+
+  log("STACK " .. (info.name or "[NO NAME]") .. " " .. (info.source or "[NO SOURCE]") .. " " .. info.currentline)
+  sources[off] = info.source
+  if info.func == debug.traceback then
+    called_explicit = true
+    called_explicit_level = off
+  end
+  off = off + 1
+end
+
+if called_explicit and sources[called_explicit_level+1] ~= "=[C]" then
+  log("called explicit source " .. vim.inspect(sources[called_explicit_level+1]))
+  return builtin_debug_traceback(...)
+end
+
+;; script variables
+local exception_error_msg = nil
+
+;; save error message
+local traceback_args = { ... }
+exception_error_msg = nil
+if #traceback_args > 0 then
+  exception_error_msg = traceback_args[1]
+end
+
+;; send exception stopped event
+local msg = make_event("stopped")
+msg.body = {
+  reason = "exception",
+  threadId = 1
+}
+sendProxyDAP(msg)
