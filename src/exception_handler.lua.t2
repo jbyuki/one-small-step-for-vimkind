@@ -1,21 +1,33 @@
 ;;; lua-debug
 ;; script variables
 local builtin_debug_traceback
+local break_on_exception
 
-;; redefine debug traceback
-if not builtin_debug_traceback then
-  builtin_debug_traceback = debug.traceback
+;; validate launch options
+["opts.break_on_exception"] = {opts.break_on_exception, "b", true},
+
+;; use launch options
+break_on_exception = opts and opts.break_on_exception
+if break_on_exception == nil then
+  break_on_exception = true
 end
 
-debug.traceback = function(...)
-  log("debug.traceback " .. vim.inspect({...}))
-  ; if osv is not running bail out
-  ; if traceback was called explicitly return builtin
-  ; save error message
-  ; save error stacktrace
-  ; send exception stopped event
-  ; freeze neovim instance
-  return builtin_debug_traceback(...)
+;; redefine debug traceback
+if break_on_exception then
+  if not builtin_debug_traceback then
+    builtin_debug_traceback = debug.traceback
+  end
+
+  debug.traceback = function(...)
+    log("debug.traceback " .. vim.inspect({...}))
+    ; if osv is not running bail out
+    ; if traceback was called explicitly return builtin
+    ; save error message
+    ; save error stacktrace
+    ; send exception stopped event
+    ; freeze neovim instance
+    return builtin_debug_traceback(...)
+  end
 end
 
 ;; restore debug traceback

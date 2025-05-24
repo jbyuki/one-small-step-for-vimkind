@@ -2,6 +2,7 @@
 local running = true
 
 local builtin_debug_traceback
+local break_on_exception
 
 local exception_error_msg = nil
 
@@ -164,6 +165,8 @@ function M.launch(opts)
       ["opts.output"] = {opts.output, "b", true},
       ["opts.profiler"] = {opts.profiler, "b", true},
 
+      ["opts.break_on_exception"] = {opts.break_on_exception, "b", true},
+
     }
     if opts.output ~= nil then redir_nvim_output = opts.output end
   end
@@ -171,6 +174,11 @@ function M.launch(opts)
     disable_profiler = false
   else
     disable_profiler = true
+  end
+
+  break_on_exception = opts and opts.break_on_exception
+  if break_on_exception == nil then
+    break_on_exception = true
   end
 
 
@@ -945,135 +953,137 @@ function M.prepare_attach(blocking)
   end
 
   local attach_now = function()
-      if not builtin_debug_traceback then
-        builtin_debug_traceback = debug.traceback
-      end
-
-      debug.traceback = function(...)
-        log("debug.traceback " .. vim.inspect({...}))
-        if not M.is_running() then
-          if builtin_debug_traceback then
-            debug.traceback = builtin_debug_traceback
-            return debug.traceback()
-          end
-          log("debug.traceback handle lost")
-          return "one-small-step-for-vimkind lost the debug.traceback handle :("
+      if break_on_exception then
+        if not builtin_debug_traceback then
+          builtin_debug_traceback = debug.traceback
         end
 
-        local off = 0
-        local called_explicit = false
-        local called_explicit_level = nil
-        local sources = {}
-        while true do
-          local succ, info = pcall(debug.getinfo, off)
-          if not succ or not info then
-            break
+        debug.traceback = function(...)
+          log("debug.traceback " .. vim.inspect({...}))
+          if not M.is_running() then
+            if builtin_debug_traceback then
+              debug.traceback = builtin_debug_traceback
+              return debug.traceback()
+            end
+            log("debug.traceback handle lost")
+            return "one-small-step-for-vimkind lost the debug.traceback handle :("
           end
 
-          log("STACK " .. (info.name or "[NO NAME]") .. " " .. (info.source or "[NO SOURCE]") .. " " .. info.currentline .. " " .. tostring(info.func == debug.traceback))
-          sources[off] = info.source
+          local off = 0
+          local called_explicit = false
+          local called_explicit_level = nil
+          local sources = {}
+          while true do
+            local succ, info = pcall(debug.getinfo, off)
+            if not succ or not info then
+              break
+            end
 
-          if info.func == debug.traceback and info.name == "traceback" then
-            called_explicit = true
-            called_explicit_level = off
+            log("STACK " .. (info.name or "[NO NAME]") .. " " .. (info.source or "[NO SOURCE]") .. " " .. info.currentline .. " " .. tostring(info.func == debug.traceback))
+            sources[off] = info.source
+
+            if info.func == debug.traceback and info.name == "traceback" then
+              called_explicit = true
+              called_explicit_level = off
+            end
+            off = off + 1
           end
-          off = off + 1
-        end
 
-        log("called explicit " .. vim.inspect(called_explicit))
-        if called_explicit and sources[called_explicit_level+1] ~= "=[C]" then
-          log("called explicit source " .. vim.inspect(sources[called_explicit_level+1]))
+          log("called explicit " .. vim.inspect(called_explicit))
+          if called_explicit and sources[called_explicit_level+1] ~= "=[C]" then
+            log("called explicit source " .. vim.inspect(sources[called_explicit_level+1]))
+            return builtin_debug_traceback(...)
+          end
+
+          local traceback_args = { ... }
+          exception_error_msg = nil
+          log(vim.inspect({...}))
+          if #traceback_args > 0 then
+            exception_error_msg = traceback_args[1]
+          end
+
+          local start_frame = 0
+          local levels = 1
+          local skip = 0
+
+          local off = 0
+          while true do
+            local info = debug.getinfo(off+levels+start_frame)
+            if not info then
+              break
+            end
+
+            local inside_osv = false
+            if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
+              local source = info.source:sub(2)
+              -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
+              local parent = vim.fs.dirname(source)
+              if parent and vim.fs.basename(parent) == "osv" then
+                inside_osv = true
+              end
+            end
+
+
+            if inside_osv then
+              skip = off + 1
+            end
+
+            off = off + 1
+          end
+
+
+          exception_stacktrace = {}
+          while true do
+            local info = debug.getinfo(skip+levels+start_frame)
+            if not info then
+              break
+            end
+            local stack_desc = ""
+            stack_desc = (info.short_src or "") .. ":" .. (info.currentline or "")
+            if info.name then
+              stack_desc = stack_desc .. " in function " .. info.name
+            elseif info.what then
+              stack_desc = stack_desc .. " in " .. info.what .. " chunk"
+            end
+            table.insert(exception_stacktrace, stack_desc)
+            levels = levels + 1
+          end
+
+          exception_stacktrace = table.concat(exception_stacktrace, "\n")
+          local msg = make_event("stopped")
+          msg.body = {
+            reason = "exception",
+            threadId = 1,
+            text = exception_error_msg 
+          }
+          sendProxyDAP(msg)
+
+          running = false
+          while not running do
+            if M.stop_freeze then
+              M.stop_freeze = false
+              break
+            end
+            local i = 1
+            while i <= #M.server_messages do
+              local msg = M.server_messages[i]
+              local f = handlers[msg.command]
+              log(vim.inspect(msg))
+              if f then
+                f(msg)
+              else
+                log("Could not handle " .. msg.command)
+              end
+              i = i + 1
+            end
+
+            M.server_messages = {}
+
+            vim.wait(0)
+          end
+
           return builtin_debug_traceback(...)
         end
-
-        local traceback_args = { ... }
-        exception_error_msg = nil
-        log(vim.inspect({...}))
-        if #traceback_args > 0 then
-          exception_error_msg = traceback_args[1]
-        end
-
-        local start_frame = 0
-        local levels = 1
-        local skip = 0
-
-        local off = 0
-        while true do
-          local info = debug.getinfo(off+levels+start_frame)
-          if not info then
-            break
-          end
-
-          local inside_osv = false
-          if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
-            local source = info.source:sub(2)
-            -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
-            local parent = vim.fs.dirname(source)
-            if parent and vim.fs.basename(parent) == "osv" then
-              inside_osv = true
-            end
-          end
-
-
-          if inside_osv then
-            skip = off + 1
-          end
-
-          off = off + 1
-        end
-
-
-        exception_stacktrace = {}
-        while true do
-          local info = debug.getinfo(skip+levels+start_frame)
-          if not info then
-            break
-          end
-          local stack_desc = ""
-          stack_desc = (info.short_src or "") .. ":" .. (info.currentline or "")
-          if info.name then
-            stack_desc = stack_desc .. " in function " .. info.name
-          elseif info.what then
-            stack_desc = stack_desc .. " in " .. info.what .. " chunk"
-          end
-          table.insert(exception_stacktrace, stack_desc)
-          levels = levels + 1
-        end
-
-        exception_stacktrace = table.concat(exception_stacktrace, "\n")
-        local msg = make_event("stopped")
-        msg.body = {
-          reason = "exception",
-          threadId = 1,
-          text = exception_error_msg 
-        }
-        sendProxyDAP(msg)
-
-        running = false
-        while not running do
-          if M.stop_freeze then
-            M.stop_freeze = false
-            break
-          end
-          local i = 1
-          while i <= #M.server_messages do
-            local msg = M.server_messages[i]
-            local f = handlers[msg.command]
-            log(vim.inspect(msg))
-            if f then
-              f(msg)
-            else
-              log("Could not handle " .. msg.command)
-            end
-            i = i + 1
-          end
-
-          M.server_messages = {}
-
-          vim.wait(0)
-        end
-
-        return builtin_debug_traceback(...)
       end
 
       debug.sethook(function(event, line)

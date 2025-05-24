@@ -115,6 +115,10 @@ launch({opts})                                           *osv.launch()*
                                the debuggee (default is true). Note: This is
                                implemented via |:redir| internally. See
                                |:redir| for caveats.
+                • `break_on_exception`       
+                               (bool) If true, osv will break if an
+                               error/exception is encountered in the debuggee.
+                               (default is true)
                 • `profiler`     (bool) Enable the internal profiler. Use 
                                |osv.print_profiler()| to see the results.
 
