@@ -1030,7 +1030,7 @@ function M.prepare_attach(blocking)
             break
           end
           local stack_desc = ""
-          stack_desc = info.source .. ":" .. info.currentline
+          stack_desc = (info.short_src or "") .. ":" .. (info.currentline or "")
           if info.name then
             stack_desc = stack_desc .. " in function " .. info.name
           elseif info.what then
