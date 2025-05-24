@@ -167,7 +167,7 @@ Events:
 * [x] terminated
 * [x] exited
 * [x] output
-* [ ] exception
+* [x] exception
 
 Capabilities:
 
@@ -175,7 +175,7 @@ Capabilities:
 * [x] supportsHitConditionalBreakpoints
 * [x] supportsSetVariable
 * [x] supportTerminateDebuggee
-* [ ] supportsExceptionInfoRequest 
+* [x] supportsExceptionInfoRequest 
 * [ ] supportsExceptionOptions
 * [x] supportsConfigurationDoneRequest
 
