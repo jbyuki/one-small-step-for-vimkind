@@ -5,6 +5,8 @@ local builtin_debug_traceback
 
 local exception_error_msg = nil
 
+local exception_stacktrace
+
 local limit = 0
 
 local stack_level = 0
@@ -499,6 +501,20 @@ function M.prepare_attach(blocking)
     end
   end
 
+  function handlers.exceptionInfo(request)
+    sendProxyDAP(make_response(request,{
+      body = {
+        exceptionId = "",
+        breakMode = "always",
+        description = exception_error_msg,
+        details = {
+          message = exception_error_msg,
+          stackTrace = exception_stacktrace,
+        }
+      }
+    }))
+  end
+
   function handlers.next(request)
     local depth = 0
     local surface = 0
@@ -972,10 +988,59 @@ function M.prepare_attach(blocking)
 
         local traceback_args = { ... }
         exception_error_msg = nil
+        log(vim.inspect({...}))
         if #traceback_args > 0 then
           exception_error_msg = traceback_args[1]
         end
 
+        local start_frame = 0
+        local levels = 1
+        local skip = 0
+
+        local off = 0
+        while true do
+          local info = debug.getinfo(off+levels+start_frame)
+          if not info then
+            break
+          end
+
+          local inside_osv = false
+          if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
+            local source = info.source:sub(2)
+            -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
+            local parent = vim.fs.dirname(source)
+            if parent and vim.fs.basename(parent) == "osv" then
+              inside_osv = true
+            end
+          end
+
+
+          if inside_osv then
+            skip = off + 1
+          end
+
+          off = off + 1
+        end
+
+
+        exception_stacktrace = {}
+        while true do
+          local info = debug.getinfo(skip+levels+start_frame)
+          if not info then
+            break
+          end
+          local stack_desc = ""
+          stack_desc = info.source .. ":" .. info.currentline
+          if info.name then
+            stack_desc = stack_desc .. " in function " .. info.name
+          elseif info.what then
+            stack_desc = stack_desc .. " in " .. info.what .. " chunk"
+          end
+          table.insert(exception_stacktrace, stack_desc)
+          levels = levels + 1
+        end
+
+        exception_stacktrace = table.concat(exception_stacktrace, "\n")
         local msg = make_event("stopped")
         msg.body = {
           reason = "exception",
@@ -983,6 +1048,7 @@ function M.prepare_attach(blocking)
           text = exception_error_msg 
         }
         sendProxyDAP(msg)
+
         running = false
         while not running do
           if M.stop_freeze then
@@ -1759,6 +1825,8 @@ function M.start_server(host, port, do_log)
       		supportsConfigurationDoneRequest = true,
 
       		supportTerminateDebuggee = true,
+
+      		supportsExceptionInfoRequest = true,
 
       		supportsHitConditionalBreakpoints = true,
       		supportsConditionalBreakpoints = true,

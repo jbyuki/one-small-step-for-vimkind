@@ -12,6 +12,7 @@ debug.traceback = function(...)
   ; if osv is not running bail out
   ; if traceback was called explicitly return builtin
   ; save error message
+  ; save error stacktrace
   ; send exception stopped event
   ; freeze neovim instance
   return builtin_debug_traceback(...)
@@ -65,6 +66,7 @@ local exception_error_msg = nil
 ;; save error message
 local traceback_args = { ... }
 exception_error_msg = nil
+log(vim.inspect({...}))
 if #traceback_args > 0 then
   exception_error_msg = traceback_args[1]
 end
@@ -77,3 +79,32 @@ msg.body = {
   text = exception_error_msg 
 }
 sendProxyDAP(msg)
+
+;; script variables
+local exception_stacktrace
+
+;; save error stacktrace
+local start_frame = 0
+local levels = 1
+local skip = 0
+
+; skip internal frames
+
+exception_stacktrace = {}
+while true do
+  local info = debug.getinfo(skip+levels+start_frame)
+  if not info then
+    break
+  end
+  local stack_desc = ""
+  stack_desc = info.source .. ":" .. info.currentline
+  if info.name then
+    stack_desc = stack_desc .. " in function " .. info.name
+  elseif info.what then
+    stack_desc = stack_desc .. " in " .. info.what .. " chunk"
+  end
+  table.insert(exception_stacktrace, stack_desc)
+  levels = levels + 1
+end
+
+exception_stacktrace = table.concat(exception_stacktrace, "\n")

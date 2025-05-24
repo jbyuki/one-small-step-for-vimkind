@@ -175,7 +175,7 @@ Capabilities:
 * [x] supportsHitConditionalBreakpoints
 * [x] supportsSetVariable
 * [x] supportTerminateDebuggee
-* [ ] supportsExceptionInfoRequest 
+* [x] supportsExceptionInfoRequest 
 * [ ] supportsExceptionOptions
 * [x] supportsConfigurationDoneRequest
 
