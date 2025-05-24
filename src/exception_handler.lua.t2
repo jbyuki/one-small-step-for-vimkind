@@ -73,6 +73,7 @@ end
 local msg = make_event("stopped")
 msg.body = {
   reason = "exception",
-  threadId = 1
+  threadId = 1,
+  text = exception_error_msg 
 }
 sendProxyDAP(msg)

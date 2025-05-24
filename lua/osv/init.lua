@@ -499,15 +499,6 @@ function M.prepare_attach(blocking)
     end
   end
 
-  function handlers.exceptionInfo(request)
-    sendProxyDAP(make_response(request,{
-      body = {
-        exceptionId = "",
-        description = exception_error_msg,
-        breakMode = "always",
-      }
-    }))
-  end
   function handlers.next(request)
     local depth = 0
     local surface = 0
@@ -988,7 +979,8 @@ function M.prepare_attach(blocking)
         local msg = make_event("stopped")
         msg.body = {
           reason = "exception",
-          threadId = 1
+          threadId = 1,
+          text = exception_error_msg 
         }
         sendProxyDAP(msg)
         running = false
@@ -1767,8 +1759,6 @@ function M.start_server(host, port, do_log)
       		supportsConfigurationDoneRequest = true,
 
       		supportTerminateDebuggee = true,
-
-      		supportsExceptionInfoRequest = true,
 
       		supportsHitConditionalBreakpoints = true,
       		supportsConditionalBreakpoints = true,
