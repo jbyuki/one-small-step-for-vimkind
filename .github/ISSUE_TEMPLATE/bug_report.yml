@@ -9,7 +9,6 @@ body:
       - Avoid generic or vague titles such as "Something's not working" or "A couple of problems" — be as descriptive as possible.
       - Keep your issue focused on one single problem. If you have multiple bug reports, please create a separate issue for each of them.
       - Issues should represent **complete and actionable** work items. If you are unsure about something or have a question, please start a [discussion](https://github.com/jbyuki/one-small-step-for-vimkind/discussions/new) instead.
-
   - type: input
     id: neovim-version
     attributes:
@@ -20,7 +19,6 @@ body:
         LuaJIT 2.1.1744317938
     validations:
       required: true
-
   - type: input
     id: os
     attributes:
@@ -28,7 +26,6 @@ body:
       placeholder: "Ubuntu 24.04.2 LTS"
     validations:
       required: true
-
   - type: input
     id: description
     attributes:
@@ -36,7 +33,6 @@ body:
       description: A clear and concise description of what the bug is. Please include any related errors you see in Neovim.
     validations:
       required: true
-
   - type: textarea
     id: repro
     attributes:
@@ -99,7 +95,6 @@ body:
       7. (B) Execute `test.lua` with `:luafile test.lua`
     validations:
       required: true
-
   - type: textarea
     id: screenshot
     attributes:
@@ -110,7 +105,6 @@ body:
       render: bash
     validations:
       required: false
-
   - type: textarea
     id: logs
     attributes:
@@ -121,7 +115,6 @@ body:
         - Actual behavior: ...
     validations:
       required: true
-
   - type: textarea
     id: logs
     attributes:
