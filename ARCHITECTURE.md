@@ -135,6 +135,40 @@ inside _fast-api_ calls can still be executed.
                └──────────────────┘           └────────────────┘
 ```
 
+Break on exception
+------------------
+
+
+When an error is encountered, Neovim will internally call `debug.traceback`. `osv` redefines it to intercept the error and put the debuggee in a frozen state.
+
+```
+                DEBUGGEE
+              ┌──────────────────┐
+              │                  │
+              │                  │
+              │       │ error    │
+              │       ▼          │
+              │ ┌──────────────┐ │
+              │ │ Neovim error │ │
+              │ │ handler      │ │
+              │ └──────────────┘ │
+              │    │(redefined)  │
+              │    │ debug.traceback
+              │    └───────┐     │
+              │            ▼     │
+              │      ┌──────────┐│
+              │      │frozen    ││
+              │      │state     ││
+              │      └──────────┘│
+              │                  │
+              └──────────────────┘
+
+             
+```
+
+
+
+
 Source code
 -----------
 
