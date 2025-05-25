@@ -5,10 +5,10 @@ labels: [bug]
 body:
   - type: markdown
     attributes: 
-    value: |
-      - Avoid generic or vague titles such as "Something's not working" or "A couple of problems" — be as descriptive as possible.
-      - Keep your issue focused on one single problem. If you have multiple bug reports, please create a separate issue for each of them.
-      - Issues should represent **complete and actionable** work items. If you are unsure about something or have a question, please start a [discussion](https://github.com/jbyuki/one-small-step-for-vimkind/discussions/new) instead.
+      value: |
+        - Avoid generic or vague titles such as "Something's not working" or "A couple of problems" — be as descriptive as possible.
+        - Keep your issue focused on one single problem. If you have multiple bug reports, please create a separate issue for each of them.
+        - Issues should represent **complete and actionable** work items. If you are unsure about something or have a question, please start a [discussion](https://github.com/jbyuki/one-small-step-for-vimkind/discussions/new) instead.
   - type: input
     id: neovim-version
     attributes:
