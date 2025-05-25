@@ -323,13 +323,14 @@ function M.prepare_attach(blocking)
   function handlers.evaluate(request)
     local args = request.arguments
     if args.context == "repl" then
-  		local frame = frames[args.frameId]
+  		local frame = args.frameId and frames[args.frameId]
       local a = 1
       local prev
       local cur = {}
       local first = cur
 
       while true do
+      	if not frame then break end
         local succ, ln, lv = pcall(debug.getlocal, frame+1, a)
         if not succ then
           break
@@ -355,31 +356,35 @@ function M.prepare_attach(blocking)
 
   		a = 1
 
-  		local succ, info = pcall(debug.getinfo, frame+1)
-  		if succ and info and info.func then
-  			local func = info.func
-  			local a = 1
-  			while true do
-  				local succ, ln, lv = pcall(debug.getupvalue, func, a)
-  				if not succ then
-  					break
-  				end
+  		if frame then
+  			local succ, info = pcall(debug.getinfo, frame+1)
+  			if succ and info and info.func then
+  				local func = info.func
+  				local a = 1
+  				while true do
+  					local succ, ln, lv = pcall(debug.getupvalue, func, a)
+  					if not succ then
+  						break
+  					end
 
-  				if not ln then
-  					break
-  				else
-  		      -- Avoid shadowing of the globals if a local variable is nil
-  					cur[ln] = lv or vim.NIL
-  					a = a + 1
+  					if not ln then
+  						break
+  					else
+  						-- Avoid shadowing of the globals if a local variable is nil
+  						cur[ln] = lv or vim.NIL
+  						a = a + 1
+  					end
   				end
   			end
   		end
 
-  		local succ, info = pcall(debug.getinfo, frame+1)
-  		if succ and info and info.func then
-  			setmetatable(cur, {
-  				__index = getfenv(info.func)
-  			})
+  		if frame then
+  			local succ, info = pcall(debug.getinfo, frame+1)
+  			if succ and info and info.func then
+  				setmetatable(cur, {
+  					__index = getfenv(info.func)
+  				})
+  			end
   		end
 
   		local expr = args.expression
@@ -416,13 +421,14 @@ function M.prepare_attach(blocking)
       }))
 
   	elseif args.context == "hover" then
-  		local frame = frames[args.frameId]
+  		local frame = args.frameId and frames[args.frameId]
       local a = 1
       local prev
       local cur = {}
       local first = cur
 
       while true do
+      	if not frame then break end
         local succ, ln, lv = pcall(debug.getlocal, frame+1, a)
         if not succ then
           break
@@ -448,31 +454,35 @@ function M.prepare_attach(blocking)
 
   		a = 1
 
-  		local succ, info = pcall(debug.getinfo, frame+1)
-  		if succ and info and info.func then
-  			local func = info.func
-  			local a = 1
-  			while true do
-  				local succ, ln, lv = pcall(debug.getupvalue, func, a)
-  				if not succ then
-  					break
-  				end
+  		if frame then
+  			local succ, info = pcall(debug.getinfo, frame+1)
+  			if succ and info and info.func then
+  				local func = info.func
+  				local a = 1
+  				while true do
+  					local succ, ln, lv = pcall(debug.getupvalue, func, a)
+  					if not succ then
+  						break
+  					end
 
-  				if not ln then
-  					break
-  				else
-  		      -- Avoid shadowing of the globals if a local variable is nil
-  					cur[ln] = lv or vim.NIL
-  					a = a + 1
+  					if not ln then
+  						break
+  					else
+  						-- Avoid shadowing of the globals if a local variable is nil
+  						cur[ln] = lv or vim.NIL
+  						a = a + 1
+  					end
   				end
   			end
   		end
 
-  		local succ, info = pcall(debug.getinfo, frame+1)
-  		if succ and info and info.func then
-  			setmetatable(cur, {
-  				__index = getfenv(info.func)
-  			})
+  		if frame then
+  			local succ, info = pcall(debug.getinfo, frame+1)
+  			if succ and info and info.func then
+  				setmetatable(cur, {
+  					__index = getfenv(info.func)
+  				})
+  			end
   		end
 
   		local expr = args.expression
@@ -1244,6 +1254,7 @@ function M.prepare_attach(blocking)
           				local first = cur
 
           				while true do
+          					if not frame then break end
           				  local succ, ln, lv = pcall(debug.getlocal, frame+1, a)
           				  if not succ then
           				    break
@@ -1269,31 +1280,35 @@ function M.prepare_attach(blocking)
 
           				a = 1
 
-          				local succ, info = pcall(debug.getinfo, frame+1)
-          				if succ and info and info.func then
-          					local func = info.func
-          					local a = 1
-          					while true do
-          						local succ, ln, lv = pcall(debug.getupvalue, func, a)
-          						if not succ then
-          							break
-          						end
+          				if frame then
+          					local succ, info = pcall(debug.getinfo, frame+1)
+          					if succ and info and info.func then
+          						local func = info.func
+          						local a = 1
+          						while true do
+          							local succ, ln, lv = pcall(debug.getupvalue, func, a)
+          							if not succ then
+          								break
+          							end
 
-          						if not ln then
-          							break
-          						else
-          				      -- Avoid shadowing of the globals if a local variable is nil
-          							cur[ln] = lv or vim.NIL
-          							a = a + 1
+          							if not ln then
+          								break
+          							else
+          								-- Avoid shadowing of the globals if a local variable is nil
+          								cur[ln] = lv or vim.NIL
+          								a = a + 1
+          							end
           						end
           					end
           				end
 
-          				local succ, info = pcall(debug.getinfo, frame+1)
-          				if succ and info and info.func then
-          					setmetatable(cur, {
-          						__index = getfenv(info.func)
-          					})
+          				if frame then
+          					local succ, info = pcall(debug.getinfo, frame+1)
+          					if succ and info and info.func then
+          						setmetatable(cur, {
+          							__index = getfenv(info.func)
+          						})
+          					end
           				end
 
           				local succ, f = pcall(loadstring, "return " .. expr)
@@ -1323,6 +1338,7 @@ function M.prepare_attach(blocking)
           				local first = cur
 
           				while true do
+          					if not frame then break end
           				  local succ, ln, lv = pcall(debug.getlocal, frame+1, a)
           				  if not succ then
           				    break
@@ -1348,31 +1364,35 @@ function M.prepare_attach(blocking)
 
           				a = 1
 
-          				local succ, info = pcall(debug.getinfo, frame+1)
-          				if succ and info and info.func then
-          					local func = info.func
-          					local a = 1
-          					while true do
-          						local succ, ln, lv = pcall(debug.getupvalue, func, a)
-          						if not succ then
-          							break
-          						end
+          				if frame then
+          					local succ, info = pcall(debug.getinfo, frame+1)
+          					if succ and info and info.func then
+          						local func = info.func
+          						local a = 1
+          						while true do
+          							local succ, ln, lv = pcall(debug.getupvalue, func, a)
+          							if not succ then
+          								break
+          							end
 
-          						if not ln then
-          							break
-          						else
-          				      -- Avoid shadowing of the globals if a local variable is nil
-          							cur[ln] = lv or vim.NIL
-          							a = a + 1
+          							if not ln then
+          								break
+          							else
+          								-- Avoid shadowing of the globals if a local variable is nil
+          								cur[ln] = lv or vim.NIL
+          								a = a + 1
+          							end
           						end
           					end
           				end
 
-          				local succ, info = pcall(debug.getinfo, frame+1)
-          				if succ and info and info.func then
-          					setmetatable(cur, {
-          						__index = getfenv(info.func)
-          					})
+          				if frame then
+          					local succ, info = pcall(debug.getinfo, frame+1)
+          					if succ and info and info.func then
+          						setmetatable(cur, {
+          							__index = getfenv(info.func)
+          						})
+          					end
           				end
 
           				local succ, f = pcall(loadstring, "return " .. expr)
