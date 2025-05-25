@@ -3,6 +3,11 @@
 local redir_nvim_output = false
 local nvim_exec2_opts = {}
 
+;; use launch options
+if opts and opts.output ~= nil then 
+  redir_nvim_output = opts.output 
+end
+
 ;; handle nvim output
 if redir_nvim_output and not vim.in_fast_event() then
   ; start timing output

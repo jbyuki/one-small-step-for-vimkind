@@ -10,9 +10,11 @@ function M.print_profiler()
   end
 end
 
-;; validate launch options
+;; validate launch options new interface
 vim.validate("opts.profiler", opts.profiler, 'boolean', true)
 
+;; validate launch options old interface
+["opts.profiler"] = {opts.profiler, "b", true},
 
 ;; use launch options
 if opts and opts.profiler then

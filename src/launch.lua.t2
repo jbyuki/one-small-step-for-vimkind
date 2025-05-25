@@ -1,7 +1,14 @@
 ;;; lua-debug
 ;; implement
 function M.launch(opts)
-  ; verify launch arguments
+  local nvim_version = vim.version()
+  if nvim_version.minor >= 11 then
+    ; verify launch arguments new interface
+  else
+    ; verify launch arguments old interface
+  end
+  ; use launch options
+
   ; abort early if already running
 
   ; init logger
@@ -69,7 +76,7 @@ function M.prepare_attach(blocking)
   end
 end
 
-;; verify launch arguments
+;; verify launch arguments new interface
 vim.validate("opts", opts, 'table', true)
 
 if opts then
@@ -77,10 +84,21 @@ if opts then
   vim.validate("opts.port", opts.port, 'number', true)
   vim.validate("opts.config_file", opts.config_file, 'string', true)
   vim.validate("opts.output", opts.output, 'boolean', true)
-  ; validate launch options
-  if opts.output ~= nil then redir_nvim_output = opts.output end
+  ; validate launch options new interface
 end
-; use launch options
+
+;; verify launch arguments old interface
+vim.validate { opts = {opts, 't', true} }
+
+if opts then
+  vim.validate {
+    ["opts.host"] = {opts.host, "s", true},
+    ["opts.port"] = {opts.port, "n", true},
+    ["opts.config_file"] = {opts.config_file, "s", true},
+    ["opts.output"] = {opts.output, "b", true},
+    ; validate launch options old interface
+  }
+end
 
 ;; detect if nvim is blocking
 local mode = vim.fn.rpcrequest(nvim_server, "nvim_get_mode")
