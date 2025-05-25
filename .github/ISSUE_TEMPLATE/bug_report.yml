@@ -15,7 +15,9 @@ body:
     attributes:
       label: "Neovim version ( `:version` )"
       placeholder: |
-        NVIM v0.12.0-dev-2581+g25947a6eb8                                                                                                                      Build type: RelWithDebInfo                                                                                                                             LuaJIT 2.1.1744317938
+        NVIM v0.12.0-dev-2581+g25947a6eb8
+        Build type: RelWithDebInfo
+        LuaJIT 2.1.1744317938
     validations:
       required: true
 
