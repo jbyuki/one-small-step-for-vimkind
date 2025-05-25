@@ -58,6 +58,7 @@ function M.prepare_attach(blocking)
   ; implement handlers
   local attach_now = function()
       ; redefine debug traceback
+      ; set is attached
       ; attach to current instance
   end
   if blocking then

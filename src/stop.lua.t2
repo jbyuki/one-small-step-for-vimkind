@@ -54,3 +54,16 @@ function M.is_running()
 	return nvim_server ~= nil
 end
 
+;; script variables
+local is_attached = false
+
+;; reset internal states
+is_attached = false
+
+;; set is attached
+is_attached = true
+
+;; implement
+function M.is_attached()
+	return is_attached
+end

@@ -54,6 +54,8 @@ local client
 
 local debug_hook_conn 
 
+local is_attached = false
+
 local cache = {}
 
 local start_profiler
@@ -310,6 +312,8 @@ function M.prepare_attach(blocking)
     seq_id = 1
 
     M.stop_freeze = false
+
+    is_attached = false
 
   	if not request.terminateDebuggee then
   		vim.schedule(function() M.prepare_attach(false) end)
@@ -1085,6 +1089,8 @@ function M.prepare_attach(blocking)
           return builtin_debug_traceback(...)
         end
       end
+
+      is_attached = true
 
       debug.sethook(function(event, line)
         if lock_debug_loop then return end
@@ -1947,6 +1953,8 @@ function M.stop()
 
   M.stop_freeze = false
 
+  is_attached = false
+
 	if exit_autocmd then
 		vim.api.nvim_del_autocmd(exit_autocmd)
 		exit_autocmd = nil
@@ -1958,6 +1966,9 @@ function M.is_running()
 	return nvim_server ~= nil
 end
 
+function M.is_attached()
+	return is_attached
+end
 function M.start_trace()
 	function line_hook(event, line)
 		local surface = 0

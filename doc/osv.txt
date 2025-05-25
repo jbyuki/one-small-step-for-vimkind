@@ -164,6 +164,12 @@ is_running()						*osv.is_running()*
     Return: ~
 	True if osv is running.
 
+is_attached()						*osv.is_attached()*
+    Checks whether |osv| is currently attached to a debuggee instance.
+
+    Return: ~
+	True if osv is attached.
+
 print_profiler()					*osv.print_profiler()*
     Prints the last 1000 elapsed times in milliseconds for each profiled sections.
     See |osv.launch()| to enable the profiler.
