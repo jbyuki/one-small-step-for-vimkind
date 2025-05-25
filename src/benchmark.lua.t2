@@ -11,7 +11,8 @@ function M.print_profiler()
 end
 
 ;; validate launch options
-["opts.profiler"] = {opts.profiler, "b", true},
+vim.validate("opts.profiler", opts.profiler, 'boolean', true)
+
 
 ;; use launch options
 if opts and opts.profiler then

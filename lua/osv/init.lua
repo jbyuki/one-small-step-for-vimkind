@@ -155,21 +155,18 @@ function make_event(event)
 end
 
 function M.launch(opts)
-  vim.validate {
-    opts = {opts, 't', true}
-  }
+  vim.validate("opts", opts, 'table', true)
 
   if opts then
-    vim.validate {
-      ["opts.host"] = {opts.host, "s", true},
-      ["opts.port"] = {opts.port, "n", true},
-      ["opts.config_file"] = {opts.config_file, "s", true},
-      ["opts.output"] = {opts.output, "b", true},
-      ["opts.profiler"] = {opts.profiler, "b", true},
+    vim.validate("opts.host", opts.host, 'string', true)
+    vim.validate("opts.port", opts.port, 'number', true)
+    vim.validate("opts.config_file", opts.config_file, 'string', true)
+    vim.validate("opts.output", opts.output, 'boolean', true)
+    vim.validate("opts.profiler", opts.profiler, 'boolean', true)
 
-      ["opts.break_on_exception"] = {opts.break_on_exception, "b", true},
 
-    }
+    vim.validate("opts.break_on_exception", opts.break_on_exception, 'boolean', true)
+
     if opts.output ~= nil then redir_nvim_output = opts.output end
   end
   if opts and opts.profiler then

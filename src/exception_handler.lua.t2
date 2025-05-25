@@ -4,7 +4,7 @@ local builtin_debug_traceback
 local break_on_exception
 
 ;; validate launch options
-["opts.break_on_exception"] = {opts.break_on_exception, "b", true},
+vim.validate("opts.break_on_exception", opts.break_on_exception, 'boolean', true)
 
 ;; use launch options
 break_on_exception = opts and opts.break_on_exception
