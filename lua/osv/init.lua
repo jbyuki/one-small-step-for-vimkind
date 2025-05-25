@@ -385,6 +385,23 @@ function M.prepare_attach(blocking)
   					__index = getfenv(info.func)
   				})
   			end
+  		else
+  			local frame = 0
+
+  			while true do 
+  				local succ, info = pcall(debug.getinfo, frame+1)
+  				if not succ or not info or not info.func then
+  					break
+  				end
+  				frame = frame + 1
+  			end
+
+  			local succ, info = pcall(debug.getinfo, frame)
+  			if succ and info then
+  				setmetatable(cur, {
+  					__index = getfenv(info.func)
+  				})
+  			end
   		end
 
   		local expr = args.expression
@@ -415,6 +432,7 @@ function M.prepare_attach(blocking)
       else
         v.variablesReference = 0
       end
+
 
       sendProxyDAP(make_response(request, {
         body = v
@@ -483,6 +501,23 @@ function M.prepare_attach(blocking)
   					__index = getfenv(info.func)
   				})
   			end
+  		else
+  			local frame = 0
+
+  			while true do 
+  				local succ, info = pcall(debug.getinfo, frame+1)
+  				if not succ or not info or not info.func then
+  					break
+  				end
+  				frame = frame + 1
+  			end
+
+  			local succ, info = pcall(debug.getinfo, frame)
+  			if succ and info then
+  				setmetatable(cur, {
+  					__index = getfenv(info.func)
+  				})
+  			end
   		end
 
   		local expr = args.expression
@@ -513,6 +548,7 @@ function M.prepare_attach(blocking)
       else
         v.variablesReference = 0
       end
+
 
       sendProxyDAP(make_response(request, {
         body = v
@@ -1309,6 +1345,23 @@ function M.prepare_attach(blocking)
           							__index = getfenv(info.func)
           						})
           					end
+          				else
+          					local frame = 0
+
+          					while true do 
+          						local succ, info = pcall(debug.getinfo, frame+1)
+          						if not succ or not info or not info.func then
+          							break
+          						end
+          						frame = frame + 1
+          					end
+
+          					local succ, info = pcall(debug.getinfo, frame)
+          					if succ and info then
+          						setmetatable(cur, {
+          							__index = getfenv(info.func)
+          						})
+          					end
           				end
 
           				local succ, f = pcall(loadstring, "return " .. expr)
@@ -1389,6 +1442,23 @@ function M.prepare_attach(blocking)
           				if frame then
           					local succ, info = pcall(debug.getinfo, frame+1)
           					if succ and info and info.func then
+          						setmetatable(cur, {
+          							__index = getfenv(info.func)
+          						})
+          					end
+          				else
+          					local frame = 0
+
+          					while true do 
+          						local succ, info = pcall(debug.getinfo, frame+1)
+          						if not succ or not info or not info.func then
+          							break
+          						end
+          						frame = frame + 1
+          					end
+
+          					local succ, info = pcall(debug.getinfo, frame)
+          					if succ and info then
           						setmetatable(cur, {
           							__index = getfenv(info.func)
           						})

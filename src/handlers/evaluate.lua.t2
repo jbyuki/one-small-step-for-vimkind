@@ -119,6 +119,9 @@ if frame then
 			__index = getfenv(info.func)
 		})
 	end
+else
+	; get top level frame
+	; inherit from top level environment
 end
 
 ;; make evaluate reponse
@@ -131,3 +134,22 @@ else
   v.variablesReference = 0
 end
 
+
+;; get top level frame
+local frame = 0
+
+while true do 
+	local succ, info = pcall(debug.getinfo, frame+1)
+	if not succ or not info or not info.func then
+		break
+	end
+	frame = frame + 1
+end
+
+;; inherit from top level environment
+local succ, info = pcall(debug.getinfo, frame)
+if succ and info then
+	setmetatable(cur, {
+		__index = getfenv(info.func)
+	})
+end
