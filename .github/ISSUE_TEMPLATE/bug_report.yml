@@ -12,7 +12,7 @@ body:
   - type: input
     id: neovim-version
     attributes:
-      label: "Neovim version ( `:version` )"
+      label: Neovim version ( `:version` )
       placeholder: |
         NVIM v0.12.0-dev-2581+g25947a6eb8
         Build type: RelWithDebInfo
@@ -22,8 +22,8 @@ body:
   - type: input
     id: os
     attributes:
-      label: "Operating System"
-      placeholder: "Ubuntu 24.04.2 LTS"
+      label: Operating System
+      placeholder: Ubuntu 24.04.2 LTS
     validations:
       required: true
   - type: input
@@ -47,52 +47,52 @@ body:
         local plugins = {
           "mfussenegger/nvim-dap",
           "jbyuki/one-small-step-for-vimkind",
-      }
-      for _, src in ipairs(plugins) do
-      local path = vim.fs.joinpath(vim.fn.stdpath("data"), src:match("/(.*)"))
-      src = "https://github.com/" .. src
-      if vim.fn.isdirectory(path) == 0 then
-      vim.fn.system { 'git', 'clone', '--depth=1', src, path }
-      end
-      vim.opt.runtimepath:append(path)
-      end
+        }
+        for _, src in ipairs(plugins) do
+        local path = vim.fs.joinpath(vim.fn.stdpath("data"), src:match("/(.*)"))
+        src = "https://github.com/" .. src
+        if vim.fn.isdirectory(path) == 0 then
+        vim.fn.system { 'git', 'clone', '--depth=1', src, path }
+        end
+        vim.opt.runtimepath:append(path)
+        end
 
-      -- if init_debug then
-      --  require "osv".launch({ port = 8086, blocking = true })
-      -- end
+        -- if init_debug then
+        --  require "osv".launch({ port = 8086, blocking = true })
+        -- end
 
-      -- plugins configuration
-      vim.g.mapleader = " "
-      vim.cmd("colorscheme retrobox")
-      vim.api.nvim_set_hl(0, "debugPC", { bg = "#cc241d" })
-      local dap = require("dap")
-      dap.configurations.lua = { { type = 'nlua', request = 'attach', name = "osv"} }
-      dap.adapters.nlua = { type = 'server', host = "127.0.0.1", port = 8086, }
-      vim.keymap.set('n', '<leader>db', require"dap".toggle_breakpoint, { noremap = true })
-      vim.keymap.set('n', '<leader>dc', require"dap".continue, { noremap = true })
-      vim.keymap.set('n', '<leader>do', require"dap".step_over, { noremap = true })
-      vim.keymap.set('n', '<leader>di', require"dap".step_into, { noremap = true })
+        -- plugins configuration
+        vim.g.mapleader = " "
+        vim.cmd("colorscheme retrobox")
+        vim.api.nvim_set_hl(0, "debugPC", { bg = "#cc241d" })
+        local dap = require("dap")
+        dap.configurations.lua = { { type = 'nlua', request = 'attach', name = "osv"} }
+        dap.adapters.nlua = { type = 'server', host = "127.0.0.1", port = 8086, }
+        vim.keymap.set('n', '<leader>db', require"dap".toggle_breakpoint, { noremap = true })
+        vim.keymap.set('n', '<leader>dc', require"dap".continue, { noremap = true })
+        vim.keymap.set('n', '<leader>do', require"dap".step_over, { noremap = true })
+        vim.keymap.set('n', '<leader>di', require"dap".step_into, { noremap = true })
 
-      vim.keymap.set('n', '<leader>dl', function() 
-      require"osv".launch({port = 8086}) 
-      end, { noremap = true })
-      ```
+        vim.keymap.set('n', '<leader>dl', function() 
+        require"osv".launch({port = 8086}) 
+        end, { noremap = true })
+        ```
 
-      3. Create test.lua in home
+        3. Create test.lua in home
 
-      ```lua
-      local sum = 0
-      for i=1,10 do
-      sum = sum + i
-      end
-      print(("The sum is %d"):format(sum))
-      ```
+        ```lua
+        local sum = 0
+        for i=1,10 do
+        sum = sum + i
+        end
+        print(("The sum is %d"):format(sum))
+        ```
 
-      3. Launch two neovim instances (A, B)
-      4. (A) Open `test.lua`, and place a breakpoint on the first line
-      5. (B) Launch `osv`
-      6. (A) Connect to (A)
-      7. (B) Execute `test.lua` with `:luafile test.lua`
+        4. Launch two neovim instances (A, B)
+        5. (A) Open `test.lua`, and place a breakpoint on the first line
+        6. (B) Launch `osv`
+        7. (A) Connect to (A)
+        8. (B) Execute `test.lua` with `:luafile test.lua`
     validations:
       required: true
   - type: textarea
