@@ -31,7 +31,7 @@ body:
     attributes:
       label: Steps to reproduce
       description: Detailed explanation on how to trigger the bug and if relevant (ex. interaction with another plugin) please specify a minimal config.
-      placeholder: |
+      value: |
         1. `mkdir ~/.config/osv_issue`
         2. Create init.lua in the `osv_issue` directory
 
@@ -93,7 +93,7 @@ body:
     attributes:
       label: Screenshots
       description: If applicable, add screenshots to help explain your problem.
-      value: |
+      placeholder: |
         ![DESCRIPTION](LINK.png)
       render: bash
     validations:
