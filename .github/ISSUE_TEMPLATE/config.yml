@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Ask a question or start a discussion
+    url: https://github.com/jbyuki/one-small-step-for-vimkind/discussions
+    about: Use the Github discussions feature
