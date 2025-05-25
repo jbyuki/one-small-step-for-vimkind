@@ -1013,7 +1013,7 @@ function M.prepare_attach(blocking)
           if not M.is_running() then
             if builtin_debug_traceback then
               debug.traceback = builtin_debug_traceback
-              return debug.traceback()
+              return debug.traceback(...)
             end
             log("debug.traceback handle lost")
             return "one-small-step-for-vimkind lost the debug.traceback handle :("
