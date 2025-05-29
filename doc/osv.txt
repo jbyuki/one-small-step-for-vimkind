@@ -194,12 +194,19 @@ the DAP server. The default behaviour is:
       return vim.fn.jobstart(args, {rpc = true, env = env})
     end
 <
+=========================================================================
+break on exception                               *osv-break-on-exception* 
+
+If the option `break_on_exception` is true (see |osv.launch()|), the debuggee
+will automatically break if an exception is encountered in the lua code. 
+This feature is useful to quickly diagnose an error as the callstack 
+is accessible and all the variables are inspectable.
 
 =========================================================================
 osv logging                                                 *osv-logging*
 
 Logging can be enabled by passing the corresponding parameter in
-|osv.launch|. The log will be written in:
+|osv.launch()|. The log will be written in:
 >lua
     vim.fn.stdpath('data') .. '/osv.log'
 <
