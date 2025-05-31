@@ -1033,7 +1033,7 @@ function M.prepare_attach(blocking)
 
         debug.traceback = function(...)
           log("debug.traceback " .. vim.inspect({...}))
-          if not M.is_running() then
+          if not M.is_running() or not M.is_attached() then
             if builtin_debug_traceback then
               debug.traceback = builtin_debug_traceback
               return debug.traceback(...)
