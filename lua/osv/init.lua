@@ -299,6 +299,10 @@ function M.prepare_attach(blocking)
   end
 
   function handlers.disconnect(request)
+  	if builtin_debug_traceback then
+  	  debug.traceback = builtin_debug_traceback
+  	end
+
     debug.sethook()
 
     sendProxyDAP(make_response(request, {}))

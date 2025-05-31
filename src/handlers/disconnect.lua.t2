@@ -1,6 +1,7 @@
 ;;; ../lua-debug
 ;; implement handlers
 function handlers.disconnect(request)
+	; restore debug traceback
   ; disable hooks
   ; send disconnect aknowledge
 	; exit debuggee if requested
