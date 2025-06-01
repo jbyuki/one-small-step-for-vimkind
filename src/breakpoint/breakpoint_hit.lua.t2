@@ -23,12 +23,10 @@ if source_path:sub(1, 1) == "@" then
 	else
 		path = source_path:sub(2)
 	end
-	; start profiler resolve path
   local succ, path = pcall(vim.fn.fnamemodify, path, ":p")
   if succ then
 		path = vim.fn.resolve(path)
     path = vim.uri_from_fname(path:lower())
-		; stop profiler resolve path
 		local bp = bps[path]
     if bp then
 			log(vim.inspect(bp))
@@ -117,9 +115,3 @@ while true do
   end
   off = off + 1
 end
-
-;; start profiler resolve path
-start_profiler("resolve_path")
-
-;; stop profiler resolve path
-stop_profiler("resolve_path")

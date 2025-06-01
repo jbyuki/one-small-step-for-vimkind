@@ -1308,7 +1308,6 @@ function M.prepare_attach(blocking)
             off = off + 1
           end
 
-
           local info = debug.getinfo(surface, "S")
           local source_path = info.source
 
@@ -1320,13 +1319,10 @@ function M.prepare_attach(blocking)
           	else
           		path = source_path:sub(2)
           	end
-          	start_profiler("resolve_path")
-
             local succ, path = pcall(vim.fn.fnamemodify, path, ":p")
             if succ then
           		path = vim.fn.resolve(path)
               path = vim.uri_from_fname(path:lower())
-          		stop_profiler("resolve_path")
           		local bp = bps[path]
               if bp then
           			log(vim.inspect(bp))
@@ -1618,7 +1614,6 @@ function M.prepare_attach(blocking)
         	  end
         	  off = off + 1
         	end
-
 
         	local info = debug.getinfo(surface)
 
@@ -2145,7 +2140,6 @@ function M.start_trace()
 		  end
 		  off = off + 1
 		end
-
 
 		local info = debug.getinfo(surface, "S")
 		local source_path = info.source
