@@ -445,14 +445,20 @@ function M.prepare_attach(blocking)
       end
 
       local v = {}
-      v.result = tostring(result_repl)
       if type(result_repl) == "table" then
+      	local mt = getmetatable(result_repl)
+      	if mt and mt.__tostring then
+      		v.result = "table"
+      	else
+      		v.result = tostring(result_repl)
+      	end
         local lv = result_repl
         vars_ref[vars_id] = lv
         v.variablesReference = vars_id
         vars_id = vars_id + 1
 
       else
+      	v.result = tostring(result_repl)
         v.variablesReference = 0
       end
 
@@ -561,14 +567,20 @@ function M.prepare_attach(blocking)
       end
 
       local v = {}
-      v.result = tostring(result_repl)
       if type(result_repl) == "table" then
+      	local mt = getmetatable(result_repl)
+      	if mt and mt.__tostring then
+      		v.result = "table"
+      	else
+      		v.result = tostring(result_repl)
+      	end
         local lv = result_repl
         vars_ref[vars_id] = lv
         v.variablesReference = vars_id
         vars_id = vars_id + 1
 
       else
+      	v.result = tostring(result_repl)
         v.variablesReference = 0
       end
 
@@ -950,6 +962,7 @@ function M.prepare_attach(blocking)
         -- Handle invalid level
         return
       end
+      log("2")
 
       while true do
         local ln, lv = debug.getlocal(frame, a)
@@ -961,15 +974,23 @@ function M.prepare_attach(blocking)
 
         else
           local v = {}
-          v.name = tostring(ln)
+          v.name = ln
           v.variablesReference = 0
           if type(lv) == "table" then
             vars_ref[vars_id] = lv
             v.variablesReference = vars_id
             vars_id = vars_id + 1
 
+
+            local mt = getmetatable(lv)
+            if mt and mt.__tostring then
+              v.value = "table"
+            else
+              v.value = tostring(lv)
+            end
+          else
+            v.value = tostring(lv)
           end
-          v.value = tostring(lv) 
 
           table.insert(variables, v)
         end
@@ -986,15 +1007,23 @@ function M.prepare_attach(blocking)
 
         else
           local v = {}
-          v.name = tostring(ln)
+          v.name = ln
           v.variablesReference = 0
           if type(lv) == "table" then
             vars_ref[vars_id] = lv
             v.variablesReference = vars_id
             vars_id = vars_id + 1
 
+
+            local mt = getmetatable(lv)
+            if mt and mt.__tostring then
+              v.value = "table"
+            else
+              v.value = tostring(lv)
+            end
+          else
+            v.value = tostring(lv)
           end
-          v.value = tostring(lv) 
 
           table.insert(variables, v)
         end
@@ -1003,15 +1032,23 @@ function M.prepare_attach(blocking)
     elseif type(ref) == "table" then
       for ln, lv in pairs(ref) do
           local v = {}
-          v.name = tostring(ln)
+          v.name = ln
           v.variablesReference = 0
           if type(lv) == "table" then
             vars_ref[vars_id] = lv
             v.variablesReference = vars_id
             vars_id = vars_id + 1
 
+
+            local mt = getmetatable(lv)
+            if mt and mt.__tostring then
+              v.value = "table"
+            else
+              v.value = tostring(lv)
+            end
+          else
+            v.value = tostring(lv)
           end
-          v.value = tostring(lv) 
 
           table.insert(variables, v)
       end

@@ -28,6 +28,7 @@ if not info then
   -- Handle invalid level
   return
 end
+log("2")
 
 while true do
   local ln, lv = debug.getlocal(frame, a)
@@ -48,12 +49,20 @@ end
 if vim.startswith(ln, "(") then
 
 ;; fill variable struct
-v.name = tostring(ln)
+v.name = ln
 v.variablesReference = 0
 if type(lv) == "table" then
   ; make variable reference for table
+
+  local mt = getmetatable(lv)
+  if mt and mt.__tostring then
+    v.value = "table"
+  else
+    v.value = tostring(lv)
+  end
+else
+  v.value = tostring(lv)
 end
-v.value = tostring(lv) 
 
 ;; make variable reference for table
 vars_ref[vars_id] = lv

@@ -126,11 +126,17 @@ end
 
 ;; make evaluate reponse
 local v = {}
-v.result = tostring(result_repl)
 if type(result_repl) == "table" then
+	local mt = getmetatable(result_repl)
+	if mt and mt.__tostring then
+		v.result = "table"
+	else
+		v.result = tostring(result_repl)
+	end
   local lv = result_repl
   ; make variable reference for table
 else
+	v.result = tostring(result_repl)
   v.variablesReference = 0
 end
 
