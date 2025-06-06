@@ -105,10 +105,7 @@ launch({opts})                                           *osv.launch()*
       • {opts}  Optional parameters.
                 • `host`         Defaults to "127.0.0.1".
                 • `port`         Specify a port number. If nil, the server will choose it.
-                • `config_file`  Specify a configuration file used when spawning nvim.
                 • `log`          (bool) Enable logging.
-                • `recursive`    (bool) If true, will not check for recursive launch
-                               calls (default is false).
                 • `blocking`     (bool) If true, will freeze the instance until a
                                client is connected (default is false)
                 • `output`       (bool) Capture and report nvim output/messages in
@@ -137,7 +134,6 @@ run_this({opts})                                        *osv.run_this()*
 
     Parameters: ~
       • {opts} Optional parameters.
-               • `config_file`  (string) See |osv.launch()|.
                • `log`          (bool) Enable logging.
                • `output`       (bool) See |osv.launch()|.
 
