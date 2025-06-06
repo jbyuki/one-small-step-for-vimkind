@@ -49,7 +49,7 @@ end
 if vim.startswith(ln, "(") then
 
 ;; fill variable struct
-v.name = ln
+v.name = tostring(ln)
 v.variablesReference = 0
 if type(lv) == "table" then
   ; make variable reference for table
