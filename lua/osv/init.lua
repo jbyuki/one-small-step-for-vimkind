@@ -156,7 +156,7 @@ end
 
 function M.launch(opts)
   local nvim_version = vim.version()
-  if nvim_version.minor >= 11 then
+  if nvim_version.major > 0 or nvim_version.minor >= 11 then
     vim.validate("opts", opts, 'table', true)
 
     if opts then
