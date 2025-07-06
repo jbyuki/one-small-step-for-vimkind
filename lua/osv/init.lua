@@ -46,8 +46,6 @@ local nvim_exec2_opts = {}
 
 local exit_autocmd
 
-local auto_nvim
-
 -- for now, only accepts a single
 -- connection
 local client
@@ -1864,50 +1862,6 @@ function M.add_message(msg)
 end
 
 M.server_messages = {}
-function M.run_this(opts)
-  local dap = require"dap"
-  assert(dap, "nvim-dap not found. Please make sure it's installed.")
-
-  if auto_nvim then
-    vim.fn.jobstop(auto_nvim)
-    auto_nvim = nil
-  end
-
-  local clean_args = { vim.v.progpath, '-u', 'NONE', '-i', 'NONE', '-n', '--embed', '--headless' }
-  nvim_server = vim.fn.jobstart(clean_args, {rpc = true,clear_env=true})
-  vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', 'vim.o.runtimepath = ...', { vim.o.runtimepath })
-  vim.fn.rpcrequest(nvim_server, 'nvim_exec_lua', 'vim.o.packpath = ...', { vim.o.packpath })
-  auto_nvim = nvim_server
-
-  assert(auto_nvim, "Could not create neovim instance with jobstart!")
-
-
-  local mode = vim.fn.rpcrequest(auto_nvim, "nvim_get_mode")
-  assert(not mode.blocking, "Neovim is waiting for input at startup. Aborting.")
-
-  local server = vim.fn.rpcrequest(auto_nvim, "nvim_exec_lua", [[return require"osv".launch(...)]], { opts })
-  vim.wait(100)
-
-  assert(dap.adapters.nlua, "nvim-dap adapter configuration for nlua not found. Please refer to the README.md or :help osv.txt")
-
-  local osv_config = {
-    type = "nlua",
-    request = "attach",
-    name = "Debug current file",
-    host = server.host,
-    port = server.port,
-  }
-  dap.run(osv_config)
-
-  dap.listeners.after['setBreakpoints']['osv'] = function(session, body)
-    vim.schedule(function()
-      vim.fn.rpcnotify(auto_nvim, "nvim_command", "luafile " .. vim.fn.expand("%:p"))
-
-    end)
-  end
-
-end
-
 function M.sendDAP(msg)
   local succ, encoded = pcall(vim.fn.json_encode, msg)
 

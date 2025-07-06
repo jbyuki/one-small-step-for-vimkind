@@ -127,16 +127,6 @@ The |osv.launch()| function will run the debug adapter server in a child
 process. This ensures that DAP requests are still processed even in a frozen
 state.
 
-run_this({opts})                                        *osv.run_this()*
-    This command will automatically start the DAP server and connect nvim-dap
-    to it. You still need to set the `dap.adapters.nlua` as explained in the
-    configuration section.
-
-    Parameters: ~
-      • {opts} Optional parameters.
-               • `log`          (bool) Enable logging.
-               • `output`       (bool) See |osv.launch()|.
-
 
 stop()                                                     *osv.stop()*
     This command will stop the running dap server. Following the DAP standard,
