@@ -303,7 +303,7 @@ function M.prepare_attach(blocking)
 
     sendProxyDAP(make_response(request, {}))
 
-  	if request.terminateDebuggee == true then
+  	if request.arguments and request.arguments.terminateDebuggee == true then
   		M.stop()
   	end
 
@@ -334,7 +334,7 @@ function M.prepare_attach(blocking)
 
     is_attached = false
 
-  	if not request.terminateDebuggee then
+  	if not request.arguments or not request.arguments.terminateDebuggee then
   		vim.schedule(function() M.prepare_attach(false) end)
   	end
   end

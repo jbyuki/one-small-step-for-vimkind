@@ -19,7 +19,7 @@ sendProxyDAP(make_response(request, {}))
 supportTerminateDebuggee = true,
 
 ;; exit debuggee if requested
-if request.terminateDebuggee == true then
+if request.arguments and request.arguments.terminateDebuggee == true then
 	M.stop()
 end
 
@@ -31,6 +31,6 @@ if nvim_server then
 end
 
 ;; if still running wait for next connection
-if not request.terminateDebuggee then
+if not request.arguments or not request.arguments.terminateDebuggee then
 	vim.schedule(function() M.prepare_attach(false) end)
 end
