@@ -1185,7 +1185,7 @@ function M.prepare_attach(blocking)
 
             M.server_messages = {}
 
-            vim.wait(1)
+            vim.wait(0)
           end
 
           return builtin_debug_traceback(...)
@@ -1575,7 +1575,7 @@ function M.prepare_attach(blocking)
 
           				  M.server_messages = {}
 
-          				  vim.wait(1)
+          				  vim.wait(0)
           				end
 
           			end
@@ -1648,7 +1648,7 @@ function M.prepare_attach(blocking)
 
         		  M.server_messages = {}
 
-        		  vim.wait(1)
+        		  vim.wait(0)
         		end
 
         	end
@@ -1686,7 +1686,7 @@ function M.prepare_attach(blocking)
 
             M.server_messages = {}
 
-            vim.wait(1)
+            vim.wait(0)
           end
 
 
@@ -1723,7 +1723,7 @@ function M.prepare_attach(blocking)
 
             M.server_messages = {}
 
-            vim.wait(1)
+            vim.wait(0)
           end
 
         elseif event == "line" and pause then
@@ -1756,7 +1756,7 @@ function M.prepare_attach(blocking)
 
             M.server_messages = {}
 
-            vim.wait(1)
+            vim.wait(0)
           end
 
 
