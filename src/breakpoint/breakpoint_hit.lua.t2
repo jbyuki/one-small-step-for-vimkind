@@ -51,13 +51,28 @@ if source_path:sub(1, 1) == "@" then
   end
 end
 
+;; script variables
+local delay_frozen = 0
+
+;; validate launch options new interface
+vim.validate("opts.delay_frozen", opts.delay_frozen, 'number', true)
+
+;; validate launch options old interface
+["opts.delay_frozen"] = {opts.delay_frozen, "number", true},
+
+;; use launch options
+delay_frozen = opts and opts.delay_frozen
+if delay_frozen == nil then
+  delay_frozen = 0
+end
+
 ;; freeze neovim instance
 running = false
 while not running do
   ; check disconnected
   ; handle new messages
   ; clear messages
-  vim.wait(0)
+  vim.wait(vim_wait_delay)
 end
 
 ;; send stopped event breakpoint

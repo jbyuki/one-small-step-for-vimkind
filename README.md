@@ -137,6 +137,10 @@ This appears when the osv's spawned headless neovim instance has an error at sta
 
 Make sure that the path is correct and the breakpoint is set to a line which effectively gets executed.
 
+### 100% CPU usage when stopped at a breakpoint
+
+Set `delay_frozen` to `100`. See [this issue](https://github.com/jbyuki/one-small-step-for-vimkind/issues/83#issuecomment-3395473283) for more informations.
+
 ## Status
 
 Handlers:

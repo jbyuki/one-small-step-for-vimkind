@@ -1,6 +1,8 @@
 -- Generated using ntangle.nvim
 local running = true
 
+local delay_frozen = 0
+
 local builtin_debug_traceback
 local break_on_exception
 
@@ -163,6 +165,8 @@ function M.launch(opts)
       vim.validate("opts.output", opts.output, 'boolean', true)
       vim.validate("opts.profiler", opts.profiler, 'boolean', true)
 
+      vim.validate("opts.delay_frozen", opts.delay_frozen, 'number', true)
+
       vim.validate("opts.break_on_exception", opts.break_on_exception, 'boolean', true)
 
     end
@@ -177,6 +181,8 @@ function M.launch(opts)
         ["opts.output"] = {opts.output, "b", true},
         ["opts.profiler"] = {opts.profiler, "b", true},
 
+        ["opts.delay_frozen"] = {opts.delay_frozen, "number", true},
+
         ["opts.break_on_exception"] = {opts.break_on_exception, "b", true},
 
       }
@@ -187,6 +193,11 @@ function M.launch(opts)
     disable_profiler = false
   else
     disable_profiler = true
+  end
+
+  delay_frozen = opts and opts.delay_frozen
+  if delay_frozen == nil then
+    delay_frozen = 0
   end
 
   break_on_exception = opts and opts.break_on_exception
@@ -1185,7 +1196,7 @@ function M.prepare_attach(blocking)
 
             M.server_messages = {}
 
-            vim.wait(0)
+            vim.wait(vim_wait_delay)
           end
 
           return builtin_debug_traceback(...)
@@ -1575,7 +1586,7 @@ function M.prepare_attach(blocking)
 
           				  M.server_messages = {}
 
-          				  vim.wait(0)
+          				  vim.wait(vim_wait_delay)
           				end
 
           			end
@@ -1648,7 +1659,7 @@ function M.prepare_attach(blocking)
 
         		  M.server_messages = {}
 
-        		  vim.wait(0)
+        		  vim.wait(vim_wait_delay)
         		end
 
         	end
@@ -1686,7 +1697,7 @@ function M.prepare_attach(blocking)
 
             M.server_messages = {}
 
-            vim.wait(0)
+            vim.wait(vim_wait_delay)
           end
 
 
@@ -1723,7 +1734,7 @@ function M.prepare_attach(blocking)
 
             M.server_messages = {}
 
-            vim.wait(0)
+            vim.wait(vim_wait_delay)
           end
 
         elseif event == "line" and pause then
@@ -1756,7 +1767,7 @@ function M.prepare_attach(blocking)
 
             M.server_messages = {}
 
-            vim.wait(0)
+            vim.wait(vim_wait_delay)
           end
 
 
