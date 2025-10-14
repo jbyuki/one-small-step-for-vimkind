@@ -72,7 +72,7 @@ while not running do
   ; check disconnected
   ; handle new messages
   ; clear messages
-  vim.wait(vim_wait_delay)
+  vim.wait(delay_frozen)
 end
 
 ;; send stopped event breakpoint
