@@ -354,7 +354,7 @@ function M.prepare_attach(blocking)
 
   function handlers.evaluate(request)
     local args = request.arguments
-    if args.context == "repl" then
+    if args.context == "repl" or args.context == "watch" then
   		local frame = args.frameId and frames[args.frameId]
       local a = 1
       local prev
