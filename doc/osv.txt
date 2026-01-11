@@ -116,7 +116,7 @@ launch({opts})                                           *osv.launch()*
                                (bool) If true, osv will break if an
                                error/exception is encountered in the debuggee.
                                (default is true)
-                • `frozen_delay`       
+                • `delay_frozen`       
                                (number) Number of milliseconds to wait in the
                                frozen loop. A lower number will increase
                                responsiveness but increase CPU usage.
