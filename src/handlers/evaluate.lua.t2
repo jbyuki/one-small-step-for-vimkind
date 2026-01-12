@@ -2,7 +2,7 @@
 ;; implement handlers
 function handlers.evaluate(request)
   local args = request.arguments
-  if args.context == "repl" then
+  if args.context == "repl" or args.context == "watch" then
 		local frame = args.frameId and frames[args.frameId]
     ; retrieve locals in frame
 		; retrieve upvalues in frame
