@@ -628,7 +628,7 @@ function M.prepare_attach(blocking)
       end
 
       local inside_osv = false
-      if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
+      if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" and (not info.name or info.name ~= "traceback") then
         local source = info.source:sub(2)
         -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
         local parent = vim.fs.dirname(source)
@@ -833,7 +833,7 @@ function M.prepare_attach(blocking)
       end
 
       local inside_osv = false
-      if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
+      if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" and (not info.name or info.name ~= "traceback") then
         local source = info.source:sub(2)
         -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
         local parent = vim.fs.dirname(source)
@@ -924,7 +924,7 @@ function M.prepare_attach(blocking)
       end
 
       local inside_osv = false
-      if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
+      if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" and (not info.name or info.name ~= "traceback") then
         local source = info.source:sub(2)
         -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
         local parent = vim.fs.dirname(source)
@@ -1138,7 +1138,7 @@ function M.prepare_attach(blocking)
             end
 
             local inside_osv = false
-            if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
+            if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" and (not info.name or info.name ~= "traceback") then
               local source = info.source:sub(2)
               -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
               local parent = vim.fs.dirname(source)
@@ -1272,7 +1272,7 @@ function M.prepare_attach(blocking)
             end
 
             local inside_osv = false
-            if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
+            if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" and (not info.name or info.name ~= "traceback") then
               local source = info.source:sub(2)
               -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
               local parent = vim.fs.dirname(source)
@@ -1306,7 +1306,7 @@ function M.prepare_attach(blocking)
             end
 
             local inside_osv = false
-            if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
+            if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" and (not info.name or info.name ~= "traceback") then
               local source = info.source:sub(2)
               -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
               local parent = vim.fs.dirname(source)
@@ -1735,7 +1735,7 @@ function M.prepare_attach(blocking)
         	  end
 
         	  local inside_osv = false
-        	  if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
+        	  if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" and (not info.name or info.name ~= "traceback") then
         	    local source = info.source:sub(2)
         	    -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
         	    local parent = vim.fs.dirname(source)
@@ -2218,7 +2218,7 @@ function M.start_trace()
 		  end
 
 		  local inside_osv = false
-		  if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" then
+		  if info.source:sub(1, 1) == '@' and #info.source > 8 and info.source:sub(#info.source-8+1,#info.source) == "init.lua" and (not info.name or info.name ~= "traceback") then
 		    local source = info.source:sub(2)
 		    -- local path = vim.fn.resolve(vim.fn.fnamemodify(source, ":p"))
 		    local parent = vim.fs.dirname(source)
